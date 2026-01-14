@@ -1,0 +1,106 @@
+# Database Tables Overview (PostgreSQL)
+
+This document describes how the tables look in the database (columns + types), including the array-based “list of IDs” fields (`BIGINT[] NULL`) as requested.
+
+---
+
+## Users
+
+| column | type |
+|---|---|
+| id | BIGSERIAL (PK) |
+| name | TEXT |
+| mail | TEXT (UNIQUE) |
+| user_type | user_type ENUM (worker/admin) |
+| active | BOOLEAN |
+| created_at | TIMESTAMPTZ |
+| updated_at | TIMESTAMPTZ |
+
+---
+
+## Clients
+
+| column | type |
+|---|---|
+| id | BIGSERIAL (PK) |
+| name | TEXT |
+| description | TEXT NULL |
+| active | BOOLEAN |
+| created_at | TIMESTAMPTZ |
+| updated_at | TIMESTAMPTZ |
+
+---
+
+## Projects
+
+| column | type |
+|---|---|
+| id | BIGSERIAL (PK) |
+| name | TEXT |
+| client_id | BIGINT (FK → clients.id) |
+| project_manager_id | BIGINT (FK → users.id) |
+| start_date | DATE |
+| end_date | DATE NULL |
+| description | TEXT NULL |
+| active | BOOLEAN |
+| created_at | TIMESTAMPTZ |
+| updated_at | TIMESTAMPTZ |
+
+---
+
+## Tasks
+
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) |  |
+| name | TEXT |  |
+| project_id | BIGINT | FK → projects.id |
+| start_date | DATE NULL |  |
+| end_date | DATE NULL |  |
+| description | TEXT NULL |  |
+| worker_ids | BIGINT[] NULL | |
+| status | task_status ENUM | open/closed |
+| created_at | TIMESTAMPTZ |  |
+| updated_at | TIMESTAMPTZ |  |
+
+---
+
+## DailyAttendance
+
+| column | type |
+|---|---|
+| id | BIGSERIAL (PK) |
+| worker_id | BIGINT (FK → users.id) |
+| date | DATE |
+| start_time | TIME NULL |
+| end_time | TIME NULL |
+| status | daily_attendance_status ENUM |
+| description | TEXT NULL |
+| created_at | TIMESTAMPTZ |
+| updated_at | TIMESTAMPTZ |
+
+---
+
+## ProjectTimeLogs
+
+| column | type |
+|---|---|
+| id | BIGSERIAL (PK) |
+| daily_attendance_id | BIGINT (FK → daily_attendance.id) |
+| task_id | BIGINT (FK → tasks.id) |
+| duration_min | INTEGER |
+| description | TEXT NULL |
+| created_at | TIMESTAMPTZ |
+| updated_at | TIMESTAMPTZ |
+
+---
+
+## Absences 
+
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) |  |
+| daily_attendance_ids | BIGINT[] NULL | |
+| document_url | TEXT NULL |  |
+| created_at | TIMESTAMPTZ |  |
+| updated_at | TIMESTAMPTZ |  |
