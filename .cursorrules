@@ -20,6 +20,9 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 - **Design Priority**: 
   - `frontend_user`: Prioritize responsive, touch-friendly components.
   - `frontend_admin`: Prioritize data density and table-based views.
+- **Date Handling Rule (Crucial for Day.js)**: Always use Day.js for date manipulations. Do not use the native Date object for calculations. When interacting with the DB, convert Day.js objects to ISO strings or Javascript Date objects as required by Prisma.
+- **State Management Rule (TanStack Query)**: Use TanStack Query hooks (useQuery, useMutation) for all server data fetching. Do not use useEffect + axios manually in components. Always invalidate queries after a mutation.
+- **Form Rule (Mantine Form)**: When building forms, use the useForm hook from @mantine/form and pass the form.getInputProps('fieldName') directly to Mantine components.
 
 ### 3. Backend Development (Express + Prisma)
 - **Type Safety**: Use **Zod** for all request body and query parameter validation.
@@ -86,3 +89,52 @@ if (isLocked) {
 }
 ```
 
+### Date Handling Pattern (Day.js)
+```typescript
+import dayjs from 'dayjs';
+
+// Always use Day.js for date calculations
+const today = dayjs();
+const startOfMonth = dayjs().startOf('month');
+const formattedDate = dayjs(date).format('DD/MM/YY');
+
+// Convert to Date/ISO for Prisma
+const prismaDate = dayjs(date).toDate(); // or .toISOString()
+```
+
+### State Management Pattern (TanStack Query)
+```typescript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// Fetching data
+const { data, isLoading } = useQuery({
+  queryKey: ['reports', month],
+  queryFn: () => fetchReports(month)
+});
+
+// Mutations with query invalidation
+const queryClient = useQueryClient();
+const mutation = useMutation({
+  mutationFn: createReport,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['reports'] });
+  }
+});
+```
+
+### Form Pattern (Mantine Form)
+```typescript
+import { useForm } from '@mantine/form';
+import { TextInput, Button } from '@mantine/core';
+
+const form = useForm({
+  initialValues: {
+    email: '',
+    name: ''
+  }
+});
+
+// Pass getInputProps directly to Mantine components
+<TextInput {...form.getInputProps('email')} />
+<TextInput {...form.getInputProps('name')} />
+```
