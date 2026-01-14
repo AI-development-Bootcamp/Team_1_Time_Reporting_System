@@ -1,0 +1,88 @@
+
+## Project Context
+- **Architecture**: Monorepo with three main services: `backend` (Express), `frontend_user` (Mobile-first React), and `frontend_admin` (Web-first React).
+- **Core Stack**: TypeScript, Prisma (PostgreSQL), Mantine UI, Vitest, Zod.
+- **Key Constraints**: Hebrew RTL interface, soft deletes for users, binary file storage (Bytes) in DB.
+
+## Role & Instructions
+You are an expert full-stack developer specializing in TypeScript. Follow these rules strictly:
+
+### 1. Monorepo Workflow
+- Always verify which directory you are working in before creating files.
+- `backend/`: Node.js/Express logic, Prisma schemas, and migrations.
+- `frontend_user/`: Mobile-optimized React code.
+- `frontend_admin/`: Desktop-optimized React code.
+- Use the root `package.json` scripts (`npm run dev:all`, etc.) for orchestration.
+
+### 2. Frontend Development (React + Mantine)
+- **UI/UX**: Use **Mantine UI** components exclusively.
+- **RTL**: All layouts must support **Hebrew (RTL)**. Ensure the `MantineProvider` is configured with `direction: 'rtl'`.
+- **Design Priority**: 
+  - `frontend_user`: Prioritize responsive, touch-friendly components.
+  - `frontend_admin`: Prioritize data density and table-based views.
+
+### 3. Backend Development (Express + Prisma)
+- **Type Safety**: Use **Zod** for all request body and query parameter validation.
+- **Database**: Use Prisma Client for all DB interactions. 
+- **Soft Deletes**: When "deleting" a User, set `isActive = false` instead of removing the record. Always filter for `isActive: true` in standard queries.
+- **Files**: Store absence files as `Bytes` in PostgreSQL via Prisma. Use Multer for multipart handling.
+- **Logic**: 
+  - Validation: Block entries where `EndTime < StartTime`.
+  - Timer: Ensure the auto-stop logic at `23:59` is handled (saves as "Incomplete").
+
+### 4. Technical Standards
+- **TypeScript**: No `any` type. Define interfaces for all API responses and data models.
+- **Testing**: Write unit tests in **Vitest**. Target 60% coverage.
+- **Performance**: 
+  - API responses for core actions (login, time entry) must be < 500ms.
+- **Auth**: Use JWT with 24h expiry. Protect routes using a shared auth middleware.
+
+### 5. Code Style & Conventions
+- **CSS Rule**: **No inline styles** are permitted in components (avoid `style={{...}}`).
+- Use functional components and React Hooks.
+- Prefer `const` over `let`.
+- **Variable Naming**: Use `camelCase` for all variables, functions, and instances (e.g., `userReport`, `fetchProjectData`).
+- Implement "Month Locking" logic by checking the lock status before any Create/Update/Delete operations on reports.
+
+## Project Structure Reference
+- `/backend/src`: Controllers, Services, Middlewares, Routes.
+- `/backend/prisma/schema.prisma`: Source of truth for models.
+- `/frontend_user/src/components`: Mobile-specific components.
+- `/frontend_admin/src/components`: Admin-specific dashboards.
+
+## Common Patterns
+
+### Backend API Pattern
+```typescript
+// Always use Zod for validation
+import { z } from 'zod';
+
+const createReportSchema = z.object({
+  startTime: z.string(),
+  endTime: z.string(),
+  // ... other fields
+});
+
+
+```
+
+### Frontend Component Pattern
+```typescript
+// Always use Mantine components, no inline styles
+import { Button, TextInput } from '@mantine/core';
+
+// RTL support via MantineProvider
+<MantineProvider theme={{ dir: 'rtl' }}>
+  {/* components */}
+</MantineProvider>
+```
+
+### Month Locking Check
+```typescript
+// Before any report mutation, check month lock status
+const isLocked = await checkMonthLock(reportDate);
+if (isLocked) {
+  throw new Error('Month is locked');
+}
+```
+
