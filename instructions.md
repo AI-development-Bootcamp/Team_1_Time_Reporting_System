@@ -125,6 +125,8 @@ The root `package.json` will utilize `concurrently` to support the following com
 
 ### API Endpoints
 
+// Need to See according to the API documentation that Dor created (After approval in the pull request).
+
 #### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
