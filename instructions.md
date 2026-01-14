@@ -181,6 +181,8 @@ The root `package.json` will utilize `concurrently` to support the following com
 
 #### Core Models
 
+// Need to Update according to the Data models that Dor created (After approval in the pull request).
+
 ```prisma
 enum Role {
   ADMIN
