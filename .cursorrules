@@ -46,6 +46,11 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 - Prefer `const` over `let`.
 - **Variable Naming**: Use `camelCase` for all variables, functions, and instances (e.g., `userReport`, `fetchProjectData`).
 - Implement "Month Locking" logic by checking the lock status before any Create/Update/Delete operations on reports.
+- **Components**: PascalCase (e.g., `ExpenseForm`, `CategorySummary`)
+- **Files**: PascalCase for all files in folders (e.g., `ExpenseForm.tsx`, `ExpenseTypes.ts`, `FormatCurrency.ts`)
+- **Functions/Variables**: camelCase (e.g., `handleSubmit`, `totalAmount`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `EXPENSE_CATEGORIES`)
+- **Types/Interfaces**: PascalCase with descriptive names (e.g., `Expense`, `ExpenseFormData`)
 
 ## Project Structure Reference
 - `/backend/src`: Controllers, Services, Middlewares, Routes.
