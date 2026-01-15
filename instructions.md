@@ -27,7 +27,7 @@ To create a unified, transparent standard for reporting hours across the organiz
   1. `frontend_user`: Reporting & History (for Employees & Admins).
   2. `frontend_admin`: Management Dashboard (Admins only).
 - [ ] **Manual Time Reporting**: Manual entry for daily hours with multiple time entries per day. The "Project" selector must group Projects by Client header, sorted by usage frequency (per user, last week usage). Minimum time unit: 1 minute. Reports stored as start/end times per task, not total hours.
-- [ ] **Admin CRUD**: Management of Users (Soft Delete), Clients, Projects, and Tasks. Admin can create, update, and soft-delete users. User update includes: email, password, name, role, is_active status.
+- [ ] **Admin CRUD**: Management of Users (Soft Delete), Clients, Projects, and Tasks. Admin can create, update, and soft-delete users. User update includes: mail, password, name, userType, active status.
 - [ ] **Hierarchy Logic**: Clients are unique companies. Each Client has many Projects (e.g., frontend build, backend build). Each Project has many Tasks (e.g., UI/UX, DB creation). Users are assigned to Tasks.
 - [ ] **Validations**: Block if End Time < Start Time.
 - [ ] **Month History Report**: View month history report with detailed UI (see UI Specifications below).
@@ -376,8 +376,7 @@ Create task.
   "startDate": "2026-01-20",
   "endDate": null,
   "description": "Create schema",
-  "status": "open",
-  "workerIds": [2, 3]
+  "status": "open"
 }
 ```
 
@@ -389,8 +388,7 @@ Soft delete task (`active=false` on DB layer; API can hide inactive tasks by def
 
 #### 6. Assignments (Admin)
 
-> If assignments are stored as a join table in DB, this API manages it.  
-> If stored only as `workerIds[]` on `Task`, then this section can be simplified to "update task workerIds".
+> Assignments are stored as a join table (`TaskWorker`) in DB. This API manages the many-to-many relationship between Users and Tasks.
 
 **POST `/api/admin/assignments`**
 Assign worker to task.
@@ -405,7 +403,15 @@ Assign worker to task.
 
 **201 Created Response:**
 ```json
-{ "success": true, "data": { "id": 999 } }
+{ 
+  "success": true, 
+  "data": { 
+    "id": 999,
+    "taskId": 55,
+    "workerId": 2,
+    "assignedAt": "2026-01-14T10:00:00.000Z"
+  } 
+}
 ```
 
 **GET `/api/admin/assignments`**
@@ -477,6 +483,7 @@ Returns month history of DailyAttendance (for UI accordion).
         "endTime": "2026-01-14T17:30:00.000Z",
         "status": "work",
         "description": "Worked normally",
+        "documentUrl": null,
         "createdAt": "2026-01-14T18:00:00.000Z",
         "updatedAt": "2026-01-14T18:00:00.000Z"
       }
@@ -671,10 +678,16 @@ export interface Task {
   startDate?: string | null;
   endDate?: string | null;
   description?: string | null;
-  workerIds?: number[]; // Array of worker IDs assigned to this task
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+//many to many
+export interface TaskWorker {
+  taskId: number;
+  workerId: number;
+  assignedAt: string;
 }
 
 export interface DailyAttendance {
@@ -685,6 +698,7 @@ export interface DailyAttendance {
   endTime: string; // ISO Time
   description?: string | null;
   status: DailyAttendanceStatus;
+  documentUrl?: string | null; // The form goes here
   createdAt: string;
   updatedAt: string;
 }
@@ -747,7 +761,10 @@ model User {
   active    Boolean   @default(true) // Soft Delete
   createdAt DateTime  @default(now()) @db.Timestamptz
   updatedAt DateTime  @updatedAt @db.Timestamptz
-
+  
+  dailyAttendances DailyAttendance[]
+  managedProjects  Project[]         @relation("ProjectManager")
+  taskWorkers      TaskWorker[]
 }
 
 model Client {
@@ -757,42 +774,64 @@ model Client {
   active      Boolean   @default(true) // Soft Delete
   createdAt   DateTime  @default(now()) @db.Timestamptz
   updatedAt   DateTime  @updatedAt @db.Timestamptz
+  
+  projects    Project[]
 }
 
 model Project {
   id                BigInt    @id @default(autoincrement())
   name              String    @db.Text
-  clientId          BigInt    @reference to client.id(fk)
-  projectManagerId  BigInt    @reference to a user.id(fk)
+  clientId          BigInt
+  projectManagerId  BigInt
   startDate         DateTime  @db.Date
   endDate           DateTime? @db.Date
   description       String?   @db.Text
   active            Boolean   @default(true) // Soft Delete
   createdAt         DateTime  @default(now()) @db.Timestamptz
   updatedAt         DateTime  @updatedAt @db.Timestamptz
+  
+  client            Client    @relation(fields: [clientId], references: [id])
+  projectManager    User      @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  tasks             Task[]
 }
 
 model Task {
   id          BigInt      @id @default(autoincrement())
   name        String      @db.Text
-  projectId   BigInt      @reference to project.id(fk)
+  projectId   BigInt
   startDate   DateTime?   @db.Date
   endDate     DateTime?   @db.Date
   description String?     @db.Text
-  workerIds   BigInt[]    // Array of worker IDs assigned to this task
   status      TaskStatus  @default(open)
   createdAt   DateTime    @default(now()) @db.Timestamptz
   updatedAt   DateTime    @updatedAt @db.Timestamptz
+  
+  project         Project         @relation(fields: [projectId], references: [id])
+  taskWorkers     TaskWorker[]
+  projectTimeLogs ProjectTimeLogs[]
+}
+
+model TaskWorker {
+  id         BigInt   @id @default(autoincrement())
+  taskId     BigInt
+  workerId   BigInt
+  assignedAt DateTime @default(now()) @db.Timestamptz
+  
+  task   Task   @relation(fields: [taskId], references: [id])
+  worker User   @relation(fields: [workerId], references: [id])
+  
+  @@unique([taskId, workerId])
 }
 
 model DailyAttendance {
   id          BigInt                @id @default(autoincrement())
-  workerId    BigInt                @reference to user.id(fk)
+  workerId    BigInt
   date        DateTime              @db.Date
   startTime   DateTime?             @db.Time
   endTime     DateTime?             @db.Time
   status      DailyAttendanceStatus
   description String?               @db.Text
+  documentUrl String?               @db.Text // URL or path to document
   createdAt   DateTime              @default(now()) @db.Timestamptz
   updatedAt   DateTime              @updatedAt @db.Timestamptz
   
@@ -802,12 +841,15 @@ model DailyAttendance {
 
 model ProjectTimeLogs {
   id                BigInt   @id @default(autoincrement())
-  dailyAttendanceId BigInt   @reference to dailyattendance.id(fk)
-  taskId            BigInt   @refernce to task.id(fk)
+  dailyAttendanceId BigInt
+  taskId            BigInt
   durationMin       Int      // Duration in minutes
   description       String?  @db.Text
   createdAt         DateTime @default(now()) @db.Timestamptz
   updatedAt         DateTime @updatedAt @db.Timestamptz
+  
+  dailyAttendance   DailyAttendance @relation(fields: [dailyAttendanceId], references: [id])
+  task              Task            @relation(fields: [taskId], references: [id])
 }
 
 model Absence {
@@ -822,8 +864,8 @@ model Absence {
 #### Notes
 - All models use `BigInt` with `@default(autoincrement())` for primary keys (matching PostgreSQL BIGSERIAL).
 - Soft deletes implemented via `active` boolean field (default: true).
-- User-Task assignments stored as `workerIds` array on Task model (BIGINT[] in PostgreSQL).
-- DailyAttendance stores daily records with optional start/end times (TIME type).
+- User-Task assignments stored as `TaskWorker` join table (many-to-many relationship) instead of array on Task.
+- DailyAttendance stores daily records with optional start/end times (TIME type) and `documentUrl` for file uploads.
 - ProjectTimeLogs stores task-based time entries with duration in minutes (not start/end times).
 - Absence stores `dailyAttendanceIds` array and `documentUrl` (TEXT) - file storage implementation choice.
 - All timestamp fields use `@db.Timestamptz` to match PostgreSQL TIMESTAMPTZ.
@@ -839,10 +881,10 @@ model Absence {
 - **Password Reset**: Admin sets new password directly (no reset link flow).
 
 #### Time Reporting Structure
-- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status).
+- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status, documentUrl).
 - **Project Time Logs**: Multiple ProjectTimeLogs records per DailyAttendance (stores taskId, duration in minutes).
 - **Time Storage**: 
-  - DailyAttendance stores overall start/end times for the day (TIME type, nullable).
+  - DailyAttendance stores overall start/end times for the day (TIME type, nullable) and optional documentUrl for file uploads.
   - ProjectTimeLogs stores duration in minutes per task (not start/end times per task).
 - **Minimum Unit**: 1 minute precision.
 - **Overlapping Entries**: Allowed for different tasks (e.g., working on 2 projects simultaneously via multiple ProjectTimeLogs).
@@ -851,7 +893,7 @@ model Absence {
 #### Project Selector Sorting
 - **Frequency Calculation**: Per user, based on last week's usage (7 days).
 - **Caching Strategy**: Cache project lists with refresh on:
-  - New user-task assignments
+  - New user-task assignments (via TaskWorker join table)
   - Daily report submissions
   - Best practice: In-memory cache with TTL or Redis for production.
 
@@ -939,7 +981,7 @@ model Absence {
 
 ### Phase 2: Backend (Express + Prisma)
 - [ ] **TASK-010**: Setup Express Server with TypeScript (ts-node/tsc) + Auth Middleware (JWT) + Zod validation.
-- [ ] **TASK-011**: Prisma CRUD: Implement Services/Controllers for Clients/Projects/Tasks/User-Task Assignments using Prisma Client (TypeScript).
+- [ ] **TASK-011**: Prisma CRUD: Implement Services/Controllers for Clients/Projects/Tasks/TaskWorker (Assignments) using Prisma Client (TypeScript).
 - [ ] **TASK-012**: Manual Reporting Logic (Time entry validation with Zod, End Time < Start Time blocking for DailyAttendance). Support multiple ProjectTimeLogs entries per day with overlapping time windows. Store duration in minutes per task entry.
 - [ ] **TASK-012b**: Timer Functionality (Timer handling, Midnight auto-stop job) - Should Have.
 - [ ] **TASK-013**: Binary File Upload Implementation (Multer -> Buffer -> Prisma Bytes field) - Should Have.

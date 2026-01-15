@@ -59,8 +59,9 @@ Error:
 - **User**: `{ id, name, mail, userType, active, createdAt, updatedAt }`
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
-- **Task**: `{ id, name, projectId, startDate?, endDate?, description?, workerIds?, status, createdAt, updatedAt }`
-- **DailyAttendance**: `{ id, workerId, date, startTime, endTime, description?, status, createdAt, updatedAt }`
+- **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
+- **TaskWorker**: `{ id, taskId, workerId, assignedAt }`
+- **DailyAttendance**: `{ id, workerId, date, startTime, endTime, description?, status, documentUrl?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
 - **Absence**: `{ id, dailyAttendanceIds?, documentUrl?, createdAt, updatedAt }`
 
@@ -363,7 +364,6 @@ List tasks (optional filter by project).
       "startDate": null,
       "endDate": null,
       "description": "Design work",
-      "workerIds": [2, 3],
       "status": "open",
       "createdAt": "2026-01-01T09:00:00.000Z",
       "updatedAt": "2026-01-10T09:00:00.000Z"
@@ -383,8 +383,7 @@ Create task.
   "startDate": "2026-01-20",
   "endDate": null,
   "description": "Create schema",
-  "status": "open",
-  "workerIds": [2, 3]
+  "status": "open"
 }
 ```
 
@@ -398,8 +397,7 @@ Soft delete task (`active=false` on DB layer; API can hide inactive tasks by def
 
 # 6) Assignments (Admin)
 
-> If you store assignments as a join table in DB, this API manages it.  
-> If you store assignments only as `workerIds[]` on `Task`, then this section can be simplified to “update task workerIds”.
+> Assignments are stored as a join table (`TaskWorker`) in DB. This API manages the many-to-many relationship between Users and Tasks.
 
 ## POST `/admin/assignments`
 Assign worker to task.
@@ -414,7 +412,15 @@ Assign worker to task.
 
 ### 201 Created
 ```json
-{ "success": true, "data": { "id": 999 } }
+{ 
+  "success": true, 
+  "data": { 
+    "id": 999,
+    "taskId": 55,
+    "workerId": 2,
+    "assignedAt": "2026-01-14T10:00:00.000Z"
+  } 
+}
 ```
 
 ## GET `/admin/assignments`

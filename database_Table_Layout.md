@@ -58,12 +58,23 @@ This document describes how the tables look in the database (columns + types), i
 | start_date | DATE NULL |  |
 | end_date | DATE NULL |  |
 | description | TEXT NULL |  |
-| worker_ids | BIGINT[] NULL | |
 | status | task_status ENUM | open/closed |
 | created_at | TIMESTAMPTZ |  |
 | updated_at | TIMESTAMPTZ |  |
 
 ---
+
+## TaskWorker
+
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) |  |
+| task_id | BIGINT | FK → tasks.id |
+| worker_id | BIGINT | FK → users.id |
+| assigned_at | TIMESTAMPTZ |  |
+
+---
+
 
 ## DailyAttendance
 
@@ -76,6 +87,7 @@ This document describes how the tables look in the database (columns + types), i
 | end_time | TIME NULL |
 | status | daily_attendance_status ENUM |
 | description | TEXT NULL |
+| document_url | TEXT NULL |
 | created_at | TIMESTAMPTZ |
 | updated_at | TIMESTAMPTZ |
 
