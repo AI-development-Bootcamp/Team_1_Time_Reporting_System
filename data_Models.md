@@ -53,17 +53,16 @@ export interface Task {
 //many to many
 export interface TaskWorker {
   taskId: number;
-  workerId: number;
+  userId: number;
   assignedAt: string;
 }
 
 export interface DailyAttendance {
   id: number;
-  workerId: number;
+  userId: number;
   date: string;
   startTime: string;
   endTime: string;
-  description?: string | null;
   status: DailyAttendanceStatus;
   documentUrl?: string | null; // The form goes here
   createdAt: string;

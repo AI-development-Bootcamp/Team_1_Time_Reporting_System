@@ -70,7 +70,7 @@ This document describes how the tables look in the database (columns + types), i
 |---|---|---|
 | id | BIGSERIAL (PK) |  |
 | task_id | BIGINT | FK → tasks.id |
-| worker_id | BIGINT | FK → users.id |
+| user_id | BIGINT | FK → users.id |
 | assigned_at | TIMESTAMPTZ |  |
 
 ---
@@ -81,12 +81,11 @@ This document describes how the tables look in the database (columns + types), i
 | column | type |
 |---|---|
 | id | BIGSERIAL (PK) |
-| worker_id | BIGINT (FK → users.id) |
+| user_id | BIGINT (FK → users.id) |
 | date | DATE |
 | start_time | TIME NULL |
 | end_time | TIME NULL |
 | status | daily_attendance_status ENUM |
-| description | TEXT NULL |
 | document_url | TEXT NULL |
 | created_at | TIMESTAMPTZ |
 | updated_at | TIMESTAMPTZ |

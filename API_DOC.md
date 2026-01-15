@@ -60,8 +60,8 @@ Error:
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
-- **TaskWorker**: `{ id, taskId, workerId, assignedAt }`
-- **DailyAttendance**: `{ id, workerId, date, startTime, endTime, description?, status, documentUrl?, createdAt, updatedAt }`
+- **TaskWorker**: `{ id, taskId, userId, assignedAt }`
+- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
 - **Absence**: `{ id, dailyAttendanceIds?, documentUrl?, createdAt, updatedAt }`
 
@@ -407,7 +407,7 @@ Assign worker to task.
 
 ### Request Body
 ```json
-{ "workerId": 2, "taskId": 55 }
+{ "userId": 2, "taskId": 55 }
 ```
 
 ### 201 Created
@@ -417,7 +417,7 @@ Assign worker to task.
   "data": { 
     "id": 999,
     "taskId": 55,
-    "workerId": 2,
+    "userId": 2,
     "assignedAt": "2026-01-14T10:00:00.000Z"
   } 
 }
@@ -450,8 +450,7 @@ Create a DailyAttendance record (manual entry or timer stop).
   "date": "2026-01-14",
   "startTime": "2026-01-14T09:00:00.000Z",
   "endTime": "2026-01-14T17:30:00.000Z",
-  "status": "work",
-  "description": "Worked normally"
+  "status": "work"
 }
 ```
 
@@ -476,33 +475,33 @@ Create a DailyAttendance record (manual entry or timer stop).
 
 ---
 
-## GET `/attendance/month-history?year=2026&month=1&workerId=optional`
-Returns month history of DailyAttendance (for UI accordion).
+## GET `/attendance/month-history?month=1&userId=2`
+Returns month history of DailyAttendance (for UI accordion). Uses current year.
 
 **Auth:** Required  
 **Role:** `worker` (self) / `admin` (can view others)
+
+### Query Params
+- `month` (number, required, 1-12)
+- `userId` (number, required)
 
 ### 200 OK
 ```json
 {
   "success": true,
-  "data": {
-    "year": 2026,
-    "month": 1,
-    "items": [
-      {
-        "id": 701,
-        "workerId": 2,
-        "date": "2026-01-14",
-        "startTime": "2026-01-14T09:00:00.000Z",
-        "endTime": "2026-01-14T17:30:00.000Z",
-        "status": "work",
-        "description": "Worked normally",
-        "createdAt": "2026-01-14T18:00:00.000Z",
-        "updatedAt": "2026-01-14T18:00:00.000Z"
-      }
-    ]
-  }
+  "data": [
+    {
+      "id": 701,
+      "userId": 2,
+      "date": "2026-01-14",
+      "startTime": "2026-01-14T09:00:00.000Z",
+      "endTime": "2026-01-14T17:30:00.000Z",
+      "status": "work",
+      "documentUrl": null,
+      "createdAt": "2026-01-14T18:00:00.000Z",
+      "updatedAt": "2026-01-14T18:00:00.000Z"
+    }
+  ]
 }
 ```
 
@@ -675,7 +674,7 @@ Lock/unlock a month.
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
   - Lock/unlock months
-  - Can view other workers data via optional `workerId` query params
+  - Can view other users data by specifying `userId` query param
 
 ---
 

@@ -398,7 +398,7 @@ Assign worker to task.
 
 **Request Body:**
 ```json
-{ "workerId": 2, "taskId": 55 }
+{ "userId": 2, "taskId": 55 }
 ```
 
 **201 Created Response:**
@@ -408,7 +408,7 @@ Assign worker to task.
   "data": { 
     "id": 999,
     "taskId": 55,
-    "workerId": 2,
+    "userId": 2,
     "assignedAt": "2026-01-14T10:00:00.000Z"
   } 
 }
@@ -439,8 +439,7 @@ Create a DailyAttendance record (manual entry or timer stop).
   "date": "2026-01-14",
   "startTime": "2026-01-14T09:00:00.000Z",
   "endTime": "2026-01-14T17:30:00.000Z",
-  "status": "work",
-  "description": "Worked normally"
+  "status": "work"
 }
 ```
 
@@ -461,34 +460,33 @@ Create a DailyAttendance record (manual entry or timer stop).
 - 400 `VALIDATION_ERROR`
 - 409 `MONTH_LOCKED`
 
-**GET `/api/attendance/month-history?year=2026&month=1&workerId=optional`**
-Returns month history of DailyAttendance (for UI accordion).
+**GET `/api/attendance/month-history?month=1&userId=2`**
+Returns month history of DailyAttendance (for UI accordion). Uses current year.
 
 **Auth:** Required  
 **Role:** `worker` (self) / `admin` (can view others)
+
+**Query Params:**
+- `month` (number, required, 1-12)
+- `userId` (number, required)
 
 **200 OK Response:**
 ```json
 {
   "success": true,
-  "data": {
-    "year": 2026,
-    "month": 1,
-    "items": [
-      {
-        "id": 701,
-        "workerId": 2,
-        "date": "2026-01-14",
-        "startTime": "2026-01-14T09:00:00.000Z",
-        "endTime": "2026-01-14T17:30:00.000Z",
-        "status": "work",
-        "description": "Worked normally",
-        "documentUrl": null,
-        "createdAt": "2026-01-14T18:00:00.000Z",
-        "updatedAt": "2026-01-14T18:00:00.000Z"
-      }
-    ]
-  }
+  "data": [
+    {
+      "id": 701,
+      "userId": 2,
+      "date": "2026-01-14",
+      "startTime": "2026-01-14T09:00:00.000Z",
+      "endTime": "2026-01-14T17:30:00.000Z",
+      "status": "work",
+      "documentUrl": null,
+      "createdAt": "2026-01-14T18:00:00.000Z",
+      "updatedAt": "2026-01-14T18:00:00.000Z"
+    }
+  ]
 }
 ```
 
@@ -628,7 +626,7 @@ Lock/unlock a month.
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
   - Lock/unlock months
-  - Can view other workers data via optional `workerId` query params
+  - Can view other users data by specifying `userId` query param
 
 ### TypeScript Data Models (API Contracts)
 
@@ -686,17 +684,16 @@ export interface Task {
 //many to many
 export interface TaskWorker {
   taskId: number;
-  workerId: number;
+  userId: number;
   assignedAt: string;
 }
 
 export interface DailyAttendance {
   id: number;
-  workerId: number;
+  userId: number;
   date: string; // YYYY-MM-DD
   startTime: string; // ISO Time
   endTime: string; // ISO Time
-  description?: string | null;
   status: DailyAttendanceStatus;
   documentUrl?: string | null; // The form goes here
   createdAt: string;
@@ -814,29 +811,28 @@ model Task {
 model TaskWorker {
   id         BigInt   @id @default(autoincrement())
   taskId     BigInt
-  workerId   BigInt
+  userId     BigInt
   assignedAt DateTime @default(now()) @db.Timestamptz
   
   task   Task   @relation(fields: [taskId], references: [id])
-  worker User   @relation(fields: [workerId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
   
-  @@unique([taskId, workerId])
+  @@unique([taskId, userId])
 }
 
 model DailyAttendance {
   id          BigInt                @id @default(autoincrement())
-  workerId    BigInt
+  userId      BigInt
   date        DateTime              @db.Date
   startTime   DateTime?             @db.Time
   endTime     DateTime?             @db.Time
   status      DailyAttendanceStatus
-  description String?               @db.Text
   documentUrl String?               @db.Text // URL or path to document
   createdAt   DateTime              @default(now()) @db.Timestamptz
   updatedAt   DateTime              @updatedAt @db.Timestamptz
   
-  worker          User              @relation(fields: [workerId], references: [id])
-  projectTimeLogs ProjectTimeLogs[]
+  user              User              @relation(fields: [userId], references: [id])
+  projectTimeLogs   ProjectTimeLogs[]
 }
 
 model ProjectTimeLogs {
@@ -911,7 +907,7 @@ model Absence {
 **Report Content (UI Layout):**
 
 **Header:**
-- Month/Year Selector with Left/Right navigation arrows (e.g., `< October >`).
+- Month Selector with Left/Right navigation arrows (e.g., `< October 2026 >`). Uses current year.
 
 **Visual View:**
 - A Vertical Accordion List listing days in descending order (newest on top).
@@ -937,7 +933,7 @@ model Absence {
 - **Footer Action**: A generic "Add Report" (הוספת דיווח) button at the bottom of the day card to add a new entry for that specific date.
 
 **Filtering/Sorting:**
-- **User App**: Filter by Month/Year (via the header navigation).
+- **User App**: Filter by Month (via the header navigation, uses current year).
 - **Admin App**: Same view, but with a User Select dropdown to view a specific employee's list.
 
 **Export:**

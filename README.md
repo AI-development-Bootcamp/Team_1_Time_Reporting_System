@@ -184,7 +184,7 @@ Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 
 ### Daily Attendance (Reporting)
 - `POST /api/attendance` - Create DailyAttendance record (manual/timer)
-- `GET /api/attendance/month-history?year=2026&month=1&workerId=optional` - Get month history
+- `GET /api/attendance/month-history?month=1&userId=2` - Get month history (returns array of DailyAttendance objects, uses current year)
 - `PUT /api/attendance/:id` - Update DailyAttendance
 - `DELETE /api/attendance/:id` - Delete DailyAttendance
 
