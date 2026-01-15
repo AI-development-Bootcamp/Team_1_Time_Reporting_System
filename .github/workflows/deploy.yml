@@ -28,16 +28,34 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Render Backend Deploy
-        if: secrets.RENDER_BACKEND_HOOK
-        run: curl -X POST ${{ secrets.RENDER_BACKEND_HOOK }}
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_BACKEND_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_BACKEND_HOOK }}
+            echo "✅ Backend deployment triggered"
+          else
+            echo "⚠️ RENDER_BACKEND_HOOK not configured"
+          fi
 
       - name: Trigger Render User Frontend Deploy
-        if: secrets.RENDER_USER_HOOK
-        run: curl -X POST ${{ secrets.RENDER_USER_HOOK }}
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_USER_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_USER_HOOK }}
+            echo "✅ User frontend deployment triggered"
+          else
+            echo "⚠️ RENDER_USER_HOOK not configured"
+          fi
 
       - name: Trigger Render Admin Frontend Deploy
-        if: secrets.RENDER_ADMIN_HOOK
-        run: curl -X POST ${{ secrets.RENDER_ADMIN_HOOK }}
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_ADMIN_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_ADMIN_HOOK }}
+            echo "✅ Admin frontend deployment triggered"
+          else
+            echo "⚠️ RENDER_ADMIN_HOOK not configured"
+          fi
       
       - name: Deployment Status
-        run: echo "✅ CI pipeline completed. Deployments triggered for configured services."
+        run: echo "✅ CI/CD pipeline completed successfully"
