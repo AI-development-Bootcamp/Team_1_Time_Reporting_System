@@ -747,9 +747,7 @@ model User {
   active    Boolean   @default(true) // Soft Delete
   createdAt DateTime  @default(now()) @db.Timestamptz
   updatedAt DateTime  @updatedAt @db.Timestamptz
-  
-  dailyAttendances DailyAttendance[]
-  managedProjects  Project[]         @relation("ProjectManager")
+
 }
 
 model Client {
@@ -759,31 +757,25 @@ model Client {
   active      Boolean   @default(true) // Soft Delete
   createdAt   DateTime  @default(now()) @db.Timestamptz
   updatedAt   DateTime  @updatedAt @db.Timestamptz
-  
-  projects    Project[]
 }
 
 model Project {
   id                BigInt    @id @default(autoincrement())
   name              String    @db.Text
-  clientId          BigInt
-  projectManagerId  BigInt
+  clientId          BigInt    @reference to client.id(fk)
+  projectManagerId  BigInt    @reference to a user.id(fk)
   startDate         DateTime  @db.Date
   endDate           DateTime? @db.Date
   description       String?   @db.Text
   active            Boolean   @default(true) // Soft Delete
   createdAt         DateTime  @default(now()) @db.Timestamptz
   updatedAt         DateTime  @updatedAt @db.Timestamptz
-  
-  client            Client    @relation(fields: [clientId], references: [id])
-  projectManager    User      @relation("ProjectManager", fields: [projectManagerId], references: [id])
-  tasks             Task[]
 }
 
 model Task {
   id          BigInt      @id @default(autoincrement())
   name        String      @db.Text
-  projectId   BigInt
+  projectId   BigInt      @reference to project.id(fk)
   startDate   DateTime?   @db.Date
   endDate     DateTime?   @db.Date
   description String?     @db.Text
@@ -791,14 +783,11 @@ model Task {
   status      TaskStatus  @default(open)
   createdAt   DateTime    @default(now()) @db.Timestamptz
   updatedAt   DateTime    @updatedAt @db.Timestamptz
-  
-  project         Project         @relation(fields: [projectId], references: [id])
-  projectTimeLogs ProjectTimeLogs[]
 }
 
 model DailyAttendance {
   id          BigInt                @id @default(autoincrement())
-  workerId    BigInt
+  workerId    BigInt                @reference to user.id(fk)
   date        DateTime              @db.Date
   startTime   DateTime?             @db.Time
   endTime     DateTime?             @db.Time
@@ -813,15 +802,12 @@ model DailyAttendance {
 
 model ProjectTimeLogs {
   id                BigInt   @id @default(autoincrement())
-  dailyAttendanceId BigInt
-  taskId            BigInt
+  dailyAttendanceId BigInt   @reference to dailyattendance.id(fk)
+  taskId            BigInt   @refernce to task.id(fk)
   durationMin       Int      // Duration in minutes
   description       String?  @db.Text
   createdAt         DateTime @default(now()) @db.Timestamptz
   updatedAt         DateTime @updatedAt @db.Timestamptz
-  
-  dailyAttendance   DailyAttendance @relation(fields: [dailyAttendanceId], references: [id])
-  task              Task            @relation(fields: [taskId], references: [id])
 }
 
 model Absence {
@@ -830,17 +816,6 @@ model Absence {
   documentUrl        String?   @db.Text // URL or path to document (if stored as file, not in DB)
   createdAt          DateTime  @default(now()) @db.Timestamptz
   updatedAt          DateTime  @updatedAt @db.Timestamptz
-}
-
-model MonthLock {
-  id        BigInt   @id @default(autoincrement())
-  year      Int
-  month     Int      // 1-12
-  isLocked  Boolean  @default(false)
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
-  
-  @@unique([year, month])
 }
 ```
 
