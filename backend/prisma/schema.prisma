@@ -1,4 +1,4 @@
-// backend/prisma/schema.prisma
+// Prisma schema based on database planning from doc/database/schema.md
 
 generator client {
   provider = "prisma-client-js"
@@ -9,5 +9,138 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// I have removed the models. 
-// Your other developer will add the official models here later.
+// Enums
+enum UserType {
+  worker
+  admin
+}
+
+enum TaskStatus {
+  open
+  closed
+}
+
+enum DailyAttendanceStatus {
+  present
+  sick
+  vacation
+  reserve
+  incomplete
+}
+
+// Models
+model User {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  mail      String   @unique
+  userType  UserType @map("user_type")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  managedProjects   Project[]           @relation("ProjectManager")
+  taskWorkers       TaskWorker[]
+  dailyAttendances  DailyAttendance[]
+
+  @@map("users")
+}
+
+model Client {
+  id          BigInt   @id @default(autoincrement())
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  projects Project[]
+
+  @@map("clients")
+}
+
+model Project {
+  id               BigInt   @id @default(autoincrement())
+  name             String
+  clientId         BigInt   @map("client_id")
+  projectManagerId BigInt   @map("project_manager_id")
+  startDate        DateTime @map("start_date") @db.Date
+  endDate          DateTime? @map("end_date") @db.Date
+  description      String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  client          Client @relation(fields: [clientId], references: [id])
+  projectManager  User   @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  tasks           Task[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          BigInt      @id @default(autoincrement())
+  name        String
+  projectId   BigInt      @map("project_id")
+  startDate   DateTime?   @map("start_date") @db.Date
+  endDate     DateTime?   @map("end_date") @db.Date
+  description String?
+  status      TaskStatus  @default(open)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id])
+  taskWorkers      TaskWorker[]
+  projectTimeLogs  ProjectTimeLog[]
+
+  @@map("tasks")
+}
+
+model TaskWorker {
+  id     BigInt @id @default(autoincrement())
+  taskId BigInt @map("task_id")
+  userId BigInt @map("user_id")
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("task_worker")
+}
+
+model DailyAttendance {
+  id          BigInt                 @id @default(autoincrement())
+  userId      BigInt                 @map("user_id")
+  date        DateTime               @db.Date
+  startTime   DateTime?              @map("start_time") @db.Time
+  endTime     DateTime?              @map("end_time") @db.Time
+  status      DailyAttendanceStatus
+  documentUrl String?                @map("document_url")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user             User              @relation(fields: [userId], references: [id])
+  projectTimeLogs  ProjectTimeLog[]
+
+  @@map("daily_attendance")
+}
+
+model ProjectTimeLog {
+  id                 BigInt   @id @default(autoincrement())
+  dailyAttendanceId  BigInt   @map("daily_attendance_id")
+  taskId             BigInt   @map("task_id")
+  durationMin        Int      @map("duration_min")
+  description        String?
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  dailyAttendance DailyAttendance @relation(fields: [dailyAttendanceId], references: [id])
+  task            Task            @relation(fields: [taskId], references: [id])
+
+  @@map("project_time_logs")
+}
