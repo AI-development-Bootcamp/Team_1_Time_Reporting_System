@@ -72,6 +72,9 @@ This document describes how the tables look in the database (columns + types), i
 | task_id | BIGINT | FK → tasks.id |
 | user_id | BIGINT | FK → users.id |
 
+**Constraints:**
+- UNIQUE constraint on (task_id, user_id) - ensures a user can only be assigned to a task once
+
 ---
 
 

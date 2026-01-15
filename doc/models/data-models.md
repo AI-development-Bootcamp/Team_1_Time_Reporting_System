@@ -54,6 +54,7 @@ export interface Task {
 export interface TaskWorker {
   taskId: number;
   userId: number;
+  // Unique constraint: (taskId, userId) - ensures a user can only be assigned to a task once
 }
 
 export interface DailyAttendance {
