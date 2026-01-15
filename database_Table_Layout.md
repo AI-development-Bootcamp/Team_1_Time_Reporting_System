@@ -71,7 +71,6 @@ This document describes how the tables look in the database (columns + types), i
 | id | BIGSERIAL (PK) |  |
 | task_id | BIGINT | FK → tasks.id |
 | user_id | BIGINT | FK → users.id |
-| assigned_at | TIMESTAMPTZ |  |
 
 ---
 
@@ -82,9 +81,9 @@ This document describes how the tables look in the database (columns + types), i
 |---|---|
 | id | BIGSERIAL (PK) |
 | user_id | BIGINT (FK → users.id) |
-| date | DATE |
-| start_time | TIME NULL |
-| end_time | TIME NULL |
+| date | DATE | In SQL: DATE object
+| start_time | TIME NULL | In SQL: TIME type
+| end_time | TIME NULL | In SQL: TIME type
 | status | daily_attendance_status ENUM |
 | document_url | TEXT NULL |
 | created_at | TIMESTAMPTZ |

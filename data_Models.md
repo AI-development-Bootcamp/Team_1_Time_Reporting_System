@@ -54,15 +54,14 @@ export interface Task {
 export interface TaskWorker {
   taskId: number;
   userId: number;
-  assignedAt: string;
 }
 
 export interface DailyAttendance {
   id: number;
   userId: number;
-  date: string;
-  startTime: string;
-  endTime: string;
+  date: string; // In SQL: saved as DATE object
+  startTime: string; // In SQL: saved as TIME type
+  endTime: string; // In SQL: saved as TIME type
   status: DailyAttendanceStatus;
   documentUrl?: string | null; // The form goes here
   createdAt: string;

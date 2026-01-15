@@ -60,7 +60,7 @@ Error:
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
-- **TaskWorker**: `{ id, taskId, userId, assignedAt }`
+- **TaskWorker**: `{ id, taskId, userId }`
 - **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
 
@@ -416,8 +416,7 @@ Assign worker to task.
   "data": { 
     "id": 999,
     "taskId": 55,
-    "userId": 2,
-    "assignedAt": "2026-01-14T10:00:00.000Z"
+    "userId": 2
   } 
 }
 ```

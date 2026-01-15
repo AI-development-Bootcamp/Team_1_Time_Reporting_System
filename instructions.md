@@ -408,8 +408,7 @@ Assign worker to task.
   "data": { 
     "id": 999,
     "taskId": 55,
-    "userId": 2,
-    "assignedAt": "2026-01-14T10:00:00.000Z"
+    "userId": 2
   } 
 }
 ```
@@ -630,15 +629,14 @@ export interface Task {
 export interface TaskWorker {
   taskId: number;
   userId: number;
-  assignedAt: string;
 }
 
 export interface DailyAttendance {
   id: number;
   userId: number;
-  date: string; // YYYY-MM-DD
-  startTime: string; // ISO Time
-  endTime: string; // ISO Time
+  date: string; // YYYY-MM-DD. In SQL: saved as DATE object
+  startTime: string; // ISO Time. In SQL: saved as TIME type
+  endTime: string; // ISO Time. In SQL: saved as TIME type
   status: DailyAttendanceStatus;
   documentUrl?: string | null; // The form goes here
   createdAt: string;
@@ -749,7 +747,6 @@ model TaskWorker {
   id         BigInt   @id @default(autoincrement())
   taskId     BigInt
   userId     BigInt
-  assignedAt DateTime @default(now()) @db.Timestamptz
   
   task   Task   @relation(fields: [taskId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
@@ -760,9 +757,9 @@ model TaskWorker {
 model DailyAttendance {
   id          BigInt                @id @default(autoincrement())
   userId      BigInt
-  date        DateTime              @db.Date
-  startTime   DateTime?             @db.Time
-  endTime     DateTime?             @db.Time
+  date        DateTime              @db.Date // In SQL: DATE object
+  startTime   DateTime?             @db.Time // In SQL: TIME type
+  endTime     DateTime?             @db.Time // In SQL: TIME type
   status      DailyAttendanceStatus
   documentUrl String?               @db.Text // URL or path to document
   createdAt   DateTime              @default(now()) @db.Timestamptz
