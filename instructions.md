@@ -11,6 +11,7 @@ A time-tracking platform built with TypeScript, featuring two distinct React int
 ### Why are we building this?
 To create a unified, transparent standard for reporting hours across the organization, reducing errors, and enabling efficient management of employee attendance and project assignments.
 
+
 ### Who are the users?
 1. **Employees**: Report daily hours (manual/timer) and absences.
 2. **Admins**: Admins are also employees with access to both platforms. They can report daily hours and absences (like regular employees) AND manage users, clients, projects, tasks, assignments, and perform monthly report closures.
