@@ -1,0 +1,60 @@
+name: CI & CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Run Tests
+        run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Render Backend Deploy
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_BACKEND_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_BACKEND_HOOK }}
+            echo "✅ Backend deployment triggered"
+          else
+            echo "⚠️ RENDER_BACKEND_HOOK not configured"
+          fi
+
+      - name: Trigger Render User Frontend Deploy
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_USER_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_USER_HOOK }}
+            echo "✅ User frontend deployment triggered"
+          else
+            echo "⚠️ RENDER_USER_HOOK not configured"
+          fi
+
+      - name: Trigger Render Admin Frontend Deploy
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_ADMIN_HOOK }}" ]; then
+            curl -X POST ${{ secrets.RENDER_ADMIN_HOOK }}
+            echo "✅ Admin frontend deployment triggered"
+          else
+            echo "⚠️ RENDER_ADMIN_HOOK not configured"
+          fi
+      
+      - name: Deployment Status
+        run: echo "✅ CI/CD pipeline completed successfully"

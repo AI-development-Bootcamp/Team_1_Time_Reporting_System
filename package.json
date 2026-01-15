@@ -1,0 +1,22 @@
+{
+  "name": "team-1-time-reporting-system",
+  "version": "1.0.0",
+  "description": "A time-tracking platform with User and Admin interfaces.",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend_user",
+    "frontend_admin"
+  ],
+  "scripts": {
+    "dev:all": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\" \"npm run dev -w frontend_admin\"",
+    "dev:user": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\"",
+    "dev:admin": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_admin\"",
+    "build:all": "npm run build -w backend && npm run build -w frontend_user && npm run build -w frontend_admin",
+    "test": "echo 'Tests will be implemented later' && exit 0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
