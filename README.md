@@ -207,7 +207,11 @@ All responses follow this structure:
 - **`worker`**: Can login, create/update own attendance & time logs, view own month history
 - **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, lock/unlock months, view other workers' data
 
-For complete API documentation with request/response examples, see [instructions.md](./instructions.md).
+For complete documentation, see the [doc](./doc/) folder:
+- **Specification**: [doc/specs/specification.md](./doc/specs/specification.md) - Complete project specification
+- **API Documentation**: [doc/api/API.md](./doc/api/API.md) - Detailed API endpoints
+- **Data Models**: [doc/models/data-models.md](./doc/models/data-models.md) - TypeScript interfaces
+- **Database Schema**: [doc/database/schema.md](./doc/database/schema.md) - Database table layout
 
 ## Development Guidelines
 
