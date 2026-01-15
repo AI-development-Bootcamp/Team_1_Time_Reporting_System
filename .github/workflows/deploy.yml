@@ -28,10 +28,26 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Render Backend Deploy
+        if: ${{ secrets.RENDER_BACKEND_HOOK != '' }}
         run: curl -X POST ${{ secrets.RENDER_BACKEND_HOOK }}
 
       - name: Trigger Render User Frontend Deploy
+        if: ${{ secrets.RENDER_USER_HOOK != '' }}
         run: curl -X POST ${{ secrets.RENDER_USER_HOOK }}
 
       - name: Trigger Render Admin Frontend Deploy
+        if: ${{ secrets.RENDER_ADMIN_HOOK != '' }}
         run: curl -X POST ${{ secrets.RENDER_ADMIN_HOOK }}
+      
+      - name: Deployment Status
+        run: |
+          if [ -z "${{ secrets.RENDER_BACKEND_HOOK }}" ]; then
+            echo "⚠️ RENDER_BACKEND_HOOK not configured"
+          fi
+          if [ -z "${{ secrets.RENDER_USER_HOOK }}" ]; then
+            echo "⚠️ RENDER_USER_HOOK not configured"
+          fi
+          if [ -z "${{ secrets.RENDER_ADMIN_HOOK }}" ]; then
+            echo "⚠️ RENDER_ADMIN_HOOK not configured"
+          fi
+          echo "✅ CI pipeline completed. Configure Render deploy hooks in GitHub Secrets to enable automatic deployment."
