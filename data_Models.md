@@ -45,24 +45,27 @@ export interface Task {
   projectId: number;
   startDate?: string | null;
   endDate?: string | null;
-  description?: string | null;
-  
-  // “worker's list”
-  workerIds?: number[]; // we will keep the workers' id
-  
+  description?: string | null;  
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;
+}
+//many to many
+export interface TaskWorker {
+  taskId: number;
+  workerId: number;
+  assignedAt: string;
 }
 
 export interface DailyAttendance {
   id: number;
   workerId: number;
-  date: string; // YYYY-MM-DD
-  startTime: string; // ISO Time
-  endTime: string; // ISO Time
+  date: string;
+  startTime: string;
+  endTime: string;
   description?: string | null;
-  status: DailyAttendanceStatus
+  status: DailyAttendanceStatus;
+  documentUrl?: string | null; // The form goes here
   createdAt: string;
   updatedAt: string;
 }
