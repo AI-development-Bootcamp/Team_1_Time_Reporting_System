@@ -3,7 +3,7 @@
 Base URL: `/api`  
 Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 
-This API spec matches the **TypeScript Data Models** used in the project (User, Client, Project, Task, DailyAttendance, ProjectTimeLogs, Absence).
+This API spec matches the **TypeScript Data Models** used in the project (User, Client, Project, Task, DailyAttendance, ProjectTimeLogs).
 
 ---
 
@@ -59,10 +59,10 @@ Error:
 - **User**: `{ id, name, mail, userType, active, createdAt, updatedAt }`
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
-- **Task**: `{ id, name, projectId, startDate?, endDate?, description?, workerIds?, status, createdAt, updatedAt }`
-- **DailyAttendance**: `{ id, workerId, date, startTime, endTime, description?, status, createdAt, updatedAt }`
+- **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
+- **TaskWorker**: `{ id, taskId, userId }`
+- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
-- **Absence**: `{ id, dailyAttendanceIds?, documentUrl?, createdAt, updatedAt }`
 
 ---
 
@@ -363,7 +363,6 @@ List tasks (optional filter by project).
       "startDate": null,
       "endDate": null,
       "description": "Design work",
-      "workerIds": [2, 3],
       "status": "open",
       "createdAt": "2026-01-01T09:00:00.000Z",
       "updatedAt": "2026-01-10T09:00:00.000Z"
@@ -383,8 +382,7 @@ Create task.
   "startDate": "2026-01-20",
   "endDate": null,
   "description": "Create schema",
-  "status": "open",
-  "workerIds": [2, 3]
+  "status": "open"
 }
 ```
 
@@ -398,8 +396,7 @@ Soft delete task (`active=false` on DB layer; API can hide inactive tasks by def
 
 # 6) Assignments (Admin)
 
-> If you store assignments as a join table in DB, this API manages it.  
-> If you store assignments only as `workerIds[]` on `Task`, then this section can be simplified to “update task workerIds”.
+> Assignments are stored as a join table (`TaskWorker`) in DB. This API manages the many-to-many relationship between Users and Tasks.
 
 ## POST `/admin/assignments`
 Assign worker to task.
@@ -409,12 +406,19 @@ Assign worker to task.
 
 ### Request Body
 ```json
-{ "workerId": 2, "taskId": 55 }
+{ "userId": 2, "taskId": 55 }
 ```
 
 ### 201 Created
 ```json
-{ "success": true, "data": { "id": 999 } }
+{ 
+  "success": true, 
+  "data": { 
+    "id": 999,
+    "taskId": 55,
+    "userId": 2
+  } 
+}
 ```
 
 ## GET `/admin/assignments`
@@ -444,8 +448,7 @@ Create a DailyAttendance record (manual entry or timer stop).
   "date": "2026-01-14",
   "startTime": "2026-01-14T09:00:00.000Z",
   "endTime": "2026-01-14T17:30:00.000Z",
-  "status": "work",
-  "description": "Worked normally"
+  "status": "work"
 }
 ```
 
@@ -470,33 +473,33 @@ Create a DailyAttendance record (manual entry or timer stop).
 
 ---
 
-## GET `/attendance/month-history?year=2026&month=1&workerId=optional`
-Returns month history of DailyAttendance (for UI accordion).
+## GET `/attendance/month-history?month=1&userId=2`
+Returns month history of DailyAttendance (for UI accordion). Uses current year.
 
 **Auth:** Required  
 **Role:** `worker` (self) / `admin` (can view others)
+
+### Query Params
+- `month` (number, required, 1-12)
+- `userId` (number, required)
 
 ### 200 OK
 ```json
 {
   "success": true,
-  "data": {
-    "year": 2026,
-    "month": 1,
-    "items": [
-      {
-        "id": 701,
-        "workerId": 2,
-        "date": "2026-01-14",
-        "startTime": "2026-01-14T09:00:00.000Z",
-        "endTime": "2026-01-14T17:30:00.000Z",
-        "status": "work",
-        "description": "Worked normally",
-        "createdAt": "2026-01-14T18:00:00.000Z",
-        "updatedAt": "2026-01-14T18:00:00.000Z"
-      }
-    ]
-  }
+  "data": [
+    {
+      "id": 701,
+      "userId": 2,
+      "date": "2026-01-14",
+      "startTime": "2026-01-14T09:00:00.000Z",
+      "endTime": "2026-01-14T17:30:00.000Z",
+      "status": "work",
+      "documentUrl": null,
+      "createdAt": "2026-01-14T18:00:00.000Z",
+      "updatedAt": "2026-01-14T18:00:00.000Z"
+    }
+  ]
 }
 ```
 
@@ -574,68 +577,7 @@ Delete time log.
 
 ---
 
-# 9) Absences
-
-> Absence model (course version) stores:
-> - `dailyAttendanceIds[]` — the days included in the absence
-> - `documentUrl` — optional link (if you store in DB as Bytes, you can expose a download URL)
-
-## POST `/absences`
-Create an absence record.
-
-**Auth:** Required
-
-### Request Body
-```json
-{
-  "dailyAttendanceIds": [701, 702],
-  "documentUrl": null
-}
-```
-
-### 201 Created
-```json
-{ "success": true, "data": { "id": 12 } }
-```
-
----
-
-## POST `/absences/upload` (multipart/form-data)
-Upload absence document (pdf/jpg/png up to 5MB) and attach it to an absence.
-
-**Auth:** Required  
-**Content-Type:** `multipart/form-data`
-
-### Form Fields
-- `absenceId` (number, required)
-- `file` (required) `.pdf | .jpg | .png` max 5MB
-
-### 200 OK
-```json
-{
-  "success": true,
-  "data": {
-    "absenceId": 12,
-    "documentUrl": "/api/absences/12/document"
-  }
-}
-```
-
-### Errors
-- 413 `FILE_TOO_LARGE`
-- 415 `UNSUPPORTED_FILE_TYPE`
-
----
-
-## GET `/absences/:id/document`
-Download/view absence document.
-
-**Auth:** Required  
-**Notes:** return the binary stream with correct `Content-Type`.
-
----
-
-# 10) Month Locking (Admin)
+# 9) Month Locking (Admin)
 
 ## PUT `/admin/month-lock`
 Lock/unlock a month.
@@ -669,7 +611,7 @@ Lock/unlock a month.
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
   - Lock/unlock months
-  - Can view other workers data via optional `workerId` query params
+  - Can view other users data by specifying `userId` query param
 
 ---
 
