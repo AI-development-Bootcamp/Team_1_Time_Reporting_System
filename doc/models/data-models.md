@@ -45,24 +45,26 @@ export interface Task {
   projectId: number;
   startDate?: string | null;
   endDate?: string | null;
-  description?: string | null;
-  
-  // “worker's list”
-  workerIds?: number[]; // we will keep the workers' id
-  
+  description?: string | null;  
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;
 }
+//many to many
+export interface TaskWorker {
+  taskId: number;
+  userId: number;
+  // Unique constraint: (taskId, userId) - ensures a user can only be assigned to a task once
+}
 
 export interface DailyAttendance {
   id: number;
-  workerId: number;
-  date: string; // YYYY-MM-DD
-  startTime: string; // ISO Time
-  endTime: string; // ISO Time
-  description?: string | null;
-  status: DailyAttendanceStatus
+  userId: number;
+  date: string; // In SQL: saved as DATE object
+  startTime: string; // In SQL: saved as TIME type
+  endTime: string; // In SQL: saved as TIME type
+  status: DailyAttendanceStatus;
+  documentUrl?: string | null; // The form goes here
   createdAt: string;
   updatedAt: string;
 }
@@ -73,16 +75,6 @@ export interface ProjectTimeLogs {
   taskId: number;
   duration: number; // in minutes
   description?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-
-export interface Absence {
-  id: number;
-  // “ids list of DailyAttendance”
-  dailyAttendanceIds?: number[]; // DailyAttendance ids of the days that the user absence.
-  documentUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

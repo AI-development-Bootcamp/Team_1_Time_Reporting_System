@@ -58,24 +58,37 @@ This document describes how the tables look in the database (columns + types), i
 | start_date | DATE NULL |  |
 | end_date | DATE NULL |  |
 | description | TEXT NULL |  |
-| worker_ids | BIGINT[] NULL | |
 | status | task_status ENUM | open/closed |
 | created_at | TIMESTAMPTZ |  |
 | updated_at | TIMESTAMPTZ |  |
 
 ---
 
+## TaskWorker
+
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) |  |
+| task_id | BIGINT | FK → tasks.id |
+| user_id | BIGINT | FK → users.id |
+
+**Constraints:**
+- UNIQUE constraint on (task_id, user_id) - ensures a user can only be assigned to a task once
+
+---
+
+
 ## DailyAttendance
 
 | column | type |
 |---|---|
 | id | BIGSERIAL (PK) |
-| worker_id | BIGINT (FK → users.id) |
-| date | DATE |
-| start_time | TIME NULL |
-| end_time | TIME NULL |
+| user_id | BIGINT (FK → users.id) |
+| date | DATE | In SQL: DATE object
+| start_time | TIME NULL | In SQL: TIME type
+| end_time | TIME NULL | In SQL: TIME type
 | status | daily_attendance_status ENUM |
-| description | TEXT NULL |
+| document_url | TEXT NULL |
 | created_at | TIMESTAMPTZ |
 | updated_at | TIMESTAMPTZ |
 
@@ -95,12 +108,3 @@ This document describes how the tables look in the database (columns + types), i
 
 ---
 
-## Absences 
-
-| column | type | notes |
-|---|---|---|
-| id | BIGSERIAL (PK) |  |
-| daily_attendance_ids | BIGINT[] NULL | |
-| document_url | TEXT NULL |  |
-| created_at | TIMESTAMPTZ |  |
-| updated_at | TIMESTAMPTZ |  |
