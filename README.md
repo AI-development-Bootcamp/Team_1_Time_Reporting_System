@@ -54,9 +54,8 @@ To get a local copy up and running, follow these steps.
 
 1.  **Clone the repo**
     ```sh
-    # [TODO: Add your git URL below]
-    git clone [https://github.com/your_username/repo_name.git](https://github.com/your_username/repo_name.git)
-    cd repo_name
+    git clone https://github.com/AI-development-Bootcamp/Team_1_Time_Reporting_System.git
+    cd Team_1_Time_Reporting_System
     ```
 
 2.  **Install NPM packages**
@@ -147,31 +146,74 @@ This will create:
 
 ## API Endpoints Overview
 
+Base URL: `/api`  
+Auth: JWT Bearer token (`Authorization: Bearer <token>`)
+
 ### Authentication
-- `POST /api/auth/login` - Login and receive JWT
+- `POST /api/auth/login` - Login and receive JWT (24h expiry)
 
-### User Reporting
-- `GET /api/user/my-projects-stats` - Get projects assigned to user
-- `POST /api/reports` - Submit daily report
-- `GET /api/reports/month-history` - Get month history report
-- `POST /api/absences` - Upload absence report + File
+### Users (Admin)
+- `GET /api/admin/users?active=true` - List users (filter by active/inactive)
+- `POST /api/admin/users` - Create user
+- `PUT /api/admin/users/:id` - Update user
+- `DELETE /api/admin/users/:id` - Soft delete user (`active=false`)
+- `POST /api/admin/users/:id/reset-password` - Admin sets new password
 
-### Admin Endpoints
-- User Management: `GET/POST/PUT/DELETE /api/admin/users`
-- Entity CRUD: `GET/POST/PUT/DELETE /api/admin/clients|projects|tasks`
-- Assignments: `POST/GET/DELETE /api/admin/assignments`
-- Month Locking: `PUT /api/admin/month-lock`
+### Clients (Admin)
+- `GET /api/admin/clients` - List clients
+- `POST /api/admin/clients` - Create client
+- `PUT /api/admin/clients/:id` - Update client
+- `DELETE /api/admin/clients/:id` - Soft delete client
 
-For complete API documentation, see [instructions.md](./instructions.md).
+### Projects (Admin)
+- `GET /api/admin/projects` - List projects
+- `POST /api/admin/projects` - Create project
+- `PUT /api/admin/projects/:id` - Update project
+- `DELETE /api/admin/projects/:id` - Soft delete project
+
+### Tasks (Admin)
+- `GET /api/admin/tasks?projectId=5` - List tasks (optional filter by project)
+- `POST /api/admin/tasks` - Create task
+- `PUT /api/admin/tasks/:id` - Update task
+- `DELETE /api/admin/tasks/:id` - Soft delete task
+
+### Assignments (Admin)
+- `POST /api/admin/assignments` - Assign worker to task
+- `GET /api/admin/assignments` - List all assignments
+- `DELETE /api/admin/assignments/:id` - Remove assignment
+
+### Daily Attendance (Reporting)
+- `POST /api/attendance` - Create DailyAttendance record (manual/timer)
+- `GET /api/attendance/month-history?year=2026&month=1&workerId=optional` - Get month history
+- `PUT /api/attendance/:id` - Update DailyAttendance
+- `DELETE /api/attendance/:id` - Delete DailyAttendance
+
+### Project Time Logs
+- `POST /api/time-logs` - Create time log entry (duration in minutes)
+- `GET /api/time-logs?dailyAttendanceId=701` - List time logs for a day
+- `PUT /api/time-logs/:id` - Update time log
+- `DELETE /api/time-logs/:id` - Delete time log
+
+### Absences
+- `POST /api/absences` - Create absence record
+- `POST /api/absences/upload` - Upload absence document (multipart/form-data, max 5MB)
+- `GET /api/absences/:id/document` - Download absence document
+
+### Month Locking (Admin)
+- `PUT /api/admin/month-lock` - Lock/unlock a month
+
+### Response Format
+All responses follow this structure:
+- **Success:** `{ "success": true, "data": {} }`
+- **Error:** `{ "success": false, "error": { "code": "ERROR_CODE", "message": "..." } }`
+
+### Role Permissions
+- **`worker`**: Can login, create/update own attendance & time logs, view own month history
+- **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, lock/unlock months, view other workers' data
+
+For complete API documentation with request/response examples, see [instructions.md](./instructions.md).
 
 ## Development Guidelines
-
-### Code Style
-- **TypeScript**: Strict mode, no `any` types
-- **CSS**: No inline styles (use Mantine components)
-- **Date Handling**: Always use Day.js, convert to Date/ISO for Prisma
-- **State Management**: Use TanStack Query hooks (useQuery, useMutation)
-- **Forms**: Use `@mantine/form` with `form.getInputProps()`
 
 ### Key Rules
 - **RTL Support**: All layouts support Hebrew (RTL)
