@@ -3,7 +3,7 @@
 Base URL: `/api`  
 Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 
-This API spec matches the **TypeScript Data Models** used in the project (User, Client, Project, Task, DailyAttendance, ProjectTimeLogs, Absence).
+This API spec matches the **TypeScript Data Models** used in the project (User, Client, Project, Task, DailyAttendance, ProjectTimeLogs).
 
 ---
 
@@ -63,7 +63,6 @@ Error:
 - **TaskWorker**: `{ id, taskId, userId, assignedAt }`
 - **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
-- **Absence**: `{ id, dailyAttendanceIds?, documentUrl?, createdAt, updatedAt }`
 
 ---
 
@@ -579,68 +578,7 @@ Delete time log.
 
 ---
 
-# 9) Absences
-
-> Absence model (course version) stores:
-> - `dailyAttendanceIds[]` — the days included in the absence
-> - `documentUrl` — optional link (if you store in DB as Bytes, you can expose a download URL)
-
-## POST `/absences`
-Create an absence record.
-
-**Auth:** Required
-
-### Request Body
-```json
-{
-  "dailyAttendanceIds": [701, 702],
-  "documentUrl": null
-}
-```
-
-### 201 Created
-```json
-{ "success": true, "data": { "id": 12 } }
-```
-
----
-
-## POST `/absences/upload` (multipart/form-data)
-Upload absence document (pdf/jpg/png up to 5MB) and attach it to an absence.
-
-**Auth:** Required  
-**Content-Type:** `multipart/form-data`
-
-### Form Fields
-- `absenceId` (number, required)
-- `file` (required) `.pdf | .jpg | .png` max 5MB
-
-### 200 OK
-```json
-{
-  "success": true,
-  "data": {
-    "absenceId": 12,
-    "documentUrl": "/api/absences/12/document"
-  }
-}
-```
-
-### Errors
-- 413 `FILE_TOO_LARGE`
-- 415 `UNSUPPORTED_FILE_TYPE`
-
----
-
-## GET `/absences/:id/document`
-Download/view absence document.
-
-**Auth:** Required  
-**Notes:** return the binary stream with correct `Content-Type`.
-
----
-
-# 10) Month Locking (Admin)
+# 9) Month Locking (Admin)
 
 ## PUT `/admin/month-lock`
 Lock/unlock a month.

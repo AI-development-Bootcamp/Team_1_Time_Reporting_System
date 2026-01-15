@@ -78,14 +78,4 @@ export interface ProjectTimeLogs {
   createdAt: string;
   updatedAt: string;
 }
-
-
-export interface Absence {
-  id: number;
-  // “ids list of DailyAttendance”
-  dailyAttendanceIds?: number[]; // DailyAttendance ids of the days that the user absence.
-  documentUrl?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 ```

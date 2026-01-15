@@ -106,12 +106,3 @@ This document describes how the tables look in the database (columns + types), i
 
 ---
 
-## Absences 
-
-| column | type | notes |
-|---|---|---|
-| id | BIGSERIAL (PK) |  |
-| daily_attendance_ids | BIGINT[] NULL | |
-| document_url | TEXT NULL |  |
-| created_at | TIMESTAMPTZ |  |
-| updated_at | TIMESTAMPTZ |  |

@@ -34,7 +34,7 @@ To create a unified, transparent standard for reporting hours across the organiz
 
 #### Should Have (Important)
 - [ ] **Timer Functionality**: Timer for time tracking with auto-stop at 23:59. If left running, it saves as "Incomplete".
-- [ ] **Absence Management**: Reporting Vacation/Sickness/Reserve with Binary File Upload (stored as Bytes in DB via Prisma).
+- [ ] **Absence Management**: Reporting Vacation/Sickness/Reserve via DailyAttendance status with Binary File Upload (stored as Bytes in DB via Prisma).
 - [ ] **Month Locking**: Admin capability to lock reporting for specific months to prevent retroactive editing.
 - [ ] **Visual Dashboard**: Progress bar for daily 9-hour standard.
 - [ ] **Validations**: Alerts for <9h or >9h daily.
@@ -538,62 +538,7 @@ Update time log.
 **DELETE `/api/time-logs/:id`**
 Delete time log.
 
-#### 9. Absences
-
-> Absence model stores:
-> - `dailyAttendanceIds[]` — the days included in the absence
-> - `documentUrl` — optional link (if stored in DB as Bytes, expose a download URL)
-
-**POST `/api/absences`**
-Create an absence record.
-
-**Auth:** Required
-
-**Request Body:**
-```json
-{
-  "dailyAttendanceIds": [701, 702],
-  "documentUrl": null
-}
-```
-
-**201 Created Response:**
-```json
-{ "success": true, "data": { "id": 12 } }
-```
-
-**POST `/api/absences/upload`** (multipart/form-data)
-Upload absence document (pdf/jpg/png up to 5MB) and attach it to an absence.
-
-**Auth:** Required  
-**Content-Type:** `multipart/form-data`
-
-**Form Fields:**
-- `absenceId` (number, required)
-- `file` (required) `.pdf | .jpg | .png` max 5MB
-
-**200 OK Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "absenceId": 12,
-    "documentUrl": "/api/absences/12/document"
-  }
-}
-```
-
-**Errors:**
-- 413 `FILE_TOO_LARGE`
-- 415 `UNSUPPORTED_FILE_TYPE`
-
-**GET `/api/absences/:id/document`**
-Download/view absence document.
-
-**Auth:** Required  
-**Notes:** return the binary stream with correct `Content-Type`.
-
-#### 10. Month Locking (Admin)
+#### 9. Month Locking (Admin)
 
 **PUT `/api/admin/month-lock`**
 Lock/unlock a month.
@@ -706,14 +651,6 @@ export interface ProjectTimeLogs {
   taskId: number;
   duration: number; // in minutes
   description?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Absence {
-  id: number;
-  dailyAttendanceIds?: number[]; // DailyAttendance ids of the days that the user absence
-  documentUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -847,23 +784,14 @@ model ProjectTimeLogs {
   dailyAttendance   DailyAttendance @relation(fields: [dailyAttendanceId], references: [id])
   task              Task            @relation(fields: [taskId], references: [id])
 }
-
-model Absence {
-  id                 BigInt    @id @default(autoincrement())
-  dailyAttendanceIds BigInt[]  // Array of DailyAttendance IDs for the absence days
-  documentUrl        String?   @db.Text // URL or path to document (if stored as file, not in DB)
-  createdAt          DateTime  @default(now()) @db.Timestamptz
-  updatedAt          DateTime  @updatedAt @db.Timestamptz
-}
 ```
 
 #### Notes
 - All models use `BigInt` with `@default(autoincrement())` for primary keys (matching PostgreSQL BIGSERIAL).
 - Soft deletes implemented via `active` boolean field (default: true).
 - User-Task assignments stored as `TaskWorker` join table (many-to-many relationship) instead of array on Task.
-- DailyAttendance stores daily records with optional start/end times (TIME type) and `documentUrl` for file uploads.
+- DailyAttendance stores daily records with optional start/end times (TIME type) and `documentUrl` for file uploads (used for absence documents).
 - ProjectTimeLogs stores task-based time entries with duration in minutes (not start/end times).
-- Absence stores `dailyAttendanceIds` array and `documentUrl` (TEXT) - file storage implementation choice.
 - All timestamp fields use `@db.Timestamptz` to match PostgreSQL TIMESTAMPTZ.
 - Date fields use `@db.Date` to match PostgreSQL DATE.
 - Time fields use `@db.Time` to match PostgreSQL TIME.
@@ -893,12 +821,12 @@ model Absence {
   - Daily report submissions
   - Best practice: In-memory cache with TTL or Redis for production.
 
-#### File Upload (Absences)
+#### File Upload (Absences via DailyAttendance)
 - **Allowed Formats**: `.pdf`, `.jpg`, `.png` only.
 - **Maximum Size**: 5MB.
 - **Storage**: Implementation choice - can store as file path/URL in `documentUrl` (TEXT field) or as binary in separate storage system.
 - **Validation**: Block uploads that don't meet format/size requirements.
-- **Note**: Absence model uses `dailyAttendanceIds` array to link to DailyAttendance records and `documentUrl` for file reference.
+- **Note**: Absence functionality is handled via DailyAttendance records with absence-related statuses (sickness, reserves, dayOff, halfDayOff) and `documentUrl` for file reference.
 
 ### UI Specifications
 

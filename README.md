@@ -194,10 +194,6 @@ Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 - `PUT /api/time-logs/:id` - Update time log
 - `DELETE /api/time-logs/:id` - Delete time log
 
-### Absences
-- `POST /api/absences` - Create absence record
-- `POST /api/absences/upload` - Upload absence document (multipart/form-data, max 5MB)
-- `GET /api/absences/:id/document` - Download absence document
 
 ### Month Locking (Admin)
 - `PUT /api/admin/month-lock` - Lock/unlock a month
