@@ -7,7 +7,7 @@
 | **Member 1** | **Auth + User Management** | Auth API, User CRUD APIs | Login (both apps), User Management UI (admin) |
 | **Member 2** | **Time Reporting** | Attendance API, Time Logs API, Project Selector | Daily Report, Month History, Project Selector (user app) |
 | **Member 3** | **Entity Management** | Clients, Projects, Tasks, Assignments APIs | Entity Tables, Forms, Assignments UI (admin app) |
-| **Member 4** | **Advanced Features** | Timer API, Month Lock API, File Upload | Timer UI, Dashboard, Month Lock UI, Absence Upload |
+| **Member 4** | **Advanced Features** | Timer API, File Upload | Timer UI, Dashboard, Absence Upload |
 
 ### Why Full-Stack Split?
 - ✅ Each developer owns a complete feature end-to-end
@@ -41,10 +41,12 @@ All tasks must align with these documents:
 
 ### 1. Prisma Schema Updates Needed
 Current `backend/prisma/schema.prisma` issues:
-- **Missing**: `password String @db.Text` field in User model
-- **Missing**: `MonthLock` model (id, year, month, isLocked, timestamps)
-- **Wrong enum**: `DailyAttendanceStatus` should be: `work`, `sickness`, `reserves`, `dayOff`, `halfDayOff`
-- **Model name**: `ProjectTimeLog` → `ProjectTimeLogs` (per API doc)
+- ✅ **Fixed**: `password String @db.Text` field in User model
+- ✅ **Fixed**: `DailyAttendanceStatus` enum: `work`, `sickness`, `reserves`, `dayOff`, `halfDayOff`
+- ✅ **Fixed**: `LocationStatus` enum: `office`, `client`, `home`
+- ✅ **Fixed**: `document Bytes?` in DailyAttendance (binary file storage)
+- ✅ **Fixed**: `location LocationStatus` in ProjectTimeLogs
+- ✅ **Fixed**: Model name: `ProjectTimeLogs` (per API doc)
 
 ### 2. Missing Dependencies
 - Backend: `bcrypt @types/bcrypt`
@@ -55,11 +57,13 @@ Current `backend/prisma/schema.prisma` issues:
 ## Phase 0: Shared Setup (All Members - Day 1)
 
 #### TASK-000: Initial Setup (All Members Together)
-- [ ] 0.1 Fix Prisma schema:
-  - [ ] Add `password String @db.Text` to User model
-  - [ ] Add MonthLock model: `id, year, month, isLocked, createdAt, updatedAt` with unique constraint on [year, month]
-  - [ ] Fix DailyAttendanceStatus enum: `work, sickness, reserves, dayOff, halfDayOff`
-  - [ ] Rename ProjectTimeLog → ProjectTimeLogs
+- [x] 0.1 Prisma schema is now fixed:
+  - [x] `password String @db.Text` in User model
+  - [x] `DailyAttendanceStatus` enum: `work, sickness, reserves, dayOff, halfDayOff`
+  - [x] `LocationStatus` enum: `office, client, home`
+  - [x] `document Bytes?` in DailyAttendance
+  - [x] `location LocationStatus` in ProjectTimeLogs
+  - [x] Model name: `ProjectTimeLogs`
 - [ ] 0.2 Install missing dependencies:
   - [ ] `npm install bcrypt @types/bcrypt -w backend`
   - [ ] `npm install react-router-dom @types/react-router-dom -w frontend_user`
@@ -185,7 +189,6 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Implement `POST /api/attendance`:
   - [ ] Zod schema: `{ date, startTime, endTime, status }`
   - [ ] Validate: `endTime > startTime` (return 400 if not)
-  - [ ] Check month lock status (return 409 `MONTH_LOCKED` if locked)
   - [ ] Create DailyAttendance record
   - [ ] Return: `{ success: true, data: { id } }`
 - [ ] Implement `GET /api/attendance/month-history`:
@@ -194,31 +197,25 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Return array of DailyAttendance objects
   - [ ] Response: `{ success: true, data: [DailyAttendance, ...] }`
 - [ ] Implement `PUT /api/attendance/:id`:
-  - [ ] Check month lock status
   - [ ] Update DailyAttendance record
-- [ ] Implement `DELETE /api/attendance/:id`:
-  - [ ] Check month lock status
-  - [ ] Delete record (hard delete per API doc)
+- [ ] **Note**: No DELETE endpoint - records are edited, not deleted
 - **Validation**: Attendance CRUD works, time validation blocks invalid entries
 
 #### TASK-M2-011: Time Logs Backend (Per `doc/api/API.md` Section 8)
 - [ ] Create `backend/src/routes/TimeLogs.ts`
 - [ ] Implement `POST /api/time-logs`:
-  - [ ] Zod schema: `{ dailyAttendanceId, taskId, duration, description? }`
+  - [ ] Zod schema: `{ dailyAttendanceId, taskId, duration, location, description? }`
   - [ ] Note: `duration` is in minutes (map to `durationMin` in DB)
-  - [ ] Check month lock status
+  - [ ] Note: `location` is required (office/client/home)
   - [ ] Create ProjectTimeLogs record
   - [ ] Return: `{ success: true, data: { id } }`
 - [ ] Implement `GET /api/time-logs?dailyAttendanceId=X`:
   - [ ] Filter by dailyAttendanceId
-  - [ ] Return array of ProjectTimeLogs
+  - [ ] Return array of ProjectTimeLogs (include location)
 - [ ] Implement `PUT /api/time-logs/:id`:
-  - [ ] Check month lock status
   - [ ] Update record
-- [ ] Implement `DELETE /api/time-logs/:id`:
-  - [ ] Check month lock status
-  - [ ] Delete record
-- **Validation**: Time logs work, multiple entries per day allowed
+- [ ] **Note**: No DELETE endpoint - records are edited, not deleted
+- **Validation**: Time logs work, multiple entries per day allowed, location required
 
 #### TASK-M2-012: Project Selector Backend
 - [ ] Create `backend/src/services/ProjectSelector.ts`
@@ -251,9 +248,9 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Create `components/DailyReport/ProjectReport.tsx`:
   - [ ] Project selector integration (cascading: Client → Project → Task)
   - [ ] Time pickers (startTime, endTime)
-  - [ ] Location of Work: Radio/Select (Home, Office, In-Client)
+  - [ ] Location of Work: Radio/Select (office, client, home) - **REQUIRED**
   - [ ] Description textarea (optional)
-  - [ ] Delete button to remove entry
+  - [ ] Edit button (no delete - records are edited only)
 - [ ] Create `hooks/useCreateAttendance.ts`:
   - [ ] `useMutation` for POST /api/attendance
   - [ ] `useMutation` for POST /api/time-logs
@@ -416,29 +413,8 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Auto-stop and save with appropriate status
 - **Validation**: Timer start/stop works, auto-stop at midnight works
 
-#### TASK-M4-011: Month Lock Backend (Per `doc/api/API.md` Section 9)
-- [ ] Create `backend/src/services/MonthLock.ts`:
-  - [ ] `checkMonthLock(year, month)`: Returns boolean
-  - [ ] `lockMonth(year, month)`: Creates/updates MonthLock record
-  - [ ] `unlockMonth(year, month)`: Sets isLocked = false
-- [ ] Create `backend/src/middleware/MonthLockCheck.ts`:
-  - [ ] Extract date from request body
-  - [ ] Check if month is locked
-  - [ ] Return 409 `MONTH_LOCKED` if locked
-- [ ] Implement `PUT /api/admin/month-lock`:
-  - [ ] Zod schema: `{ year, month, isLocked }`
-  - [ ] Create or update MonthLock record
-  - [ ] Return: `{ success: true, data: { year, month, isLocked } }`
-- [ ] Implement `GET /api/admin/month-lock?year=X&month=Y`:
-  - [ ] Return lock status for specified month
-- [ ] Apply MonthLockCheck middleware to:
-  - [ ] POST /api/attendance
-  - [ ] PUT /api/attendance/:id
-  - [ ] DELETE /api/attendance/:id
-  - [ ] POST /api/time-logs
-  - [ ] PUT /api/time-logs/:id
-  - [ ] DELETE /api/time-logs/:id
-- **Validation**: Month locking prevents edits, returns 409
+#### TASK-M4-011: (DEFERRED) Month Lock Backend
+> **Note**: Month Lock feature is deferred for later implementation. Will be added in a future sprint.
 
 #### TASK-M4-012: File Upload Backend
 - [ ] Create `backend/src/middleware/FileUpload.ts`:
@@ -449,10 +425,10 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Return 415 `UNSUPPORTED_FILE_TYPE` if wrong format
 - [ ] Implement `POST /api/attendance/:id/upload`:
   - [ ] Accept multipart/form-data
-  - [ ] Store file (Bytes in DB or file path in documentUrl)
-  - [ ] Update DailyAttendance.documentUrl
+  - [ ] Convert file to Buffer
+  - [ ] Store as Bytes in DailyAttendance.document field
 - [ ] Implement `GET /api/attendance/:id/document`:
-  - [ ] Return file stream
+  - [ ] Return file from Bytes field
   - [ ] Set correct Content-Type header
 - **Validation**: File upload works, validations block invalid files
 
@@ -486,17 +462,8 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Warning for >9h
 - **Validation**: Progress bar shows correct progress
 
-#### TASK-M4-022: Month Lock UI (Admin App)
-- [ ] Create `frontend_admin/src/components/MonthLock/MonthLockManager.tsx`:
-  - [ ] Month/year selector
-  - [ ] Lock/unlock toggle button
-- [ ] Create `hooks/useMonthLock.ts`:
-  - [ ] `useQuery` for GET status
-  - [ ] `useMutation` for PUT lock/unlock
-- [ ] Add visual indicator for locked months (lock icon)
-- [ ] Disable edit buttons when month is locked
-- [ ] Handle 409 MONTH_LOCKED error gracefully
-- **Validation**: Month locking UI works
+#### TASK-M4-022: (DEFERRED) Month Lock UI (Admin App)
+> **Note**: Month Lock UI is deferred for later implementation. Will be added in a future sprint.
 
 #### TASK-M4-023: Absence Upload UI (User App)
 - [ ] Create `frontend_user/src/components/Absence/AbsenceUpload.tsx`:
@@ -636,8 +603,6 @@ frontend_admin/src/
 backend/src/
 ├── routes/Timer.ts
 ├── services/Timer.ts
-├── services/MonthLock.ts
-├── middleware/MonthLockCheck.ts
 ├── middleware/FileUpload.ts
 └── jobs/TimerAutoStop.ts
 
@@ -646,10 +611,6 @@ frontend_user/src/
 ├── components/Dashboard/ProgressBar.tsx
 ├── components/Absence/AbsenceUpload.tsx
 └── hooks/useTimer.ts
-
-frontend_admin/src/
-├── components/MonthLock/MonthLockManager.tsx
-└── hooks/useMonthLock.ts
 ```
 
 ---
@@ -663,7 +624,7 @@ frontend_admin/src/
 | Member 1 | Auth Backend + Login UI | Login works in both apps |
 | Member 2 | Attendance Backend | Basic API ready |
 | Member 3 | Clients Backend | Clients API ready |
-| Member 4 | Timer Backend | Timer API ready |
+| Member 4 | Timer + File Upload Backend | Timer API, File Upload ready |
 
 ### Sprint 2 (Week 3-4): Core Features
 | Member | Focus | Deliverable |
@@ -679,7 +640,7 @@ frontend_admin/src/
 | Member 1 | Integration testing | Auth fully tested |
 | Member 2 | Month History UI | Full reporting flow |
 | Member 3 | Assignments UI | Full entity management |
-| Member 4 | Month Lock + File Upload | All advanced features |
+| Member 4 | Dashboard + Absence UI | All advanced features |
 
 ### Sprint 4 (Week 7-8): Polish + Testing
 | Member | Focus | Deliverable |

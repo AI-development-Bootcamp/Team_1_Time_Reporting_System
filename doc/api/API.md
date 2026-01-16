@@ -62,7 +62,9 @@ Error:
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
 - **TaskWorker**: `{ id, taskId, userId }`
 - **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
-- **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
+- **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, location, description?, createdAt, updatedAt }`
+
+> **Location**: `office` | `client` | `home` - Where the work was done
 
 ---
 
@@ -511,8 +513,7 @@ Update an existing DailyAttendance record.
 ### Errors
 - 409 `MONTH_LOCKED`
 
-## DELETE `/attendance/:id`
-Delete a DailyAttendance record (implementation choice: hard delete or soft delete — define in backend).
+> **Note**: No DELETE endpoint for DailyAttendance. Records are edited, not deleted.
 
 ---
 
@@ -532,9 +533,12 @@ Create a time log entry for a DailyAttendance.
   "dailyAttendanceId": 701,
   "taskId": 55,
   "duration": 120,
+  "location": "office",
   "description": "Worked on UI"
 }
 ```
+
+> **location**: Required. One of: `office`, `client`, `home`
 
 ### 201 Created
 ```json
@@ -561,6 +565,7 @@ List time logs for a specific day.
       "dailyAttendanceId": 701,
       "taskId": 55,
       "duration": 120,
+      "location": "office",
       "description": "Worked on UI",
       "createdAt": "2026-01-14T18:10:00.000Z",
       "updatedAt": "2026-01-14T18:10:00.000Z"
@@ -572,31 +577,9 @@ List time logs for a specific day.
 ## PUT `/time-logs/:id`
 Update time log.
 
-## DELETE `/time-logs/:id`
-Delete time log.
+> **Note**: No DELETE endpoint for ProjectTimeLogs. Records are edited, not deleted.
 
 ---
-
-# 9) Month Locking (Admin)
-
-## PUT `/admin/month-lock`
-Lock/unlock a month.
-
-**Auth:** Required  
-**Role:** `admin`
-
-### Request Body
-```json
-{ "year": 2026, "month": 1, "isLocked": true }
-```
-
-### 200 OK
-```json
-{
-  "success": true,
-  "data": { "year": 2026, "month": 1, "isLocked": true }
-}
-```
 
 ---
 
@@ -610,7 +593,6 @@ Lock/unlock a month.
   - Everything worker can do (as employee)
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
-  - Lock/unlock months
   - Can view other users data by specifying `userId` query param
 
 ---
@@ -620,4 +602,10 @@ Lock/unlock a month.
 - **Soft Delete Users:** `active=false` instead of deleting.
 - **Time Validation:** block when `endTime < startTime`.
 - **Overlaps:** allowed in ProjectTimeLogs (different tasks).
-- **Month Lock:** if locked, any create/update/delete for that month should return `409 MONTH_LOCKED`.
+- **No Deletion for Reports:** DailyAttendance and ProjectTimeLogs are edited, not deleted.
+- **Location Required:** All ProjectTimeLogs must specify location (office/client/home).
+- **File Storage:** Documents stored as Bytes (BYTEA) in database.
+- **Caching:** In-memory cache for project selector (no Redis for MVP).
+- **Timer Storage:** Memory-only for running timers.
+- **Timer Auto-Stop:** Uses `work` status when timer auto-stops at 23:59.
+- **Locked Month UI:** Edit button is disabled when month is locked.

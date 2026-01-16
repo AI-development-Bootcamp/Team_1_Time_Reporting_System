@@ -4,6 +4,13 @@
 - **Core Stack**: TypeScript, Prisma (PostgreSQL), Mantine UI, Vitest, Zod.
 - **Key Constraints**: Hebrew RTL interface, soft deletes for users, binary file storage (Bytes) in DB.
 
+## ⚠️ CRITICAL: Do NOT Make Changes Without Permission
+- **DO NOT** add fields to data models/interfaces without explicit permission
+- **DO NOT** add API versioning (e.g., `/api/v1/`) without explicit permission
+- **DO NOT** add new features, patterns, or architectural changes without asking first
+- **ALWAYS** ask before making structural changes that weren't explicitly requested
+- When in doubt, **ASK** - do not assume or "improve" without permission
+
 ## Role & Instructions
 You are an expert full-stack developer specializing in TypeScript. Follow these rules strictly:
 

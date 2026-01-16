@@ -24,7 +24,7 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 | **Member 1** | Auth + User Management | Auth API, User CRUD | Login (both apps), User Management UI |
 | **Member 2** | Time Reporting | Attendance API, Time Logs API, Project Selector | Daily Report, Month History, Selector |
 | **Member 3** | Entity Management | Clients, Projects, Tasks, Assignments APIs | Entity Tables, Forms, Assignments UI |
-| **Member 4** | Advanced Features | Timer API, Month Lock API, File Upload | Timer UI, Dashboard, Month Lock UI |
+| **Member 4** | Advanced Features | Timer API, File Upload | Timer UI, Dashboard, Absence Upload |
 
 **Why**: 
 - ✅ Each developer owns a complete feature end-to-end
@@ -55,8 +55,8 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - `Project`: id, name, clientId, projectManagerId, startDate, endDate?, description?, active
 - `Task`: id, name, projectId, startDate?, endDate?, description?, status
 - `TaskWorker`: id, taskId, userId (join table)
-- `DailyAttendance`: id, userId, date, startTime, endTime, status, documentUrl?
-- `ProjectTimeLogs`: id, dailyAttendanceId, taskId, duration, description?
+- `DailyAttendance`: id, userId, date, startTime, endTime, status, document? (Bytes)
+- `ProjectTimeLogs`: id, dailyAttendanceId, taskId, duration, location, description?
 
 ### Decision: API Response Envelope (Per `doc/api/API.md`)
 **What**: Standard response format
@@ -69,8 +69,8 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 **Owner**: Member 2 (Time Reporting feature)
 
 ### Decision: File Storage
-**What**: Store as documentUrl (TEXT) pointing to file path, or Bytes in PostgreSQL
-**Why**: Simpler than external storage for MVP
+**What**: Store as Bytes (BYTEA) in PostgreSQL
+**Why**: Simpler than external storage for MVP, keeps everything in DB
 **Owner**: Member 4 (Advanced Features)
 
 ## Database Schema (Per `doc/database/schema.md`)
@@ -79,6 +79,7 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - `UserType`: worker, admin
 - `TaskStatus`: open, closed
 - `DailyAttendanceStatus`: work, sickness, reserves, dayOff, halfDayOff
+- `LocationStatus`: office, client, home
 
 ### Tables
 - `users`: id, name, mail, password, user_type, active, created_at, updated_at
@@ -86,9 +87,8 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - `projects`: id, name, client_id, project_manager_id, start_date, end_date, description, active
 - `tasks`: id, name, project_id, start_date, end_date, description, status
 - `task_worker`: id, task_id, user_id (join table)
-- `daily_attendance`: id, user_id, date, start_time, end_time, status, document_url
-- `project_time_logs`: id, daily_attendance_id, task_id, duration_min, description
-- `month_lock`: id, year, month, is_locked (MISSING - needs to be added)
+- `daily_attendance`: id, user_id, date, start_time, end_time, status, document (BYTEA)
+- `project_time_logs`: id, daily_attendance_id, task_id, duration_min, location, description
 
 ## Risks / Trade-offs
 
@@ -132,8 +132,13 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 | File upload (5MB) | < 3 seconds | Member 4 |
 | Admin CRUD | < 1 second | Member 1, 3 |
 
-## Open Questions
+## Resolved Questions
 - [x] Full-stack vs Backend/Frontend split? → **Full-stack feature ownership**
-- [ ] Redis from start or in-memory cache for MVP? → In-memory for MVP
-- [ ] File storage: Bytes in DB vs documentUrl? → documentUrl (TEXT) for simplicity
-- [ ] Should we implement API versioning from start? → No, defer for MVP
+- [x] Redis from start or in-memory cache for MVP? → **In-memory for MVP**
+- [x] File storage: Bytes in DB vs documentUrl? → **Bytes in DB**
+- [x] DailyAttendance deletion? → **No deletion, editing only**
+- [x] Timer state persistence? → **Memory only**
+- [x] Timer auto-stop status? → **Uses 'work' status**
+- [x] MonthLock model? → **Removed for now, will add later**
+- [x] Location of Work field? → **Added to ProjectTimeLogs (office/client/home)**
+- [x] Locked month UI behavior? → **Edit button disabled**
