@@ -422,6 +422,15 @@ Assign worker to task.
 }
 ```
 
+### 409 Conflict
+Returns when attempting to assign a user to a task they are already assigned to (unique constraint violation).
+```json
+{
+  "success": false,
+  "error": "User is already assigned to this task"
+}
+```
+
 ## GET `/admin/assignments`
 List all assignments.
 
