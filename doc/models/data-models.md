@@ -64,7 +64,7 @@ export interface DailyAttendance {
   startTime: string; // In SQL: saved as TIME type
   endTime: string; // In SQL: saved as TIME type
   status: DailyAttendanceStatus;
-  documentUrl?: string | null; // Binary file stored as Bytes in DB
+  document?: Uint8Array | null; // Binary file stored as Bytes in DB
   createdAt: string;
   updatedAt: string;
 }

@@ -60,8 +60,8 @@ Error:
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
-- **TaskWorker**: `{ id, taskId, userId }`
-- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
+- **TaskWorker**: `{ taskId, userId }`
+- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, document?, createdAt, updatedAt }`
 - **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, location, description?, createdAt, updatedAt }`
 
 > **Location**: `office` | `client` | `home` - Where the work was done
@@ -416,7 +416,6 @@ Assign worker to task.
 { 
   "success": true, 
   "data": { 
-    "id": 999,
     "taskId": 55,
     "userId": 2
   } 
@@ -497,7 +496,7 @@ Returns month history of DailyAttendance (for UI accordion). Uses current year.
       "startTime": "2026-01-14T09:00:00.000Z",
       "endTime": "2026-01-14T17:30:00.000Z",
       "status": "work",
-      "documentUrl": null,
+      "document": null,
       "createdAt": "2026-01-14T18:00:00.000Z",
       "updatedAt": "2026-01-14T18:00:00.000Z"
     }
@@ -577,7 +576,8 @@ List time logs for a specific day.
 ## PUT `/time-logs/:id`
 Update time log.
 
-> **Note**: No DELETE endpoint for ProjectTimeLogs. Records are edited, not deleted.
+## DELETE `/time-logs/:id`
+Delete time log.
 
 ---
 
@@ -602,7 +602,7 @@ Update time log.
 - **Soft Delete Users:** `active=false` instead of deleting.
 - **Time Validation:** block when `endTime < startTime`.
 - **Overlaps:** allowed in ProjectTimeLogs (different tasks).
-- **No Deletion for Reports:** DailyAttendance and ProjectTimeLogs are edited, not deleted.
+- **No Deletion for DailyAttendance:** DailyAttendance records are edited, not deleted. ProjectTimeLogs can be deleted.
 - **Location Required:** All ProjectTimeLogs must specify location (office/client/home).
 - **File Storage:** Documents stored as Bytes (BYTEA) in database.
 - **Caching:** In-memory cache for project selector (no Redis for MVP).

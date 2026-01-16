@@ -191,7 +191,7 @@ Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 - `POST /api/time-logs` - Create time log entry (duration in minutes, location required)
 - `GET /api/time-logs?dailyAttendanceId=701` - List time logs for a day
 - `PUT /api/time-logs/:id` - Update time log
-- Note: No DELETE endpoint - records are edited, not deleted
+- `DELETE /api/time-logs/:id` - Delete time log
 
 ### Response Format
 All responses follow this structure:
@@ -216,7 +216,7 @@ For complete documentation, see the [doc](./doc/) folder:
 - **Validation**: Use Zod for all request validation
 - **File Uploads**: Only `.pdf`, `.jpg`, `.png` formats, max 5MB, stored as Bytes in DB
 - **Location Required**: All time logs must specify location (office/client/home)
-- **No Deletions**: DailyAttendance and ProjectTimeLogs are edited, not deleted
+- **No Deletion for DailyAttendance**: DailyAttendance records are edited, not deleted (ProjectTimeLogs can be deleted)
 
 ## Testing
 

@@ -214,7 +214,8 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Return array of ProjectTimeLogs (include location)
 - [ ] Implement `PUT /api/time-logs/:id`:
   - [ ] Update record
-- [ ] **Note**: No DELETE endpoint - records are edited, not deleted
+- [ ] Implement `DELETE /api/time-logs/:id`:
+  - [ ] Delete ProjectTimeLogs record
 - **Validation**: Time logs work, multiple entries per day allowed, location required
 
 #### TASK-M2-012: Project Selector Backend

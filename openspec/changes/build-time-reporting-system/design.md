@@ -54,7 +54,7 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - `Client`: id, name, description?, active, createdAt, updatedAt
 - `Project`: id, name, clientId, projectManagerId, startDate, endDate?, description?, active
 - `Task`: id, name, projectId, startDate?, endDate?, description?, status
-- `TaskWorker`: id, taskId, userId (join table)
+- `TaskWorker`: taskId, userId (join table, composite key)
 - `DailyAttendance`: id, userId, date, startTime, endTime, status, document? (Bytes)
 - `ProjectTimeLogs`: id, dailyAttendanceId, taskId, duration, location, description?
 
@@ -86,7 +86,7 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - `clients`: id, name, description, active, created_at, updated_at
 - `projects`: id, name, client_id, project_manager_id, start_date, end_date, description, active
 - `tasks`: id, name, project_id, start_date, end_date, description, status
-- `task_worker`: id, task_id, user_id (join table)
+- `task_worker`: task_id, user_id (join table, composite key)
 - `daily_attendance`: id, user_id, date, start_time, end_time, status, document (BYTEA)
 - `project_time_logs`: id, daily_attendance_id, task_id, duration_min, location, description
 

@@ -34,11 +34,11 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 ### 3. Backend Development (Express + Prisma)
 - **Type Safety**: Use **Zod** for all request body and query parameter validation.
 - **Database**: Use Prisma Client for all DB interactions. 
-- **Soft Deletes**: When "deleting" a User, set `isActive = false` instead of removing the record. Always filter for `isActive: true` in standard queries.
+- **Soft Deletes**: When "deleting" a User, set `active = false` instead of removing the record. Always filter for `active: true` in standard queries.
 - **Files**: Store absence files as `Bytes` in PostgreSQL via Prisma. Use Multer for multipart handling.
 - **Logic**: 
   - Validation: Block entries where `EndTime < StartTime`.
-  - Timer: Ensure the auto-stop logic at `23:59` is handled (saves as "Incomplete").
+  - Timer: Ensure the auto-stop logic at `23:59` is handled (saves with `work` status).
 
 ### 4. Technical Standards
 - **TypeScript**: No `any` type. Define interfaces for all API responses and data models.
@@ -52,7 +52,6 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 - Use functional components and React Hooks.
 - Prefer `const` over `let`.
 - **Variable Naming**: Use `camelCase` for all variables, functions, and instances (e.g., `userReport`, `fetchProjectData`).
-- Implement "Month Locking" logic by checking the lock status before any Create/Update/Delete operations on reports.
 - **Components**: PascalCase (e.g., `ExpenseForm`, `CategorySummary`)
 - **Files**: PascalCase for all files in folders (e.g., `ExpenseForm.tsx`, `ExpenseTypes.ts`, `FormatCurrency.ts`)
 - **Functions/Variables**: camelCase (e.g., `handleSubmit`, `totalAmount`)
@@ -90,15 +89,6 @@ import { Button, TextInput } from '@mantine/core';
 <MantineProvider theme={{ dir: 'rtl' }}>
   {/* components */}
 </MantineProvider>
-```
-
-### Month Locking Check
-```typescript
-// Before any report mutation, check month lock status
-const isLocked = await checkMonthLock(reportDate);
-if (isLocked) {
-  throw new Error('Month is locked');
-}
 ```
 
 ### Date Handling Pattern (Day.js)

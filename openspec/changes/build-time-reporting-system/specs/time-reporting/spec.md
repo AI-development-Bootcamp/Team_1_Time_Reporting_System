@@ -233,7 +233,6 @@ export interface Task {
 }
 
 export interface TaskWorker {
-  id: number;
   taskId: number;
   userId: number;
 }

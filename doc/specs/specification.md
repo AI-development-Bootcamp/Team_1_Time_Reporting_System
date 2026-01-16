@@ -33,7 +33,7 @@ To create a unified, transparent standard for reporting hours across the organiz
 - [ ] **Month History Report**: View month history report with detailed UI (see UI Specifications below).
 
 #### Should Have (Important)
-- [ ] **Timer Functionality**: Timer for time tracking with auto-stop at 23:59. If left running, it saves as "Incomplete".
+- [ ] **Timer Functionality**: Timer for time tracking with auto-stop at 23:59. If left running, it saves with `work` status.
 - [ ] **Absence Management**: Reporting Vacation/Sickness/Reserve via DailyAttendance status with Binary File Upload (stored as Bytes in DB via Prisma).
 - [ ] **Visual Dashboard**: Progress bar for daily 9-hour standard.
 - [ ] **Validations**: Alerts for <9h or >9h daily.
@@ -405,7 +405,6 @@ Assign worker to task.
 { 
   "success": true, 
   "data": { 
-    "id": 999,
     "taskId": 55,
     "userId": 2
   } 
@@ -478,7 +477,7 @@ Returns month history of DailyAttendance (for UI accordion). Uses current year.
       "startTime": "2026-01-14T09:00:00.000Z",
       "endTime": "2026-01-14T17:30:00.000Z",
       "status": "work",
-      "documentUrl": null,
+      "document": null,
       "createdAt": "2026-01-14T18:00:00.000Z",
       "updatedAt": "2026-01-14T18:00:00.000Z"
     }
@@ -529,7 +528,8 @@ List time logs for a specific day.
 **PUT `/api/time-logs/:id`**
 Update time log.
 
-> **Note**: No DELETE endpoint for ProjectTimeLogs. Records are edited, not deleted.
+**DELETE `/api/time-logs/:id`**
+Delete time log.
 
 #### API Role Rules Summary
 
@@ -724,14 +724,13 @@ model Task {
 }
 
 model TaskWorker {
-  id         BigInt   @id @default(autoincrement())
   taskId     BigInt
   userId     BigInt
   
   task   Task   @relation(fields: [taskId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
   
-  @@unique([taskId, userId])
+  @@id([taskId, userId])
 }
 
 model DailyAttendance {
@@ -783,10 +782,10 @@ model ProjectTimeLogs {
 - **Password Reset**: Admin sets new password directly (no reset link flow).
 
 #### Time Reporting Structure
-- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status, documentUrl).
+- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status, document).
 - **Project Time Logs**: Multiple ProjectTimeLogs records per DailyAttendance (stores taskId, duration in minutes).
 - **Time Storage**: 
-  - DailyAttendance stores overall start/end times for the day (TIME type, nullable) and optional documentUrl for file uploads.
+  - DailyAttendance stores overall start/end times for the day (TIME type, nullable) and optional document for file uploads (Bytes).
   - ProjectTimeLogs stores duration in minutes per task (not start/end times per task).
 - **Minimum Unit**: 1 minute precision.
 - **Overlapping Entries**: Allowed for different tasks (e.g., working on 2 projects simultaneously via multiple ProjectTimeLogs).

@@ -1,6 +1,17 @@
 # Database Tables Overview (PostgreSQL)
 
-This document describes how the tables look in the database (columns + types), including the array-based “list of IDs” fields (`BIGINT[] NULL`) as requested.
+This document describes how the tables look in the database (columns + types).
+
+---
+
+## Enums
+
+| Enum | Values |
+|------|--------|
+| user_type | worker, admin |
+| task_status | open, closed |
+| daily_attendance_status | work, sickness, reserves, dayOff, halfDayOff |
+| location_status | office, client, home |
 
 ---
 
@@ -11,6 +22,7 @@ This document describes how the tables look in the database (columns + types), i
 | id | BIGSERIAL (PK) |
 | name | TEXT |
 | mail | TEXT (UNIQUE) |
+| password | TEXT |
 | user_type | user_type ENUM (worker/admin) |
 | active | BOOLEAN |
 | created_at | TIMESTAMPTZ |
@@ -68,40 +80,48 @@ This document describes how the tables look in the database (columns + types), i
 
 | column | type | notes |
 |---|---|---|
-| id | BIGSERIAL (PK) |  |
-| task_id | BIGINT | FK → tasks.id |
-| user_id | BIGINT | FK → users.id |
+| task_id | BIGINT (PK) | FK → tasks.id |
+| user_id | BIGINT (PK) | FK → users.id |
 
 ---
 
-
 ## DailyAttendance
 
-| column | type |
-|---|---|
-| id | BIGSERIAL (PK) |
-| user_id | BIGINT (FK → users.id) |
-| date | DATE | In SQL: DATE object
-| start_time | TIME NULL | In SQL: TIME type
-| end_time | TIME NULL | In SQL: TIME type
-| status | daily_attendance_status ENUM |
-| document_url | TEXT NULL |
-| created_at | TIMESTAMPTZ |
-| updated_at | TIMESTAMPTZ |
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) | |
+| user_id | BIGINT (FK → users.id) | |
+| date | DATE | In SQL: DATE object |
+| start_time | TIME NULL | In SQL: TIME type |
+| end_time | TIME NULL | In SQL: TIME type |
+| status | daily_attendance_status ENUM | work/sickness/reserves/dayOff/halfDayOff |
+| document | BYTEA NULL | Binary file storage (Bytes in Prisma) |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
 ---
 
 ## ProjectTimeLogs
 
-| column | type |
-|---|---|
-| id | BIGSERIAL (PK) |
-| daily_attendance_id | BIGINT (FK → daily_attendance.id) |
-| task_id | BIGINT (FK → tasks.id) |
-| duration_min | INTEGER |
-| description | TEXT NULL |
-| created_at | TIMESTAMPTZ |
-| updated_at | TIMESTAMPTZ |
+| column | type | notes |
+|---|---|---|
+| id | BIGSERIAL (PK) | |
+| daily_attendance_id | BIGINT (FK → daily_attendance.id) | |
+| task_id | BIGINT (FK → tasks.id) | |
+| duration_min | INTEGER | Duration in minutes |
+| location | location_status ENUM | office/client/home |
+| description | TEXT NULL | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
 ---
 
+## Notes
+
+- **No deletion**: DailyAttendance and ProjectTimeLogs records are edited, not deleted
+- **Soft delete**: Users, Clients, Projects, Tasks use `active=false` for soft delete
+- **File storage**: Documents stored as BYTEA (Bytes) in database
+- **API versioning**: Implemented from start (e.g., `/api/v1/...`)
+- **Caching**: In-memory cache for project selector (no Redis for MVP)
+- **Timer**: Memory-only storage for running timers
+- **Timer auto-stop status**: Uses `work` status when timer auto-stops at 23:59
