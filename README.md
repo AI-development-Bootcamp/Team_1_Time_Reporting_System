@@ -63,23 +63,37 @@ To get a local copy up and running, follow these steps.
     npm install
     ```
 
-3.  **Setup Database (Docker)**
+3.  **Quick Setup (Recommended)**
+    
+    Run the automated setup script that handles everything:
     ```sh
-    docker-compose up -d
+    npm run setup
     ```
-
-4.  **Prisma Setup**
+    
+    This single command will:
+    - Start Docker Compose (PostgreSQL database)
+    - Wait for database to be ready
+    - Generate Prisma Client
+    - Run database migrations
+    - Seed the database with sample data
+    
+    **Alternative: Manual Setup**
+    
+    If you prefer to run steps manually:
     ```sh
+    # Start Docker Compose
+    docker-compose up -d
+    
+    # Setup Prisma (from backend directory)
     cd backend
-    # Run migrations to create tables
-    npx prisma migrate dev --name init
-    # Generate the Prisma Client
     npx prisma generate
+    npx prisma migrate dev --name init
+    npx prisma db seed
     ```
 
 ### Running the Project
 
-The root `package.json` includes scripts to run different service combinations:
+After running `npm run setup`, start the development servers:
 
 ```sh
 # Run EVERYTHING (Backend + User App + Admin App)
@@ -91,6 +105,29 @@ npm run dev:user
 # Run only Admin Environment
 npm run dev:admin
 ```
+
+**Note:** Make sure you've run `npm run setup` first to initialize the database and seed data.
+
+## Shutting Down
+
+When you're done working:
+
+1. **Stop the development servers**
+   - Press `Ctrl+C` in the terminal where `npm run dev:all` (or `dev:user`/`dev:admin`) is running
+   - This will stop all frontend and backend services
+
+2. **Stop Docker Compose (optional)**
+   ```sh
+   docker-compose down
+   ```
+   
+   **Note:** You can leave Docker running if you'll be working again soon. The database will persist data between sessions. Only run `docker-compose down` if you want to completely stop the database container.
+
+   To remove all data (including volumes):
+   ```sh
+   docker-compose down -v
+   ```
+   ⚠️ **Warning:** This will delete all database data!
 
 ## Environment Variables
 

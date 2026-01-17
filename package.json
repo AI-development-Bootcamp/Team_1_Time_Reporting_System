@@ -9,6 +9,7 @@
     "frontend_admin"
   ],
   "scripts": {
+    "setup": "node scripts/setup.js",
     "dev:all": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\" \"npm run dev -w frontend_admin\"",
     "dev:user": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\"",
     "dev:admin": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_admin\"",
