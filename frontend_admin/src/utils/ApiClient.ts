@@ -18,14 +18,24 @@ export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 class ApiClient {
   private client: AxiosInstance;
+  private baseURL: string;
 
   constructor() {
+    const primaryURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    const fallbackURL = 'http://localhost:10000/api';
+    
+    // Initialize with primary URL, will be updated if needed
+    this.baseURL = primaryURL;
+    
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:10000/api',
+      baseURL: primaryURL,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+
+    // Test primary URL and fallback to 10000 if needed
+    this.initializeBaseURL(primaryURL, fallbackURL);
 
     // Add request interceptor to include auth token
     this.client.interceptors.request.use(
@@ -53,6 +63,38 @@ class ApiClient {
         return Promise.reject(error);
       }
     );
+  }
+
+  private async initializeBaseURL(primaryURL: string, fallbackURL: string): Promise<void> {
+    // Extract base URL without /api for health check
+    const getBaseUrl = (url: string) => url.replace('/api', '');
+    
+    // Test primary URL with a health check
+    try {
+      const testClient = axios.create({
+        baseURL: getBaseUrl(primaryURL),
+        timeout: 2000, // 2 second timeout
+      });
+      await testClient.get('/health');
+      // Primary URL works, keep it
+      this.baseURL = primaryURL;
+    } catch (error) {
+      // Primary URL failed, try fallback
+      try {
+        const testClient = axios.create({
+          baseURL: getBaseUrl(fallbackURL),
+          timeout: 2000,
+        });
+        await testClient.get('/health');
+        // Fallback works, update baseURL
+        this.baseURL = fallbackURL;
+        this.client.defaults.baseURL = fallbackURL;
+        console.log(`API client: Primary URL (${primaryURL}) unavailable, using fallback (${fallbackURL})`);
+      } catch (fallbackError) {
+        // Both failed, keep primary and let requests fail naturally
+        console.warn(`API client: Both primary (${primaryURL}) and fallback (${fallbackURL}) URLs are unavailable`);
+      }
+    }
   }
 
   async get<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
