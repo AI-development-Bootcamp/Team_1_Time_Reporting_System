@@ -64,25 +64,25 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] `document Bytes?` in DailyAttendance
   - [x] `location LocationStatus` in ProjectTimeLogs
   - [x] Model name: `ProjectTimeLogs`
-- [ ] 0.2 Install missing dependencies:
-  - [ ] `npm install bcrypt @types/bcrypt -w backend`
-  - [ ] `npm install react-router-dom @types/react-router-dom -w frontend_user`
-  - [ ] `npm install react-router-dom @types/react-router-dom -w frontend_admin`
-- [ ] 0.3 Setup Docker Compose with PostgreSQL
-- [ ] 0.4 Create `.env.example` with DATABASE_URL, JWT_SECRET, PORT
-- [ ] 0.5 Run initial migration: `npx prisma migrate dev --name init`
-- [ ] 0.6 Create seed script (`backend/prisma/seed.ts`):
-  - [ ] Initial admin user (hashed password)
-  - [ ] Sample clients (2-3)
-  - [ ] Sample projects per client
-  - [ ] Sample tasks per project
-  - [ ] User-task assignments
-- [ ] 0.7 Setup shared backend utilities:
-  - [ ] `src/utils/Response.ts` - Standard response envelope per API doc
-  - [ ] `src/middleware/ErrorHandler.ts` - Global error handling
-- [ ] 0.8 Configure MantineProvider with RTL (`direction: 'rtl'`) in both frontends
-- [ ] 0.9 Setup TanStack Query provider in both frontends
-- [ ] 0.10 Create shared API client utility (`utils/ApiClient.ts`) in both frontends
+- [x] 0.2 Install missing dependencies:
+  - [x] `npm install bcrypt @types/bcrypt -w backend`
+  - [x] `npm install react-router-dom @types/react-router-dom -w frontend_user`
+  - [x] `npm install react-router-dom @types/react-router-dom -w frontend_admin`
+- [x] 0.3 Setup Docker Compose with PostgreSQL
+- [x] 0.4 Create `.env.example` with DATABASE_URL, JWT_SECRET, PORT
+- [ ] 0.5 Run initial migration: `npx prisma migrate dev --name init` (Ready - run when database is accessible)
+- [x] 0.6 Create seed script (`backend/prisma/seed.ts`):
+  - [x] Initial admin user (hashed password)
+  - [x] Sample clients (2-3)
+  - [x] Sample projects per client
+  - [x] Sample tasks per project
+  - [x] User-task assignments
+- [x] 0.7 Setup shared backend utilities:
+  - [x] `src/utils/Response.ts` - Standard response envelope per API doc
+  - [x] `src/middleware/ErrorHandler.ts` - Global error handling
+- [x] 0.8 Configure MantineProvider with RTL (`direction: 'rtl'`) in both frontends
+- [x] 0.9 Setup TanStack Query provider in both frontends
+- [x] 0.10 Create shared API client utility (`utils/ApiClient.ts`) in both frontends
 
 **Validation**: `npm run dev:all` works, database has seed data, both frontends show RTL Mantine UI
 
