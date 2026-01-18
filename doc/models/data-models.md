@@ -7,6 +7,7 @@ export type UserType = 'worker' | 'admin';
 export type TaskStatus = 'open' | 'closed';
 export type DailyAttendanceStatus = 'work' | 'sickness' | 'reserves' | 'dayOff' | 'halfDayOff';
 export type LocationStatus = 'office' | 'client' | 'home';
+export type ReportingType = 'duration' | 'startEnd';
 
 export interface User {
   id: number;
@@ -35,6 +36,7 @@ export interface Project {
   startDate: string; // YYYY-MM-DD
   endDate?: string | null; // YYYY-MM-DD | null
   description?: string | null;
+  reportingType: ReportingType; // duration | startEnd
   active: boolean;
   createdAt: string;
   updatedAt: string;

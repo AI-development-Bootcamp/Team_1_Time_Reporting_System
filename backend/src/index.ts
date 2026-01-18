@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/ErrorHandler';
+import projectsRouter from './routes/admin/Projects';
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Enregistrez les routes admin
+app.use('/api/admin/projects', projectsRouter);
 
 app.use(errorHandler);
 app.listen(port, () => {
