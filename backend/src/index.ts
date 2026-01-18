@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/ErrorHandler';
+import clientsRouter from './routes/admin/Clients'; 
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+
+app.use('/api/admin/clients', clientsRouter); 
 
 app.use(errorHandler);
 app.listen(port, () => {
