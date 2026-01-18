@@ -22,7 +22,7 @@ The architecture is a **Monorepo** consisting of three main services:
 * **Smart Time Tracking:** Manual entry + Live Timer (auto-stops at 23:59 via cron jobs).
 * **Absence Management:** Upload sickness/vacation documents (stored as secure binary `Bytes` in DB).
 * **Hierarchy Logic:** Complex management of Clients → Projects → Tasks.
-* **Month Locking:** Admins can lock past months to prevent retroactive editing.
+* **Location Tracking:** Track where work was done (office, client, home).
 * **RTL Support:** Fully localized Hebrew interface.
 
 ## Built With
@@ -63,23 +63,37 @@ To get a local copy up and running, follow these steps.
     npm install
     ```
 
-3.  **Setup Database (Docker)**
+3.  **Quick Setup (Recommended)**
+    
+    Run the automated setup script that handles everything:
     ```sh
-    docker-compose up -d
+    npm run setup
     ```
-
-4.  **Prisma Setup**
+    
+    This single command will:
+    - Start Docker Compose (PostgreSQL database)
+    - Wait for database to be ready
+    - Generate Prisma Client
+    - Run database migrations
+    - Seed the database with sample data
+    
+    **Alternative: Manual Setup**
+    
+    If you prefer to run steps manually:
     ```sh
+    # Start Docker Compose
+    docker-compose up -d
+    
+    # Setup Prisma (from backend directory)
     cd backend
-    # Run migrations to create tables
-    npx prisma migrate dev --name init
-    # Generate the Prisma Client
     npx prisma generate
+    npx prisma migrate dev --name init
+    npx prisma db seed
     ```
 
 ### Running the Project
 
-The root `package.json` includes scripts to run different service combinations:
+After running `npm run setup`, start the development servers:
 
 ```sh
 # Run EVERYTHING (Backend + User App + Admin App)
@@ -91,6 +105,29 @@ npm run dev:user
 # Run only Admin Environment
 npm run dev:admin
 ```
+
+**Note:** Make sure you've run `npm run setup` first to initialize the database and seed data.
+
+## Shutting Down
+
+When you're done working:
+
+1. **Stop the development servers**
+   - Press `Ctrl+C` in the terminal where `npm run dev:all` (or `dev:user`/`dev:admin`) is running
+   - This will stop all frontend and backend services
+
+2. **Stop Docker Compose (optional)**
+   ```sh
+   docker-compose down
+   ```
+   
+   **Note:** You can leave Docker running if you'll be working again soon. The database will persist data between sessions. Only run `docker-compose down` if you want to completely stop the database container.
+
+   To remove all data (including volumes):
+   ```sh
+   docker-compose down -v
+   ```
+   ⚠️ **Warning:** This will delete all database data!
 
 ## Environment Variables
 
@@ -126,8 +163,27 @@ This will create:
 │   └── tsconfig.json    # TypeScript configuration
 ├── frontend_user/       # React App: Reporting (TypeScript + Vite)
 ├── frontend_admin/      # React App: Management (TypeScript + Vite)
+├── shared/              # Shared code between frontends
+│   └── src/
+│       └── utils/       # Shared utilities (e.g., ApiClient)
 └── package.json         # Root config
 ```
+
+### Shared Code
+
+The `shared/` folder contains code that is used by both `frontend_user` and `frontend_admin` to avoid duplication. 
+
+**When you need to import shared utilities**, use the `@shared` alias:
+
+```typescript
+// Example: Importing the shared ApiClient
+import { apiClient, ApiResponse } from '@shared/utils/ApiClient';
+```
+
+**Important Notes:**
+- Each frontend uses its own `.env` file, so environment variables (like `VITE_API_URL`) are resolved per frontend
+- The `@shared` alias is configured in both `vite.config.ts` and `tsconfig.json` files
+- If you need to add new shared utilities, place them in `shared/src/` and import using `@shared/...`
 
 ## Key Features
 
@@ -141,7 +197,6 @@ This will create:
 ### Should Have (Important)
 - ⏱️ **Timer Functionality**: Timer with auto-stop at 23:59
 - 📎 **Absence Management**: Vacation/Sickness/Reserve reporting with file upload
-- 🔒 **Month Locking**: Admin capability to lock reporting for specific months
 - 📊 **Visual Dashboard**: Progress bar for daily 9-hour standard
 
 ## API Endpoints Overview
@@ -184,19 +239,15 @@ Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 
 ### Daily Attendance (Reporting)
 - `POST /api/attendance` - Create DailyAttendance record (manual/timer)
-- `GET /api/attendance/month-history?month=1&userId=2` - Get month history (returns array of DailyAttendance objects, uses current year)
+- `GET /api/attendance/month-history?month=1&userId=2` - Get month history (uses current year)
 - `PUT /api/attendance/:id` - Update DailyAttendance
-- `DELETE /api/attendance/:id` - Delete DailyAttendance
+- Note: No DELETE endpoint - records are edited, not deleted
 
 ### Project Time Logs
-- `POST /api/time-logs` - Create time log entry (duration in minutes)
+- `POST /api/time-logs` - Create time log entry (duration in minutes, location required)
 - `GET /api/time-logs?dailyAttendanceId=701` - List time logs for a day
 - `PUT /api/time-logs/:id` - Update time log
 - `DELETE /api/time-logs/:id` - Delete time log
-
-
-### Month Locking (Admin)
-- `PUT /api/admin/month-lock` - Lock/unlock a month
 
 ### Response Format
 All responses follow this structure:
@@ -205,7 +256,7 @@ All responses follow this structure:
 
 ### Role Permissions
 - **`worker`**: Can login, create/update own attendance & time logs, view own month history
-- **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, lock/unlock months, view other workers' data
+- **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, view other workers' data
 
 For complete documentation, see the [doc](./doc/) folder:
 - **Specification**: [doc/specs/specification.md](./doc/specs/specification.md) - Complete project specification
@@ -217,9 +268,11 @@ For complete documentation, see the [doc](./doc/) folder:
 
 ### Key Rules
 - **RTL Support**: All layouts support Hebrew (RTL)
-- **Soft Deletes**: Always filter for `isActive: true` in standard queries
+- **Soft Deletes**: Always filter for `active: true` in standard queries
 - **Validation**: Use Zod for all request validation
-- **File Uploads**: Only `.pdf`, `.jpg`, `.png` formats, max 5MB
+- **File Uploads**: Only `.pdf`, `.jpg`, `.png` formats, max 5MB, stored as Bytes in DB
+- **Location Required**: All time logs must specify location (office/client/home)
+- **No Deletion for DailyAttendance**: DailyAttendance records are edited, not deleted (ProjectTimeLogs can be deleted)
 
 ## Testing
 

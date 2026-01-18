@@ -6,6 +6,7 @@ TypeScript data models for the core entities in the system.
 export type UserType = 'worker' | 'admin';
 export type TaskStatus = 'open' | 'closed';
 export type DailyAttendanceStatus = 'work' | 'sickness' | 'reserves' | 'dayOff' | 'halfDayOff';
+export type LocationStatus = 'office' | 'client' | 'home';
 
 export interface User {
   id: number;
@@ -54,6 +55,7 @@ export interface Task {
 export interface TaskWorker {
   taskId: number;
   userId: number;
+  // Unique constraint: (taskId, userId) - ensures a user can only be assigned to a task once
 }
 
 export interface DailyAttendance {
@@ -63,7 +65,7 @@ export interface DailyAttendance {
   startTime: string; // In SQL: saved as TIME type
   endTime: string; // In SQL: saved as TIME type
   status: DailyAttendanceStatus;
-  documentUrl?: string | null; // The form goes here
+  document?: Uint8Array | null; // Binary file stored as Bytes in DB
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +75,7 @@ export interface ProjectTimeLogs {
   dailyAttendanceId: number;
   taskId: number;
   duration: number; // in minutes
+  location: LocationStatus; // Where the work was done: office, client, or home
   description?: string | null;
   createdAt: string;
   updatedAt: string;

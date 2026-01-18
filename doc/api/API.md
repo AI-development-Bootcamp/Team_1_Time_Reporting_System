@@ -60,9 +60,11 @@ Error:
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
 - **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
-- **TaskWorker**: `{ id, taskId, userId }`
-- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, documentUrl?, createdAt, updatedAt }`
-- **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, description?, createdAt, updatedAt }`
+- **TaskWorker**: `{ taskId, userId }`
+- **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, document?, createdAt, updatedAt }`
+- **ProjectTimeLogs**: `{ id, dailyAttendanceId, taskId, duration, location, description?, createdAt, updatedAt }`
+
+> **Location**: `office` | `client` | `home` - Where the work was done
 
 ---
 
@@ -414,10 +416,18 @@ Assign worker to task.
 { 
   "success": true, 
   "data": { 
-    "id": 999,
     "taskId": 55,
     "userId": 2
   } 
+}
+```
+
+### 409 Conflict
+Returns when attempting to assign a user to a task they are already assigned to (unique constraint violation).
+```json
+{
+  "success": false,
+  "error": "User is already assigned to this task"
 }
 ```
 
@@ -495,7 +505,7 @@ Returns month history of DailyAttendance (for UI accordion). Uses current year.
       "startTime": "2026-01-14T09:00:00.000Z",
       "endTime": "2026-01-14T17:30:00.000Z",
       "status": "work",
-      "documentUrl": null,
+      "document": null,
       "createdAt": "2026-01-14T18:00:00.000Z",
       "updatedAt": "2026-01-14T18:00:00.000Z"
     }
@@ -511,8 +521,7 @@ Update an existing DailyAttendance record.
 ### Errors
 - 409 `MONTH_LOCKED`
 
-## DELETE `/attendance/:id`
-Delete a DailyAttendance record (implementation choice: hard delete or soft delete — define in backend).
+> **Note**: No DELETE endpoint for DailyAttendance. Records are edited, not deleted.
 
 ---
 
@@ -532,9 +541,12 @@ Create a time log entry for a DailyAttendance.
   "dailyAttendanceId": 701,
   "taskId": 55,
   "duration": 120,
+  "location": "office",
   "description": "Worked on UI"
 }
 ```
+
+> **location**: Required. One of: `office`, `client`, `home`
 
 ### 201 Created
 ```json
@@ -561,6 +573,7 @@ List time logs for a specific day.
       "dailyAttendanceId": 701,
       "taskId": 55,
       "duration": 120,
+      "location": "office",
       "description": "Worked on UI",
       "createdAt": "2026-01-14T18:10:00.000Z",
       "updatedAt": "2026-01-14T18:10:00.000Z"
@@ -577,27 +590,6 @@ Delete time log.
 
 ---
 
-# 9) Month Locking (Admin)
-
-## PUT `/admin/month-lock`
-Lock/unlock a month.
-
-**Auth:** Required  
-**Role:** `admin`
-
-### Request Body
-```json
-{ "year": 2026, "month": 1, "isLocked": true }
-```
-
-### 200 OK
-```json
-{
-  "success": true,
-  "data": { "year": 2026, "month": 1, "isLocked": true }
-}
-```
-
 ---
 
 # Appendix A — Role Rules Summary
@@ -610,7 +602,6 @@ Lock/unlock a month.
   - Everything worker can do (as employee)
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
-  - Lock/unlock months
   - Can view other users data by specifying `userId` query param
 
 ---
@@ -620,4 +611,10 @@ Lock/unlock a month.
 - **Soft Delete Users:** `active=false` instead of deleting.
 - **Time Validation:** block when `endTime < startTime`.
 - **Overlaps:** allowed in ProjectTimeLogs (different tasks).
-- **Month Lock:** if locked, any create/update/delete for that month should return `409 MONTH_LOCKED`.
+- **No Deletion for DailyAttendance:** DailyAttendance records are edited, not deleted. ProjectTimeLogs can be deleted.
+- **Location Required:** All ProjectTimeLogs must specify location (office/client/home).
+- **File Storage:** Documents stored as Bytes (BYTEA) in database.
+- **Caching:** In-memory cache for project selector (no Redis for MVP).
+- **Timer Storage:** Memory-only for running timers.
+- **Timer Auto-Stop:** Uses `work` status when timer auto-stops at 23:59.
+- **Locked Month UI:** Edit button is disabled when month is locked.
