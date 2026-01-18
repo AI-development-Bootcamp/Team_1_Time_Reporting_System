@@ -33,9 +33,8 @@ To create a unified, transparent standard for reporting hours across the organiz
 - [ ] **Month History Report**: View month history report with detailed UI (see UI Specifications below).
 
 #### Should Have (Important)
-- [ ] **Timer Functionality**: Timer for time tracking with auto-stop at 23:59. If left running, it saves as "Incomplete".
+- [ ] **Timer Functionality**: Timer for time tracking with auto-stop at 23:59. If left running, it saves with `work` status.
 - [ ] **Absence Management**: Reporting Vacation/Sickness/Reserve via DailyAttendance status with Binary File Upload (stored as Bytes in DB via Prisma).
-- [ ] **Month Locking**: Admin capability to lock reporting for specific months to prevent retroactive editing.
 - [ ] **Visual Dashboard**: Progress bar for daily 9-hour standard.
 - [ ] **Validations**: Alerts for <9h or >9h daily.
 - [ ] **Overlapping Reports**: Allow reporting different tasks for the same time window (e.g., working on 2 projects simultaneously). Multiple time entries can be saved per day, including overlapping time windows.
@@ -406,7 +405,6 @@ Assign worker to task.
 { 
   "success": true, 
   "data": { 
-    "id": 999,
     "taskId": 55,
     "userId": 2
   } 
@@ -445,7 +443,6 @@ Create a DailyAttendance record (manual entry or timer stop).
 **Validations:**
 - Block if `endTime < startTime`
 - Minimum precision: 1 minute
-- If month is locked → block
 
 **201 Created Response:**
 ```json
@@ -457,7 +454,6 @@ Create a DailyAttendance record (manual entry or timer stop).
 
 **Errors:**
 - 400 `VALIDATION_ERROR`
-- 409 `MONTH_LOCKED`
 
 **GET `/api/attendance/month-history?month=1&userId=2`**
 Returns month history of DailyAttendance (for UI accordion). Uses current year.
@@ -481,7 +477,7 @@ Returns month history of DailyAttendance (for UI accordion). Uses current year.
       "startTime": "2026-01-14T09:00:00.000Z",
       "endTime": "2026-01-14T17:30:00.000Z",
       "status": "work",
-      "documentUrl": null,
+      "document": null,
       "createdAt": "2026-01-14T18:00:00.000Z",
       "updatedAt": "2026-01-14T18:00:00.000Z"
     }
@@ -492,11 +488,7 @@ Returns month history of DailyAttendance (for UI accordion). Uses current year.
 **PUT `/api/attendance/:id`**
 Update an existing DailyAttendance record.
 
-**Errors:**
-- 409 `MONTH_LOCKED`
-
-**DELETE `/api/attendance/:id`**
-Delete a DailyAttendance record (implementation choice: hard delete or soft delete — define in backend).
+> **Note**: No DELETE endpoint for DailyAttendance. Records are edited, not deleted.
 
 #### 8. Project Time Logs (Per-day entries per task)
 
@@ -514,9 +506,12 @@ Create a time log entry for a DailyAttendance.
   "dailyAttendanceId": 701,
   "taskId": 55,
   "duration": 120,
+  "location": "office",
   "description": "Worked on UI"
 }
 ```
+
+> **location**: Required. One of: `office`, `client`, `home`
 
 **201 Created Response:**
 ```json
@@ -526,7 +521,6 @@ Create a time log entry for a DailyAttendance.
 **Errors:**
 - 400 `VALIDATION_ERROR`
 - 404 `NOT_FOUND` (attendance or task not found)
-- 409 `MONTH_LOCKED` (if the day/month is locked)
 
 **GET `/api/time-logs?dailyAttendanceId=701`**
 List time logs for a specific day.
@@ -536,27 +530,6 @@ Update time log.
 
 **DELETE `/api/time-logs/:id`**
 Delete time log.
-
-#### 9. Month Locking (Admin)
-
-**PUT `/api/admin/month-lock`**
-Lock/unlock a month.
-
-**Auth:** Required  
-**Role:** `admin`
-
-**Request Body:**
-```json
-{ "year": 2026, "month": 1, "isLocked": true }
-```
-
-**200 OK Response:**
-```json
-{
-  "success": true,
-  "data": { "year": 2026, "month": 1, "isLocked": true }
-}
-```
 
 #### API Role Rules Summary
 
@@ -569,7 +542,6 @@ Lock/unlock a month.
   - Everything worker can do (as employee)
   - Admin CRUD: users/clients/projects/tasks
   - Manage assignments
-  - Lock/unlock months
   - Can view other users data by specifying `userId` query param
 
 ### TypeScript Data Models (API Contracts)
@@ -580,6 +552,7 @@ These TypeScript interfaces represent the data models used in API requests/respo
 export type UserType = 'worker' | 'admin';
 export type TaskStatus = 'open' | 'closed';
 export type DailyAttendanceStatus = 'work' | 'sickness' | 'reserves' | 'dayOff' | 'halfDayOff';
+export type LocationStatus = 'office' | 'client' | 'home';
 
 export interface User {
   id: number;
@@ -638,7 +611,7 @@ export interface DailyAttendance {
   startTime: string; // ISO Time. In SQL: saved as TIME type
   endTime: string; // ISO Time. In SQL: saved as TIME type
   status: DailyAttendanceStatus;
-  documentUrl?: string | null; // The form goes here
+  document?: Bytes | null; // Binary file storage (PDF, JPG, PNG up to 5MB)
   createdAt: string;
   updatedAt: string;
 }
@@ -648,6 +621,7 @@ export interface ProjectTimeLogs {
   dailyAttendanceId: number;
   taskId: number;
   duration: number; // in minutes
+  location: LocationStatus; // Where the work was done: office, client, or home
   description?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -682,6 +656,12 @@ enum DailyAttendanceStatus {
   reserves
   dayOff
   halfDayOff
+}
+
+enum LocationStatus {
+  office
+  client
+  home
 }
 
 model User {
@@ -744,14 +724,13 @@ model Task {
 }
 
 model TaskWorker {
-  id         BigInt   @id @default(autoincrement())
   taskId     BigInt
   userId     BigInt
   
   task   Task   @relation(fields: [taskId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
   
-  @@unique([taskId, userId])
+  @@id([taskId, userId])
 }
 
 model DailyAttendance {
@@ -761,7 +740,7 @@ model DailyAttendance {
   startTime   DateTime?             @db.Time // In SQL: TIME type
   endTime     DateTime?             @db.Time // In SQL: TIME type
   status      DailyAttendanceStatus
-  documentUrl String?               @db.Text // URL or path to document
+  document    Bytes?                // Binary file storage (PDF, JPG, PNG up to 5MB)
   createdAt   DateTime              @default(now()) @db.Timestamptz
   updatedAt   DateTime              @updatedAt @db.Timestamptz
   
@@ -770,13 +749,14 @@ model DailyAttendance {
 }
 
 model ProjectTimeLogs {
-  id                BigInt   @id @default(autoincrement())
+  id                BigInt         @id @default(autoincrement())
   dailyAttendanceId BigInt
   taskId            BigInt
-  durationMin       Int      // Duration in minutes
-  description       String?  @db.Text
-  createdAt         DateTime @default(now()) @db.Timestamptz
-  updatedAt         DateTime @updatedAt @db.Timestamptz
+  durationMin       Int            // Duration in minutes
+  location          LocationStatus // Where the work was done: office, client, or home
+  description       String?        @db.Text
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
   
   dailyAttendance   DailyAttendance @relation(fields: [dailyAttendanceId], references: [id])
   task              Task            @relation(fields: [taskId], references: [id])
@@ -787,8 +767,8 @@ model ProjectTimeLogs {
 - All models use `BigInt` with `@default(autoincrement())` for primary keys (matching PostgreSQL BIGSERIAL).
 - Soft deletes implemented via `active` boolean field (default: true).
 - User-Task assignments stored as `TaskWorker` join table (many-to-many relationship) instead of array on Task.
-- DailyAttendance stores daily records with optional start/end times (TIME type) and `documentUrl` for file uploads (used for absence documents).
-- ProjectTimeLogs stores task-based time entries with duration in minutes (not start/end times).
+- DailyAttendance stores daily records with optional start/end times (TIME type) and `document` for file uploads (stored as Bytes in DB).
+- ProjectTimeLogs stores task-based time entries with duration in minutes and location (office/client/home).
 - All timestamp fields use `@db.Timestamptz` to match PostgreSQL TIMESTAMPTZ.
 - Date fields use `@db.Date` to match PostgreSQL DATE.
 - Time fields use `@db.Time` to match PostgreSQL TIME.
@@ -802,10 +782,10 @@ model ProjectTimeLogs {
 - **Password Reset**: Admin sets new password directly (no reset link flow).
 
 #### Time Reporting Structure
-- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status, documentUrl).
+- **Daily Attendance**: One DailyAttendance record per user per day (stores date, startTime, endTime, status, document).
 - **Project Time Logs**: Multiple ProjectTimeLogs records per DailyAttendance (stores taskId, duration in minutes).
 - **Time Storage**: 
-  - DailyAttendance stores overall start/end times for the day (TIME type, nullable) and optional documentUrl for file uploads.
+  - DailyAttendance stores overall start/end times for the day (TIME type, nullable) and optional document for file uploads (Bytes).
   - ProjectTimeLogs stores duration in minutes per task (not start/end times per task).
 - **Minimum Unit**: 1 minute precision.
 - **Overlapping Entries**: Allowed for different tasks (e.g., working on 2 projects simultaneously via multiple ProjectTimeLogs).
@@ -821,9 +801,9 @@ model ProjectTimeLogs {
 #### File Upload (Absences via DailyAttendance)
 - **Allowed Formats**: `.pdf`, `.jpg`, `.png` only.
 - **Maximum Size**: 5MB.
-- **Storage**: Implementation choice - can store as file path/URL in `documentUrl` (TEXT field) or as binary in separate storage system.
+- **Storage**: Binary file stored as `Bytes` in PostgreSQL (BYTEA) via Prisma.
 - **Validation**: Block uploads that don't meet format/size requirements.
-- **Note**: Absence functionality is handled via DailyAttendance records with absence-related statuses (sickness, reserves, dayOff, halfDayOff) and `documentUrl` for file reference.
+- **Note**: Absence functionality is handled via DailyAttendance records with absence-related statuses (sickness, reserves, dayOff, halfDayOff) and `document` field for binary file storage.
 
 ### UI Specifications
 
@@ -919,7 +899,6 @@ model ProjectTimeLogs {
 ### Phase 4: Integration
 - [ ] **TASK-030**: Connect Auth & JWT handling on both Frontends.
 - [ ] **TASK-031**: Integrate File Upload with Backend.
-- [ ] **TASK-032**: Enforce "Month Lock" logic on UI (Disable editing) - Should Have.
 
 ### Phase 5: Polish
 - [ ] **TASK-040**: Hebrew Translations & RTL Layout fixes.
