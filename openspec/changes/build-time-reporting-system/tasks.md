@@ -186,125 +186,143 @@ Current `backend/prisma/schema.prisma` issues:
 
 #### TASK-M2-010: Attendance Backend (Per `doc/api/API.md` Section 7)
 - [ ] Create `backend/src/routes/Attendance.ts`
-- [ ] Implement `POST /api/attendance`:
-  - [ ] Zod schema: `{ date, startTime, endTime, status }`
-  - [ ] Validate: `endTime > startTime` (return 400 if not)
+- [ ] Wire Attendance routes in `backend/src/index.ts`
+- [ ] Add Zod schemas for create/update/query:
+  - [ ] Body: `{ date, startTime, endTime, status }`
+  - [ ] Query: `{ month, userId }`
+- [ ] Implement `POST /api/attendance` basics:
+  - [ ] Validate: `endTime > startTime` when both provided
   - [ ] Create DailyAttendance record
   - [ ] Return: `{ success: true, data: { id } }`
+- [ ] Enforce frontend validations on backend (create):
+  - [ ] Required fields present (date, status, times for work)
+  - [ ] No overlap with existing attendance ranges on same date
+  - [ ] Return `VALIDATION_ERROR` on failure
+- [ ] Add no-overlap validation on create:
+  - [ ] Block if attendance time range overlaps another record on same date
 - [ ] Implement `GET /api/attendance/month-history`:
   - [ ] Query params: `month` (1-12, required), `userId` (required)
   - [ ] Use current year automatically
   - [ ] Return array of DailyAttendance objects
-  - [ ] Response: `{ success: true, data: [DailyAttendance, ...] }`
-- [ ] Implement `PUT /api/attendance/:id`:
+- [ ] Implement `PUT /api/attendance/:id` basics:
   - [ ] Update DailyAttendance record
+  - [ ] Re-run no-overlap validation (exclude current record)
+- [ ] Enforce frontend validations on backend (update):
+  - [ ] `endTime > startTime` when both provided
+  - [ ] Total ProjectTimeLogs minutes >= attendance duration
+  - [ ] Return `VALIDATION_ERROR` on failure
+- [ ] Add duration-vs-logs validation helper:
+  - [ ] When attendance has start/end, ensure total ProjectTimeLogs minutes >= attendance duration
+  - [ ] Use on attendance update when time range changes
+- [ ] Add backend save workflow rules:
+  - [ ] Expose a helper to validate overlap + duration before writes
+  - [ ] Ensure attendance create + logs creation can be performed sequentially without partial saves
 - [ ] **Note**: No DELETE endpoint - records are edited, not deleted
-- **Validation**: Attendance CRUD works, time validation blocks invalid entries
+- **Validation**: Attendance CRUD works, overlap blocked, duration-vs-logs enforced
 
 #### TASK-M2-011: Time Logs Backend (Per `doc/api/API.md` Section 8)
 - [ ] Create `backend/src/routes/TimeLogs.ts`
-- [ ] Implement `POST /api/time-logs`:
-  - [ ] Zod schema: `{ dailyAttendanceId, taskId, duration, location, description? }`
-  - [ ] Note: `duration` is in minutes (map to `durationMin` in DB)
-  - [ ] Note: `location` is required (office/client/home)
+- [ ] Wire TimeLogs routes in `backend/src/index.ts`
+- [ ] Add Zod schemas for create/update/query:
+  - [ ] Body: `{ dailyAttendanceId, taskId, duration, location, description? }`
+  - [ ] Query: `{ dailyAttendanceId }`
+- [ ] Implement `POST /api/time-logs` basics:
+  - [ ] Map `duration` (minutes) → `durationMin`
+  - [ ] Enforce required `location` (office/client/home)
   - [ ] Create ProjectTimeLogs record
   - [ ] Return: `{ success: true, data: { id } }`
-- [ ] Implement `GET /api/time-logs?dailyAttendanceId=X`:
-  - [ ] Filter by dailyAttendanceId
-  - [ ] Return array of ProjectTimeLogs (include location)
-- [ ] Implement `PUT /api/time-logs/:id`:
-  - [ ] Update record
-- [ ] Implement `DELETE /api/time-logs/:id`:
-  - [ ] Delete ProjectTimeLogs record
-- **Validation**: Time logs work, multiple entries per day allowed, location required
+- [ ] Enforce frontend validations on backend:
+  - [ ] `duration` is positive integer minutes
+  - [ ] Required fields present (dailyAttendanceId, taskId, location)
+  - [ ] Return `VALIDATION_ERROR` on failure
+- [ ] Validate attendance exists before creating time log
+- [ ] Implement `GET /api/time-logs?dailyAttendanceId=X`
+- [ ] Implement `PUT /api/time-logs/:id`
+- [ ] Implement `DELETE /api/time-logs/:id`
+- [ ] Re-check attendance duration rule after log create/update/delete:
+  - [ ] Block if total logs would become < attendance duration
+- [ ] Add backend guard to prevent partial saves in combined flow:
+  - [ ] If a log mutation fails, return error without leaving inconsistent totals
+- **Validation**: Time logs work, multiple entries allowed, location required
 
 #### TASK-M2-012: Project Selector Backend
 - [ ] Create `backend/src/services/ProjectSelector.ts`
+- [ ] Define grouped response shape (Client → Project → Task) with ids/names
 - [ ] Implement `getProjectsForUser(userId)`:
-  - [ ] Get user's assigned tasks via TaskWorker join table
-  - [ ] Get projects and clients for those tasks
-  - [ ] Group by Client → Project → Task structure
-- [ ] Implement usage frequency calculation:
+  - [ ] Get assigned tasks via TaskWorker
+  - [ ] Join projects + clients
+  - [ ] Group by Client → Project → Task
+- [ ] Implement usage frequency:
   - [ ] Query ProjectTimeLogs for last 7 days per user
-  - [ ] Count usage per project
-  - [ ] Sort by frequency (highest first)
-- [ ] Create `backend/src/services/Cache.ts`:
-  - [ ] In-memory cache with TTL (5 minutes)
-  - [ ] Cache key: userId
-  - [ ] Cache value: grouped, sorted project list
+  - [ ] Count by project, sort highest first
+- [ ] Create `backend/src/services/Cache.ts` (TTL 5 minutes)
+- [ ] Create `backend/src/routes/Projects.ts` for selector endpoint
+- [ ] Wire Projects routes in `backend/src/index.ts`
 - [ ] Implement `GET /api/projects/selector`:
-  - [ ] Check cache first
-  - [ ] If miss, calculate and cache
-  - [ ] Return grouped, sorted project list
+  - [ ] Read cache → compute on miss → cache response
 - [ ] Implement cache refresh triggers:
   - [ ] On POST /api/admin/assignments
   - [ ] On POST /api/attendance
-- **Validation**: Returns grouped, sorted projects, response < 300ms
+- **Validation**: Grouped, sorted projects return quickly (<300ms)
 
 #### TASK-M2-020: Daily Report Entry UI (User App)
 - [ ] Create `frontend_user/src/components/DailyReport/DailyReportEntry.tsx`
-- [ ] Implement date selector:
-  - [ ] Mantine DatePicker
-  - [ ] Default to today (use Day.js)
-- [ ] Create `components/DailyReport/ProjectReport.tsx`:
-  - [ ] Project selector integration (cascading: Client → Project → Task)
-  - [ ] Time pickers (startTime, endTime)
-  - [ ] Location of Work: Radio/Select (office, client, home) - **REQUIRED**
-  - [ ] Description textarea (optional)
-  - [ ] Edit button (no delete - records are edited only)
+- [ ] Match mobile Figma layout and spacing for daily report
+- [ ] Build header + date picker (default today via Day.js)
+- [ ] Add daily attendance time inputs (entrance/exit)
+- [ ] Add "save" disabled state when no project reports
+- [ ] Create `components/DailyReport/ProjectReport.tsx` layout
+- [ ] Add required location selector (office/client/home)
+- [ ] Add time inputs for project report (start/end time)
+- [ ] Add description input (optional)
+- [ ] Add "Add Project" to append report rows
+- [ ] Add edit flow for existing report row (no delete)
+- [ ] Implement client+project+task selector modal flow:
+  - [ ] Project list grouped by client (matches UI)
+  - [ ] Task list filtered by project
+  - [ ] Location modal
+- [ ] Add error and empty states for selector fetch (per UI)
+- [ ] Add validation rules:
+  - [ ] Daily endTime > startTime
+  - [ ] Each project report has required fields
+  - [ ] Sum of project durations >= daily attendance duration
+- [ ] Implement save flow (single action):
+  - [ ] Run all validations (overlap + duration + required)
+  - [ ] Create DailyAttendance first and use returned id
+  - [ ] Create ProjectTimeLogs for that attendance
+  - [ ] If any step fails, show error state and do not partially save
 - [ ] Create `hooks/useCreateAttendance.ts`:
   - [ ] `useMutation` for POST /api/attendance
   - [ ] `useMutation` for POST /api/time-logs
   - [ ] Invalidate queries after success
-- [ ] Support multiple project entries per day:
-  - [ ] "Add Project" button
-  - [ ] List of ProjectReport components
-- [ ] Implement validation:
-  - [ ] endTime > startTime (per spec)
-  - [ ] Required fields
-- **Validation**: User can submit time entries, validation works
+- [ ] Add success/error notifications (per UI)
+- **Validation**: User can submit daily report with project logs
 
 #### TASK-M2-021: Project Selector UI (User App)
 - [ ] Create `frontend_user/src/components/ProjectSelector/SmartProjectSelector.tsx`
-- [ ] Create `hooks/useProjectSelector.ts`:
-  - [ ] `useQuery` for GET /api/projects/selector
-- [ ] Implement grouped display:
-  - [ ] Client headers
-  - [ ] Projects under each client
-  - [ ] Tasks under each project
-  - [ ] Sorted by frequency
-- [ ] Implement cascading dropdowns:
-  - [ ] Client selection → filter projects
-  - [ ] Project selection → filter tasks
-  - [ ] Only show tasks assigned to user
-- [ ] Add loading/error states
-- **Validation**: Selector shows grouped, sorted projects
+- [ ] Match mobile Figma layout and modal flows
+- [ ] Create `hooks/useProjectSelector.ts` with `useQuery`
+- [ ] Render grouped modal list (client headers, projects list)
+- [ ] Render tasks modal for selected project
+- [ ] Render location modal (office/home/client)
+- [ ] Add loading skeletons and error state screen
+- [ ] Add empty state when user has no assignments
+- **Validation**: Selector matches Figma flow and states
 
 #### TASK-M2-022: Month History UI (User App)
 - [ ] Create `frontend_user/src/components/MonthHistory/MonthHistoryReport.tsx`
-- [ ] Implement month selector:
-  - [ ] Left/right navigation arrows
-  - [ ] Display: "October 2026"
-  - [ ] Uses current year only
-- [ ] Create `hooks/useMonthHistory.ts`:
-  - [ ] `useQuery` for GET /api/attendance/month-history
-- [ ] Implement accordion list (Mantine Accordion):
-  - [ ] Days in descending order (newest first)
-- [ ] Implement status badges (per UI spec):
-  - [ ] 🔴 Red: Missing/no hours
-  - [ ] 🟢 Green: 9h (full quota)
-  - [ ] 🟡 Yellow: <9h (partial)
-  - [ ] 🔵 Blue: Sick/Weekend
-- [ ] Collapsed state:
-  - [ ] Date (e.g., "16/01/26, Thu")
-  - [ ] Icon (briefcase for work, calendar for absence)
-  - [ ] Status badge
-- [ ] Expanded state:
-  - [ ] List of time entries
-  - [ ] Entry details: time range, client, project, duration
-  - [ ] Edit button (pencil icon)
-- [ ] "Add Report" button per day
-- **Validation**: Month history displays correctly, badges work
+- [ ] Match mobile Figma layout for list and cards
+- [ ] Add month navigation header (left/right + month label)
+- [ ] Create `hooks/useMonthHistory.ts` with `useQuery`
+- [ ] Render accordion by date (descending)
+- [ ] Show multiple DailyAttendance cards per date
+- [ ] Render time logs under each DailyAttendance
+- [ ] Add status badge rules (missing/full/partial/sick-weekend)
+- [ ] Add "Add Report" per date
+- [ ] Add edit button per DailyAttendance (opens daily report entry)
+- [ ] Add empty state for no data
+- [ ] Add error state for fetch failure
+- **Validation**: Month history matches expanded card behavior
 
 ---
 
