@@ -218,6 +218,12 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Expose a helper to validate overlap + duration before writes
   - [ ] Ensure attendance create + logs creation can be performed sequentially without partial saves
 - [ ] **Note**: No DELETE endpoint - records are edited, not deleted
+- [ ] Tests (backend):
+  - [ ] Unit: overlap validation, duration calculation, query parsing
+  - [ ] Integration: create/update attendance with valid/invalid times
+  - [ ] Integration: overlap rejection on same date
+  - [ ] Integration: duration-vs-logs rejection on update
+- **Coverage Target**: ≥60% for Attendance route + helpers
 - **Validation**: Attendance CRUD works, overlap blocked, duration-vs-logs enforced
 
 #### TASK-M2-011: Time Logs Backend (Per `doc/api/API.md` Section 8)
@@ -243,6 +249,11 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Block if total logs would become < attendance duration
 - [ ] Add backend guard to prevent partial saves in combined flow:
   - [ ] If a log mutation fails, return error without leaving inconsistent totals
+- [ ] Tests (backend):
+  - [ ] Unit: duration mapping and validation, location validation
+  - [ ] Integration: create/update/delete time logs
+  - [ ] Integration: duration-vs-logs rejection on delete/update
+- **Coverage Target**: ≥60% for TimeLogs route + helpers
 - **Validation**: Time logs work, multiple entries allowed, location required
 
 #### TASK-M2-012: Project Selector Backend
@@ -263,6 +274,11 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Implement cache refresh triggers:
   - [ ] On POST /api/admin/assignments
   - [ ] On POST /api/attendance
+- [ ] Tests (backend):
+  - [ ] Unit: grouping by client/project/task
+  - [ ] Unit: frequency ordering from last 7 days
+  - [ ] Integration: selector response shape and ordering
+- **Coverage Target**: ≥60% for ProjectSelector + cache
 - **Validation**: Grouped, sorted projects return quickly (<300ms)
 
 #### TASK-M2-020: Daily Report Entry UI (User App)
@@ -296,6 +312,11 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] `useMutation` for POST /api/time-logs
   - [ ] Invalidate queries after success
 - [ ] Add success/error notifications (per UI)
+- [ ] Tests (frontend):
+  - [ ] Unit: validation logic (required, duration sum, overlap client-side)
+  - [ ] Component: save flow triggers attendance then logs
+  - [ ] Component: error states render correctly
+- **Coverage Target**: ≥60% for DailyReport components + hooks
 - **Validation**: User can submit daily report with project logs
 
 #### TASK-M2-021: Project Selector UI (User App)
@@ -307,6 +328,11 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Render location modal (office/home/client)
 - [ ] Add loading skeletons and error state screen
 - [ ] Add empty state when user has no assignments
+- [ ] Tests (frontend):
+  - [ ] Component: grouped list renders by client
+  - [ ] Component: task modal filters by project
+  - [ ] Component: loading/error/empty states
+- **Coverage Target**: ≥60% for ProjectSelector components + hooks
 - **Validation**: Selector matches Figma flow and states
 
 #### TASK-M2-022: Month History UI (User App)
@@ -322,7 +348,24 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Add edit button per DailyAttendance (opens daily report entry)
 - [ ] Add empty state for no data
 - [ ] Add error state for fetch failure
+- [ ] Tests (frontend):
+  - [ ] Component: renders multiple attendances per date
+  - [ ] Component: status badges by total hours/status
+  - [ ] Component: expand/collapse and edit/add actions
+- **Coverage Target**: ≥60% for MonthHistory components + hooks
 - **Validation**: Month history matches expanded card behavior
+
+#### TASK-M2-090: Testing (Per `TESTING_GUIDE.md`)
+- [ ] Add unit tests colocated with new backend utilities/services
+  - [ ] Name tests as `[filename].test.ts`
+- [ ] Add unit tests for new frontend hooks/components
+  - [ ] Name tests as `[filename].test.tsx`
+- [ ] Add integration tests for Member 2 backend flows:
+  - [ ] Attendance create/update validations
+  - [ ] Time logs create/update/delete validations
+  - [ ] Project selector response shape and ordering
+- [ ] Place integration tests under `backend/tests/integration/`
+- **Validation**: Tests follow the naming/placement format in `TESTING_GUIDE.md`
 
 ---
 
