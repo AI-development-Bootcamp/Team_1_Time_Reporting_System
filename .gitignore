@@ -30,4 +30,4 @@ mcp-trello-config.json
 real_tasks.md
 tasks_trello.md
 test-trello-connection.js
-sync-tasks-to-trello.js
+/scripts/sync-tasks-to-trello.js
