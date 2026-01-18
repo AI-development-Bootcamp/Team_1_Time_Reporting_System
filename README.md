@@ -163,8 +163,27 @@ This will create:
 │   └── tsconfig.json    # TypeScript configuration
 ├── frontend_user/       # React App: Reporting (TypeScript + Vite)
 ├── frontend_admin/      # React App: Management (TypeScript + Vite)
+├── shared/              # Shared code between frontends
+│   └── src/
+│       └── utils/       # Shared utilities (e.g., ApiClient)
 └── package.json         # Root config
 ```
+
+### Shared Code
+
+The `shared/` folder contains code that is used by both `frontend_user` and `frontend_admin` to avoid duplication. 
+
+**When you need to import shared utilities**, use the `@shared` alias:
+
+```typescript
+// Example: Importing the shared ApiClient
+import { apiClient, ApiResponse } from '@shared/utils/ApiClient';
+```
+
+**Important Notes:**
+- Each frontend uses its own `.env` file, so environment variables (like `VITE_API_URL`) are resolved per frontend
+- The `@shared` alias is configured in both `vite.config.ts` and `tsconfig.json` files
+- If you need to add new shared utilities, place them in `shared/src/` and import using `@shared/...`
 
 ## Key Features
 
