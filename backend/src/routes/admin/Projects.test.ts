@@ -591,5 +591,71 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
+
+    it('should return 400 for invalid date - February 30', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-02-30', // Invalid date (February doesn't have 30 days)
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid date - month 13', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-13-01', // Invalid month
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid date - day 45', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-01-45', // Invalid day
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
   });
 });

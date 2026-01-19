@@ -29,6 +29,48 @@ export const bigIntIdSchema = z
 export const optionalBigIntIdSchema = bigIntIdSchema.optional();
 
 /**
+ * Validates that a date string represents a valid date
+ * @param dateString - Date string in YYYY-MM-DD format
+ * @returns true if the date is valid, false otherwise
+ */
+export function isValidDateString(dateString: string): boolean {
+  const [year, month, day] = dateString.split('-').map(Number);
+  
+  // Basic range checks
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1 || year > 9999) return false;
+  
+  // Create date at UTC and check if it's valid
+  const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  
+  // Check if the date components match (handles invalid dates like 2026-02-30)
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+/**
+ * Zod schema for date strings in YYYY-MM-DD format with validation
+ */
+export const dateStringSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+  .refine(
+    (val) => isValidDateString(val),
+    {
+      message: 'Invalid date. Please provide a valid date (e.g., 2026-02-28, not 2026-02-30)',
+    }
+  );
+
+/**
+ * Zod schema for optional date strings with validation
+ */
+export const optionalDateStringSchema = dateStringSchema.optional().nullable();
+
+/**
  * Converts a date string in YYYY-MM-DD format to a Date object at midnight UTC
  * This ensures consistent timezone handling regardless of server timezone
  * 

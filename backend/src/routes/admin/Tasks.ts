@@ -3,7 +3,7 @@ import { PrismaClient, TaskStatus } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
-import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema, parseDateString } from '../../utils/routeUtils';
+import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema, parseDateString, optionalDateStringSchema } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -12,16 +12,8 @@ const prisma = new PrismaClient();
 const createTaskSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   projectId: bigIntIdSchema,
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
-    .optional()
-    .nullable(),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format')
-    .optional()
-    .nullable(),
+  startDate: optionalDateStringSchema,
+  endDate: optionalDateStringSchema,
   description: z.string().optional(),
   status: z.enum(['open', 'closed']).default('open'),
 });
@@ -29,8 +21,8 @@ const createTaskSchema = z.object({
 const updateTaskSchema = z.object({
   name: z.string().min(1).optional(),
   projectId: optionalBigIntIdSchema,
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  startDate: optionalDateStringSchema,
+  endDate: optionalDateStringSchema,
   description: z.string().nullable().optional(),
   status: z.enum(['open', 'closed']).optional(),
 });

@@ -19,10 +19,13 @@ describe('Projects API Integration Tests', () => {
   beforeAll(async () => {
     await prisma.$connect();
 
+    // Use more unique identifiers to avoid conflicts
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
     // Create test client
     const testClient = await prisma.client.create({
       data: {
-        name: `Integration Test Client ${Date.now()}`,
+        name: `Integration Test Client ${uniqueId}`,
         description: 'Test client for project integration tests',
       },
     });
@@ -31,8 +34,8 @@ describe('Projects API Integration Tests', () => {
     // Create test user (project manager)
     const testUser = await prisma.user.create({
       data: {
-        name: `Test Manager ${Date.now()}`,
-        mail: `testmanager${Date.now()}@test.com`,
+        name: `Test Manager ${uniqueId}`,
+        mail: `testmanager-${uniqueId}@test.com`,
         password: 'hashedpassword',
         userType: 'admin',
       },

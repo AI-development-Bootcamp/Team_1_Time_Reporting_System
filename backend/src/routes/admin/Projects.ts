@@ -3,7 +3,7 @@ import { PrismaClient, ReportingType, Project } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
-import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema, parseDateString } from '../../utils/routeUtils';
+import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema, parseDateString, dateStringSchema, optionalDateStringSchema } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -13,14 +13,8 @@ const createProjectSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   clientId: bigIntIdSchema,
   projectManagerId: bigIntIdSchema,
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format')
-    .optional()
-    .nullable(),
+  startDate: dateStringSchema,
+  endDate: optionalDateStringSchema,
   description: z.string().optional(),
   // Optional, defaults to startEnd in DB
   reportingType: z.enum(['duration', 'startEnd']).optional(),
@@ -30,12 +24,8 @@ const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
   clientId: optionalBigIntIdSchema,
   projectManagerId: optionalBigIntIdSchema,
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional()
-    .nullable(),
+  startDate: optionalDateStringSchema,
+  endDate: optionalDateStringSchema,
   description: z.string().nullable().optional(),
   reportingType: z.enum(['duration', 'startEnd']).optional(),
   active: z.boolean().optional(),
@@ -225,7 +215,7 @@ router.put(
       }
       updateData.projectManagerId = validatedData.projectManagerId;
     }
-    if (validatedData.startDate !== undefined) {
+    if (validatedData.startDate !== undefined && validatedData.startDate !== null) {
       updateData.startDate = parseDateString(validatedData.startDate);
     }
     if (validatedData.endDate !== undefined) {
