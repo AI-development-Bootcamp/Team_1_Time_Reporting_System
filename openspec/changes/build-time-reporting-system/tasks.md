@@ -475,6 +475,120 @@ Current `backend/prisma/schema.prisma` issues:
 - [ ] Integrate with DailyAttendance creation
 - **Validation**: Absence with document upload works
 
+#### TASK-M4-030: Reporting Settings UI - "הגדרת דיווחי שעות" (Admin App)
+
+> **Dependency**: Member 3 must add `reportingType` field to Project model and implement `PATCH /api/admin/projects/:id` endpoint first.  
+> **Coordination Doc**: See `COORDINATION_MEMBER_3.md`
+
+**Purpose**: Allow admins to configure how workers report time per project - either via Start/End times (כניסה/יציאה) or Total Duration (סכום שעות).
+
+##### Frontend Types & Utilities
+- [x] 30.1 Update/Create shared types in `frontend_admin/src/types/Project.ts`:
+  - [x] Add `ReportingType` type: `'duration' | 'startEnd'`
+  - [x] Update `Project` interface to include `reportingType` field
+- [x] 30.2 Extend API client in `frontend_admin/src/utils/ApiClient.ts`:
+  - [x] Add `patchProjectReportingType(projectId: number, reportingType: ReportingType)` method
+
+##### Page & Layout
+- [x] 30.3 Create `frontend_admin/src/pages/ReportingSettingsPage.tsx`:
+  - [x] Page container with RTL layout
+  - [x] Page title: "הגדרת דיווחי שעות"
+  - [x] Page subtitle: "כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים"
+  - [x] Integrate search bar component (placeholder - will be implemented in 30.8)
+  - [x] Integrate settings table component (placeholder - will be implemented in 30.6)
+  - [x] Integrate pagination component (placeholder - will be implemented in 30.10)
+- [x] 30.4 Add route `/settings/reporting` in React Router config
+
+##### Data Fetching Hook
+- [x] 30.5 Create `frontend_admin/src/hooks/useReportingSettings.ts`:
+  - [x] `useQuery` for `GET /api/admin/projects` (with Client data joined)
+  - [x] `useMutation` for `PATCH /api/admin/projects/:id` (reportingType update)
+  - [x] Optimistic update: update local state immediately on radio change
+  - [x] Rollback on error
+  - [x] Invalidate queries on success
+
+##### Table Component
+- [x] 30.6 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsTable.tsx`:
+  - [x] Mantine Table component with RTL support
+  - [x] Columns:
+    - [x] שם לקוח (Client Name)
+    - [x] שם פרויקט (Project Name)
+    - [x] סוג הדיווח (Reporting Type) - Radio buttons
+  - [x] Display Client name by joining Project → Client data
+  - [x] Row styling per design
+
+##### Radio Button Toggle Component
+- [x] 30.7 Create `frontend_admin/src/components/ReportingSettings/ReportingTypeToggle.tsx`:
+  - [x] Mantine Radio.Group component
+  - [x] Two options:
+    - [x] "סכום שעות" (duration) - Total Hours
+    - [x] "כניסה / יציאה" (startEnd) - Start/End Times (Default)
+  - [x] `onChange` handler triggers immediate API call
+  - [x] Visual indicator for selected state (filled vs empty circle per UI)
+  - [x] Disabled state while saving
+
+##### Search & Filter
+- [x] 30.8 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsSearch.tsx`:
+  - [x] Mantine TextInput with search icon
+  - [x] Placeholder: "חיפוש לפי שם לקוח/פרויקט"
+  - [x] Debounced input (300ms)
+- [x] 30.9 Implement filter logic in page component:
+  - [x] Filter by Client name OR Project name (case-insensitive)
+  - [x] Use `useMemo` for filtered results
+
+##### Pagination
+- [x] 30.10 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsPagination.tsx`:
+  - [x] Mantine Pagination component
+  - [x] Items per page: 10 (configurable)
+  - [x] Display: page numbers with arrows
+  - [x] RTL layout (arrows direction)
+- [x] 30.11 Implement pagination logic:
+  - [x] Calculate total pages from filtered results
+  - [x] Slice data for current page
+
+##### Loading & Error States
+- [x] 30.12 Add loading skeleton while fetching projects
+- [x] 30.13 Add error state with retry button
+- [x] 30.14 Add toast notification on successful save
+- [x] 30.15 Add toast notification on save error
+
+##### Navigation Integration
+- [x] 30.16 Add sidebar menu item "הגדרת דיווחי שעות" in Admin app navigation
+- [x] 30.17 Add icon for the menu item (clock/settings icon)
+
+##### UI Polish & Backend Integration
+- [ ] 30.18 UI Polish and Refinement:
+  - [ ] TODO: Add specific styling requirements here
+  - [ ] Review spacing and padding across all components
+  - [ ] Verify RTL layout works correctly in all states
+  - [ ] Ensure consistent styling with other admin pages
+
+- [ ] 30.19 Remove Mock Data and Connect Real Backend:
+  - [ ] **Prerequisite**: Member 3 completes `GET /api/admin/projects` endpoint (Task M3-011)
+  - [ ] **Prerequisite**: Member 3 completes `PATCH /api/admin/projects/:id` endpoint
+  - [ ] In `frontend_admin/src/hooks/useReportingSettings.ts`:
+    - [ ] Remove mock data array from queryFn (lines 44-130)
+    - [ ] Uncomment real API call: `sharedApiClient.get<ProjectWithClient[]>('/admin/projects')`
+    - [ ] Remove mock mutation function (lines 146-155)
+    - [ ] Uncomment real API call: `apiClient.patchProjectReportingType(projectId, reportingType)`
+    - [ ] Uncomment imports for apiClient and sharedApiClient (lines 2-4)
+    - [ ] Uncomment `queryClient.invalidateQueries({ queryKey })` in onSuccess (line 192)
+    - [ ] Remove console.log statements from mock code
+  - [ ] In `frontend_admin/src/pages/ReportingSettingsPage.tsx`:
+    - [ ] Optional: Remove or keep console.log from handleReportingTypeChange (line 9) for debugging
+  - [ ] Test end-to-end with real backend:
+    - [ ] Verify projects load from database
+    - [ ] Verify reporting type updates persist to database
+    - [ ] Verify optimistic updates still work correctly
+    - [ ] Verify error handling works with real API errors
+
+- **Validation**:
+  - Admin can view all projects with their current reporting type
+  - Admin can search by client or project name
+  - Clicking radio button immediately saves to database
+  - Pagination works correctly
+  - Error handling shows appropriate messages
+
 ---
 
 ## Phase 2: Integration & Testing

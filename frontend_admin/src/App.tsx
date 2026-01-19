@@ -1,8 +1,17 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AppLayout } from './components/Layout/AppLayout';
+import ReportingSettingsPage from './pages/ReportingSettingsPage';
+
 function App() {
   return (
-    <div>
-      <h1>Time Reporting System - Admin</h1>
-    </div>
+    <BrowserRouter>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<div><h1>מערכת דיווח שעות - ניהול</h1></div>} />
+          <Route path="/settings/reporting" element={<ReportingSettingsPage />} />
+        </Routes>
+      </AppLayout>
+    </BrowserRouter>
   );
 }
 
