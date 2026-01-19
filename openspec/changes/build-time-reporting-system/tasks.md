@@ -227,44 +227,44 @@ Current `backend/prisma/schema.prisma` issues:
 - **Validation**: Attendance CRUD works, overlap blocked, duration-vs-logs enforced
 
 #### TASK-M2-011: Time Logs Backend (Per `doc/api/API.md` Section 8)
-- [ ] Create `backend/src/routes/TimeLogs.ts`
-- [ ] Wire TimeLogs routes in `backend/src/index.ts`
-- [ ] Add Zod schemas for create/update/query:
-  - [ ] Body: `{ dailyAttendanceId, taskId, duration, location, description? }`
-  - [ ] Query: `{ dailyAttendanceId }`
-- [ ] Implement `POST /api/time-logs` basics:
-  - [ ] Map `duration` (minutes) → `durationMin`
-  - [ ] Enforce required `location` (office/client/home)
-  - [ ] Create ProjectTimeLogs record
-  - [ ] Return: `{ success: true, data: { id } }`
-- [ ] Enforce frontend validations on backend:
-  - [ ] `duration` is positive integer minutes
-  - [ ] Required fields present (dailyAttendanceId, taskId, location)
-  - [ ] Return `VALIDATION_ERROR` on failure
-- [ ] Validate attendance exists before creating time log
-- [ ] Validate task exists before creating time log
-- [ ] Allow overlapping time logs (per API spec)
-- [ ] Implement `GET /api/time-logs?dailyAttendanceId=X`
-  - [ ] Return flat list (no nested task/project/client)
-- [ ] Implement `PUT /api/time-logs/:id`
-- [ ] Implement `DELETE /api/time-logs/:id`
-- [ ] Re-check attendance duration rule after log create/update/delete:
-  - [ ] Block if total logs would become < attendance duration
-- [ ] Return `NOT_FOUND` when attendance or task does not exist
-- [ ] Return `MONTH_LOCKED` when attendance date is locked
-- [ ] Add backend guard to prevent partial saves in combined flow:
-  - [ ] If a log mutation fails, return error without leaving inconsistent totals
+- [x] Create `backend/src/routes/TimeLogs.ts`
+- [x] Wire TimeLogs routes in `backend/src/index.ts` (via `app.ts`)
+- [x] Add Zod schemas for create/update/query:
+  - [x] Body: `{ dailyAttendanceId, taskId, duration, location, description? }`
+  - [x] Query: `{ dailyAttendanceId }`
+- [x] Implement `POST /api/time-logs` basics:
+  - [x] Map `duration` (minutes) → `durationMin`
+  - [x] Enforce required `location` (office/client/home)
+  - [x] Create ProjectTimeLogs record
+  - [x] Return: `{ success: true, data: { id } }`
+- [x] Enforce frontend validations on backend:
+  - [x] `duration` is positive integer minutes
+  - [x] Required fields present (dailyAttendanceId, taskId, location)
+  - [x] Return `VALIDATION_ERROR` on failure
+- [x] Validate attendance exists before creating time log
+- [x] Validate task exists before creating time log
+- [x] Allow overlapping time logs (per API spec)
+- [x] Implement `GET /api/time-logs?dailyAttendanceId=X`
+  - [x] Return flat list (no nested task/project/client)
+- [x] Implement `PUT /api/time-logs/:id`
+- [x] Implement `DELETE /api/time-logs/:id`
+- [x] Re-check attendance duration rule after log create/update/delete:
+  - [x] Block if total logs would become < attendance duration
+- [x] Return `NOT_FOUND` when attendance or task does not exist
+- [ ] Return `MONTH_LOCKED` when attendance date is locked (pending month-locking feature)
+- [x] Add backend guard to prevent partial saves in combined flow:
+  - [x] If a log mutation fails, return error without leaving inconsistent totals
 - [ ] **Auth integration (after TASK-M1-010):**
   - [ ] Apply auth middleware to Time Logs routes
   - [ ] Enforce ownership on POST (dailyAttendance belongs to authenticated user)
   - [ ] Enforce ownership on GET (only return logs for user attendance)
   - [ ] Enforce ownership on update/delete (log belongs to authenticated user)
   - [ ] Update tests to include auth (token or mocked user context)
-- [ ] Tests (backend):
-  - [ ] Unit: duration mapping and validation, location validation
-  - [ ] Integration: create/update/delete time logs
-  - [ ] Integration: duration-vs-logs rejection on delete/update
-- **Coverage Target**: ≥60% for TimeLogs route + helpers
+- [x] Tests (backend):
+  - [x] Unit: duration mapping and validation, location validation (`backend/src/routes/TimeLogs.test.ts`)
+  - [x] Integration: create/update/delete time logs (`backend/tests/integration/timeLogs.test.ts`)
+  - [x] Integration: duration-vs-logs rejection on delete/update
+- **Coverage Achieved**: 97% statements, 93% branches for TimeLogs route (exceeds 60% target)
 - **Validation**: Time logs work, multiple entries allowed, location required
 
 #### TASK-M2-012: Project Selector Backend
