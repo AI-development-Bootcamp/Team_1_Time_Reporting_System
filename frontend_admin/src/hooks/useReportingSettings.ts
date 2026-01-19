@@ -31,7 +31,7 @@ export function useReportingSettings() {
    * Fetch all projects with client data joined
    * 
    * Fetches projects and clients from the backend, then joins them on the frontend
-   * Only returns active projects
+   * Backend is responsible for returning only active projects
    */
   const projectsQuery = useQuery<ProjectWithClient[]>({
     queryKey,
@@ -48,18 +48,17 @@ export function useReportingSettings() {
       // Create a map of clients for quick lookup
       const clientMap = new Map(clients.map(c => [c.id, c]));
 
-      // Filter active projects and join with client data
-      const activeProjects = projects
-        .filter(p => p.active) // Only show active projects
-        .map(project => ({
-          ...project,
-          client: {
-            id: project.clientId,
-            name: clientMap.get(project.clientId)?.name || 'Unknown Client'
-          }
-        }));
+      // Join projects with client data
+      // Note: Backend is responsible for returning only active projects
+      const projectsWithClients = projects.map(project => ({
+        ...project,
+        client: {
+          id: project.clientId,
+          name: clientMap.get(project.clientId)?.name || 'Unknown Client'
+        }
+      }));
 
-      return activeProjects;
+      return projectsWithClients;
     },
   });
 

@@ -581,7 +581,7 @@ image.png- [x] 30.10 Create `frontend_admin/src/components/ReportingSettings/Rep
     - [x] Removed mock data array from queryFn
     - [x] Implemented real API calls to fetch both projects and clients in parallel
     - [x] Joined projects with clients on frontend using clientId
-    - [x] Added filter for active projects only (`projects.filter(p => p.active)`)
+    - [x] Backend returns only active projects (no frontend filtering needed)
     - [x] Removed mock mutation function
     - [x] Implemented real API call: `apiClient.patchProjectReportingType(projectId, reportingType)`
     - [x] Uncommented imports for apiClient and sharedApiClient
