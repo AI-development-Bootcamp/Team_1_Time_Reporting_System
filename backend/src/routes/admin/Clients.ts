@@ -14,6 +14,35 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
   };
 };
 
+// Local serialization helper to handle BigInt and Date objects
+function serializeData<T>(obj: T): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => serializeData(item));
+  }
+
+  if (typeof obj === 'object') {
+    const result: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = serializeData(value);
+    }
+    return result;
+  }
+
+  return obj;
+}
+
 // Zod schemas for validation
 const createClientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -50,7 +79,7 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  ApiResponse.success(res, clients);
+  ApiResponse.success(res, serializeData(clients));
 }));
 
 /**
@@ -84,7 +113,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  ApiResponse.success(res, { id: client.id }, 201);
+  ApiResponse.success(res, serializeData({ id: client.id }), 201);
 }));
 
 /**
@@ -132,7 +161,7 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
     data: updateData,
   });
 
-  ApiResponse.success(res, { updated: true });
+  ApiResponse.success(res, serializeData({ updated: true }));
 }));
 
 /**
@@ -160,7 +189,7 @@ router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
     data: { active: false },
   });
 
-  ApiResponse.success(res, { deleted: true });
+  ApiResponse.success(res, serializeData({ deleted: true }));
 }));
 
 export default router;

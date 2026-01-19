@@ -1,5 +1,4 @@
 import { Response } from 'express';
-import { serializeBigInt } from './serialize';
 
 export interface SuccessResponse<T = any> {
   success: true;
@@ -19,7 +18,7 @@ export class ApiResponse {
   static success<T>(res: Response, data: T, statusCode: number = 200): void {
     const response: SuccessResponse<T> = {
       success: true,
-      data: serializeBigInt(data) as T,
+      data,
     };
     res.status(statusCode).json(response);
   }
