@@ -16,7 +16,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Enregistrez les routes admin
+// Register admin routes
 app.use('/api/admin/projects', projectsRouter);
 
 app.use(errorHandler);
