@@ -223,6 +223,12 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] Integration: create/update attendance with valid/invalid times (`backend/tests/integration/attendance.test.ts`)
   - [x] Integration: overlap rejection on same date
   - [x] Integration: duration-vs-logs rejection on update
+- [ ] **Auth integration (after TASK-M1-010):**
+  - [ ] Apply auth middleware to Attendance routes
+  - [ ] Use `req.user.id` instead of `userId` from request body/query
+  - [ ] Enforce ownership on GET (month-history only returns authenticated user data)
+  - [ ] Enforce ownership on update (attendance belongs to authenticated user)
+  - [ ] Update tests to include auth (token or mocked user context)
 - **Coverage Achieved**: 99% statements, 93% branches for Attendance route (exceeds 60% target)
 - **Validation**: Attendance CRUD works, overlap blocked, duration-vs-logs enforced
 
