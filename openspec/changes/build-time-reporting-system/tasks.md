@@ -274,25 +274,912 @@ Current `backend/prisma/schema.prisma` issues:
 - **Validation**: Time logs work, multiple entries allowed, location required
 
 #### TASK-M2-011A: Combined Attendance + Time Logs Save (Atomic Flow)
-- [ ] Confirm API shape for combined save (new endpoint vs reuse existing)
-- [ ] Define request/response schema for combined save:
-  - [ ] Body: DailyAttendance fields + array of ProjectTimeLogs
-  - [ ] Return: `{ success: true, data: { attendanceId, timeLogIds[] } }`
-- [ ] Create service to perform atomic save with Prisma transaction:
-  - [ ] Validate attendance payload (overlap, time order)
-  - [ ] Validate time logs payload (required fields, duration > 0, location)
-  - [ ] Create DailyAttendance record
-  - [ ] Create ProjectTimeLogs records (use returned attendanceId)
-  - [ ] Validate total logs duration >= attendance duration
-  - [ ] Roll back on any failure (no partial saves)
-- [ ] Add route handler that calls the service and returns standard response
-- [ ] Decide whether to keep POST `/api/attendance` for non-combined flow
+
+**Purpose**: Create atomic endpoint for saving work attendance + time logs together (no partial saves)
+
+**API Endpoint**: `POST /api/attendance/combined`
+
+- [ ] Define request schema for combined save:
+  ```typescript
+  {
+    userId: number;           // (Will be from auth token later)
+    date: string;             // "YYYY-MM-DD"
+    startTime: string;        // "HH:mm"
+    endTime: string;          // "HH:mm"
+    status: "work";           // Only work status uses combined endpoint
+    timeLogs: Array<{
+      taskId: number;
+      duration: number;       // minutes (for duration-based projects)
+      startTime?: string;     // "HH:mm" (for startEnd-based projects)
+      endTime?: string;       // "HH:mm" (for startEnd-based projects)
+      location: "office" | "client" | "home";
+      description?: string;
+    }>;
+  }
+  ```
+- [ ] Define response schema:
+  ```typescript
+  { success: true, data: { attendanceId: string, timeLogIds: string[] } }
+  ```
+- [ ] Create `backend/src/services/CombinedAttendance.ts` service:
+  - [ ] Use Prisma `$transaction` for atomic operations
+  - [ ] Validation Step 1: Check no exclusive status exists on date (dayOff/sickness/reserves)
+  - [ ] Validation Step 2: Validate time range (`endTime > startTime`)
+  - [ ] Validation Step 3: Validate no midnight crossing (`endTime <= 23:59`)
+  - [ ] Validation Step 4: Check no overlap with existing work/halfDayOff attendances
+  - [ ] Validation Step 5: Calculate attendance duration in minutes
+  - [ ] Validation Step 6: Validate each time log (duration > 0, task exists, location valid)
+  - [ ] Validation Step 7: Calculate total logs duration based on project reportingType
+  - [ ] Validation Step 8: Validate `sumOfTimeLogs >= attendanceDuration`
+  - [ ] Create Step 1: Create DailyAttendance record
+  - [ ] Create Step 2: Create all ProjectTimeLogs records with returned attendanceId
+  - [ ] Return IDs on success, rollback entire transaction on any failure
+- [ ] Add route handler in `backend/src/routes/Attendance.ts`:
+  - [ ] `POST /api/attendance/combined` calls CombinedAttendance service
+  - [ ] Returns standard response envelope
+- [ ] Keep `POST /api/attendance` for non-work statuses (halfDayOff/dayOff/sickness/reserves)
 - [ ] Tests (backend):
   - [ ] Integration: success path creates attendance + logs atomically
-  - [ ] Integration: failure in logs rejects attendance creation
+  - [ ] Integration: failure in time log validation rejects entire operation
   - [ ] Integration: duration-vs-logs failure rolls back all inserts
+  - [ ] Integration: exclusive status blocks creation
+  - [ ] Integration: overlap with existing work attendance blocks creation
+  - [ ] Integration: midnight crossing (endTime > 23:59) rejected
 - **Coverage Target**: ≥60% for combined save service + route
-- **Validation**: “Save” only succeeds when logs exist and totals are valid
+- **Validation**: "Save" only succeeds when all validations pass and logs sum >= attendance duration
+
+---
+
+#### TASK-M2-011B: Schema Changes for Time Logs (startTime/endTime columns)
+
+**Purpose**: Add startTime/endTime columns to ProjectTimeLogs for projects with reportingType=startEnd
+
+- [ ] Update Prisma schema - add to `ProjectTimeLogs` model:
+  ```prisma
+  model ProjectTimeLogs {
+    // ... existing fields ...
+    durationMin   Int               // Always stored (required, calculated or entered)
+    startTime     DateTime? @db.Time  // NULL if project reportingType=duration
+    endTime       DateTime? @db.Time  // NULL if project reportingType=duration
+    // ... rest of fields ...
+  }
+  ```
+- [ ] Create migration: `npx prisma migrate dev --name add_timelog_start_end`
+- [ ] Update `POST /api/time-logs` to handle both reportingTypes:
+  - [ ] Get task's project to check `reportingType`
+  - [ ] If `reportingType = startEnd`:
+    - [ ] Require startTime and endTime in request
+    - [ ] Validate `endTime > startTime`
+    - [ ] Validate no midnight crossing (`endTime <= 23:59`)
+    - [ ] Calculate `durationMin` from endTime - startTime
+    - [ ] Store all three: startTime, endTime, durationMin
+  - [ ] If `reportingType = duration`:
+    - [ ] Require duration in request
+    - [ ] Store durationMin, set startTime/endTime to NULL
+- [ ] Update `PUT /api/time-logs/:id` to handle reportingType:
+  - [ ] Check project's current reportingType (may have changed since creation)
+  - [ ] If `reportingType = startEnd`: require startTime/endTime, recalculate duration
+  - [ ] If `reportingType = duration`: accept duration, set startTime/endTime to NULL
+- [ ] Update Zod schemas:
+  ```typescript
+  const createTimeLogSchema = z.object({
+    dailyAttendanceId: z.bigint(),
+    taskId: z.bigint(),
+    duration: z.number().int().positive().optional(),  // For duration-based
+    startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),  // For startEnd-based
+    endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),    // For startEnd-based
+    location: z.enum(['office', 'client', 'home']),
+    description: z.string().optional(),
+  });
+  ```
+- [ ] Tests (backend):
+  - [ ] Unit: duration calculation from startTime/endTime
+  - [ ] Integration: create time log for startEnd project stores all 3 fields
+  - [ ] Integration: create time log for duration project stores only durationMin
+  - [ ] Integration: update time log when project type changed (duration→startEnd)
+  - [ ] Integration: midnight crossing validation for startEnd projects
+- **Coverage Target**: ≥60% for updated time log endpoints
+- **Validation**: Time logs correctly handle both project reporting types
+
+---
+
+#### TASK-M2-011C: Non-Work Status Handling (halfDayOff/dayOff/sickness/reserves)
+
+**Purpose**: Handle attendance creation/update for non-work statuses with proper validation
+
+**Status Rules**:
+| Status | Exclusive? | Requires Times? | Requires Time Logs? | Requires Document? |
+|--------|------------|-----------------|---------------------|-------------------|
+| `work` | No | Yes | Yes (sum >= duration) | No |
+| `halfDayOff` | No | No (NULL) | No | No |
+| `dayOff` | Yes | No (NULL) | No | No |
+| `sickness` | Yes | No (NULL) | No | Soft (badge=missing if null) |
+| `reserves` | Yes | No (NULL) | No | Soft (badge=missing if null) |
+
+- [ ] Update `POST /api/attendance` for non-work statuses:
+  - [ ] Accept: `{ userId, date, status, document? }` (no startTime/endTime)
+  - [ ] For `halfDayOff`:
+    - [ ] Check no exclusive status exists on date (dayOff/sickness/reserves)
+    - [ ] Allow coexistence with work attendances
+    - [ ] Store with startTime=NULL, endTime=NULL
+  - [ ] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
+    - [ ] Check NO other attendance exists on this date (any status)
+    - [ ] Store with startTime=NULL, endTime=NULL
+    - [ ] For sickness/reserves: document is optional (can be NULL, frontend shows "missing" badge)
+- [ ] Update `PUT /api/attendance/:id` for status changes:
+  - [ ] **Work → Non-work**: Block if time logs exist (require delete logs first)
+  - [ ] **Non-work → Work**: Require startTime/endTime in request
+  - [ ] **Work → Work**: Validate times, overlap, and logs sum
+  - [ ] **Exclusive → Any**: Check new status rules allow the change
+  - [ ] **Any → Exclusive**: Check no other records exist on date
+  - [ ] **halfDayOff ↔ Work**: Validate coexistence rules
+- [ ] Update validation helpers:
+  - [ ] `checkExclusiveStatusExists(userId, date, excludeId?)` - returns true if dayOff/sickness/reserves exists
+  - [ ] `checkAnyAttendanceExists(userId, date, excludeId?)` - returns true if any attendance exists
+  - [ ] `checkTimeLogsExist(attendanceId)` - returns count of time logs
+- [ ] Error messages:
+  - [ ] `"Cannot add work attendance - exclusive status (dayOff/sickness/reserves) already exists on this date"`
+  - [ ] `"Cannot add {status} - other attendance already exists on this date"`
+  - [ ] `"Cannot change to non-work status while time logs exist. Delete time logs first."`
+- [ ] Tests (backend):
+  - [ ] Integration: create halfDayOff alongside work attendance (allowed)
+  - [ ] Integration: create dayOff when work exists (blocked)
+  - [ ] Integration: create work when dayOff exists (blocked)
+  - [ ] Integration: change work→halfDayOff with time logs (blocked)
+  - [ ] Integration: change work→halfDayOff after deleting time logs (allowed)
+  - [ ] Integration: sickness without document saves successfully (frontend handles badge)
+- **Coverage Target**: ≥60% for status handling logic
+- **Validation**: All status rules enforced correctly
+
+---
+
+#### TASK-M2-011D: Enhanced Time Validation Rules
+
+**Purpose**: Ensure all time validations are consistently applied
+
+**Validation Rules**:
+1. `endTime > startTime` (both attendance and time logs)
+2. No midnight crossing: `endTime <= 23:59` (max time is 23:59)
+3. No overlap between work attendances on same date
+4. For work status: `sumOfTimeLogs >= (endTime - startTime)`
+
+- [ ] Create `backend/src/utils/TimeValidation.ts`:
+  ```typescript
+  // Validate time range and no midnight crossing
+  function validateTimeRange(startTime: string, endTime: string): void;
+  
+  // Check if endTime exceeds 23:59
+  function validateNoMidnightCrossing(startTime: string, endTime: string): void;
+  
+  // Check overlap between two time ranges
+  function timeRangesOverlap(s1: string, e1: string, s2: string, e2: string): boolean;
+  
+  // Calculate duration in minutes
+  function calculateDurationMinutes(startTime: string, endTime: string): number;
+  ```
+- [ ] Apply validations consistently across:
+  - [ ] `POST /api/attendance/combined` - entrance/exit times
+  - [ ] `PUT /api/attendance/:id` - when updating times
+  - [ ] `POST /api/time-logs` - when project is startEnd type
+  - [ ] `PUT /api/time-logs/:id` - when project is startEnd type
+- [ ] Update overlap validation to only check against:
+  - [ ] Other `work` attendances on same date
+  - [ ] Other `halfDayOff` attendances (if they had times, but they don't)
+  - [ ] Skip overlap check for exclusive statuses (they have no times)
+- [ ] Tests (backend):
+  - [ ] Unit: validateTimeRange rejects end <= start
+  - [ ] Unit: validateNoMidnightCrossing rejects endTime > 23:59
+  - [ ] Unit: timeRangesOverlap correctly detects overlaps
+  - [ ] Integration: attendance with endTime "24:00" rejected
+  - [ ] Integration: time log with endTime "00:30" (next day) rejected
+- **Coverage Target**: ≥60% for time validation utilities
+- **Validation**: No times past 23:59 allowed anywhere
+
+---
+
+#### TASK-M2-011E: Update Existing Endpoints for New Rules
+
+**Purpose**: Update PUT /api/attendance/:id and time log endpoints with new validation logic
+
+- [ ] Update `PUT /api/attendance/:id`:
+  - [ ] If status is/becomes `work`:
+    - [ ] Validate times provided
+    - [ ] Validate time range and no midnight crossing
+    - [ ] Check overlap with other attendances (exclude self)
+    - [ ] Validate `sumOfTimeLogs >= attendanceDuration`
+  - [ ] If increasing attendance duration (earlier start or later end):
+    - [ ] Validate `existingTimeLogs >= newDuration`
+    - [ ] Block if logs would become insufficient
+  - [ ] If decreasing attendance duration:
+    - [ ] Allow (logs can exceed attendance duration)
+  - [ ] If status is/becomes non-work:
+    - [ ] Apply status change rules from TASK-M2-011C
+    - [ ] Set startTime/endTime to NULL
+- [ ] Update `DELETE /api/time-logs/:id`:
+  - [ ] Calculate remaining logs total after deletion
+  - [ ] Check attendance duration
+  - [ ] Block if `remainingTotal < attendanceDuration`
+  - [ ] Error: `"Cannot delete - remaining time logs would be less than attendance duration"`
+- [ ] Update `PUT /api/time-logs/:id`:
+  - [ ] If reducing duration:
+    - [ ] Calculate new total after change
+    - [ ] Block if `newTotal < attendanceDuration`
+  - [ ] Apply project reportingType validation (from TASK-M2-011B)
+- [ ] Tests (backend):
+  - [ ] Integration: extend attendance time blocked when logs insufficient
+  - [ ] Integration: reduce attendance time allowed when logs still sufficient
+  - [ ] Integration: delete time log blocked when would violate sum rule
+  - [ ] Integration: reduce time log duration blocked when would violate sum rule
+- **Coverage Target**: ≥60% for updated endpoints
+- **Validation**: All validation rules consistently enforced
+
+---
+
+#### TASK-M2-011F: Existing Code Analysis & Implementation Guide
+
+**Purpose**: Document existing code to reuse and what needs modification for the new backend features
+
+##### ✅ Existing Code to REUSE (Already in `Attendance.ts`)
+
+The following helper functions already exist in `backend/src/routes/Attendance.ts` and should be **moved** to `backend/src/utils/TimeValidation.ts`:
+
+| Function | Lines | Purpose | Action |
+|----------|-------|---------|--------|
+| `TIME_REGEX` | 23 | HH:mm format validation | Move to TimeValidation.ts |
+| `timeStringToDate()` | 29-37 | Convert "HH:mm" to Date (1970-01-01 UTC) | Move to TimeValidation.ts |
+| `dateToTimeString()` | 42-46 | Convert Date to "HH:mm" | Move to TimeValidation.ts |
+| `calculateDurationMinutes()` | 51-59 | Calculate minutes between two times | Move to TimeValidation.ts |
+| `timeRangesOverlap()` | 65-78 | Check if two time ranges overlap | Move to TimeValidation.ts |
+| `checkOverlap()` | 92-125 | Check DB for overlapping attendances | Keep in Attendance.ts, modify |
+| `checkDurationVsLogs()` | 131-152 | Validate sum(logs) >= attendance duration | Keep in Attendance.ts |
+| `validateAttendance()` | 158-183 | Combined validation (exported) | Keep in Attendance.ts, expand |
+
+##### ✅ Existing Code to REUSE (Already in `TimeLogs.ts`)
+
+The following helpers already exist in `backend/src/routes/TimeLogs.ts`:
+
+| Function | Lines | Purpose | Action |
+|----------|-------|---------|--------|
+| `calculateAttendanceDuration()` | 17-23 | Duration from Date objects | Keep, use internally |
+| `getTotalLogsDuration()` | 29-42 | Sum all logs for attendance (exported) | Keep, no changes |
+| `getAttendanceOrThrow()` | 47-57 | Get attendance or 404 | Keep, no changes |
+| `validateTaskExists()` | 62-70 | Check task exists | Keep, no changes |
+| `validateDuration()` | 75-79 | Positive integer validation (exported) | Keep, no changes |
+| `validateLocation()` | 84-89 | office/client/home validation (exported) | Keep, no changes |
+| `checkDurationVsLogsRule()` | 96-121 | Block if logs < attendance | Keep, no changes |
+
+##### ✅ Existing Infrastructure to REUSE
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `backend/src/utils/Response.ts` | `ApiResponse.success()` and `ApiResponse.error()` | ✅ Ready |
+| `backend/src/middleware/ErrorHandler.ts` | `AppError` class + global handler | ✅ Ready |
+| `backend/src/utils/AuditLog.ts` | `logAudit()` for tracking changes | ✅ Ready |
+| Zod validation pattern | Schema-based request validation | ✅ Ready |
+| Prisma `$transaction` | Atomic operations | ✅ Available |
+
+---
+
+##### 🔧 Code That NEEDS MODIFICATION
+
+###### 1. Prisma Schema (`backend/prisma/schema.prisma`)
+
+**Current State**: Missing `reportingType` on Project and `startTime`/`endTime` on ProjectTimeLogs
+
+**Required Changes**:
+```prisma
+// Add new enum (if not already added by teammate)
+enum ReportingType {
+  duration
+  startEnd
+}
+
+// Add to Project model (if not already added by teammate)
+model Project {
+  // ... existing fields ...
+  reportingType  ReportingType  @default(startEnd) @map("reporting_type")
+}
+
+// Add to ProjectTimeLogs model
+model ProjectTimeLogs {
+  // ... existing fields ...
+  startTime      DateTime?      @map("start_time") @db.Time   // NEW
+  endTime        DateTime?      @map("end_time") @db.Time     // NEW
+  // durationMin remains required (always calculated/stored)
+}
+```
+
+**Migration**: `npx prisma migrate dev --name add_timelog_start_end_and_project_reporting_type`
+
+---
+
+###### 2. `POST /api/attendance` (Attendance.ts lines 222-259)
+
+**Current Behavior**: Creates any attendance with optional times
+
+**Required Changes**:
+- [ ] For `work` status: Redirect user to use combined endpoint OR block with error
+- [ ] For `halfDayOff`: Check no exclusive status exists, allow creation with NULL times
+- [ ] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
+  - [ ] Check NO other attendance exists on this date
+  - [ ] Create with startTime=NULL, endTime=NULL
+- [ ] Add new validation helpers:
+  ```typescript
+  async function checkExclusiveStatusExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>
+  async function checkAnyAttendanceExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>
+  ```
+
+---
+
+###### 3. `PUT /api/attendance/:id` (Attendance.ts lines 347-424)
+
+**Current Behavior**: Updates attendance, checks overlap and duration-vs-logs
+
+**Required Changes**:
+- [ ] Add status change validation:
+  ```typescript
+  // Block work → non-work if time logs exist
+  if (existingStatus === 'work' && newStatus !== 'work') {
+    const logsCount = await checkTimeLogsExist(id);
+    if (logsCount > 0) {
+      throw new AppError('VALIDATION_ERROR', 
+        'Cannot change to non-work status while time logs exist. Delete time logs first.', 400);
+    }
+  }
+  ```
+- [ ] Handle `non-work` → `work` (require times in request)
+- [ ] Check exclusive status rules when changing TO exclusive status
+- [ ] Set times to NULL when changing to non-work status
+- [ ] Add `validateNoMidnightCrossing()` check
+
+---
+
+###### 4. `validateAttendance()` (Attendance.ts lines 158-183)
+
+**Current Code**:
+```typescript
+export async function validateAttendance(
+  userId: bigint, date: Date, startTime: string | null, endTime: string | null, 
+  status: string, excludeId?: bigint
+): Promise<void> {
+  // Only checks: work requires times, endTime > startTime, overlap
+}
+```
+
+**Required Additions**:
+- [ ] Add midnight crossing check: `if (endTime && endTime > '23:59') throw ...`
+- [ ] For `work`/`halfDayOff`: Check no exclusive status exists
+- [ ] For exclusive statuses: Check no other attendance exists
+- [ ] Skip overlap check for non-work statuses (they have no times)
+
+---
+
+###### 5. `POST /api/time-logs` (TimeLogs.ts lines 154-185)
+
+**Current Behavior**: Creates time log with duration only
+
+**Required Changes**:
+- [ ] Get task's project to check `reportingType`:
+  ```typescript
+  const task = await prisma.task.findUnique({
+    where: { id: body.taskId },
+    include: { project: { select: { reportingType: true } } }
+  });
+  ```
+- [ ] If `reportingType = startEnd`:
+  - [ ] Require startTime and endTime in request
+  - [ ] Validate `endTime > startTime`
+  - [ ] Validate no midnight crossing
+  - [ ] Calculate `durationMin = calculateDurationMinutes(startTime, endTime)`
+  - [ ] Store all three fields
+- [ ] If `reportingType = duration`:
+  - [ ] Require duration in request
+  - [ ] Store durationMin, set startTime/endTime to NULL
+
+---
+
+###### 6. `PUT /api/time-logs/:id` (TimeLogs.ts lines 229-275)
+
+**Current Behavior**: Updates duration only
+
+**Required Changes**:
+- [ ] Check project's current `reportingType` (may have changed)
+- [ ] Handle both reporting types appropriately
+- [ ] Update startTime/endTime or set to NULL based on type
+- [ ] Keep all existing duration-vs-logs validation
+
+---
+
+##### 📁 New Files to CREATE
+
+| File | Purpose | Based On |
+|------|---------|----------|
+| `backend/src/services/CombinedAttendance.ts` | Atomic attendance + logs creation | New service |
+| `backend/src/utils/TimeValidation.ts` | Consolidated time helpers | Move from Attendance.ts |
+
+##### 📄 `backend/src/utils/TimeValidation.ts` Structure
+
+```typescript
+// Move these from Attendance.ts:
+export const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+export function timeStringToDate(time: string): Date;
+export function dateToTimeString(date: Date): string;
+export function calculateDurationMinutes(startTime: string, endTime: string): number;
+export function timeRangesOverlap(s1: string, e1: string, s2: string, e2: string): boolean;
+
+// Add these new helpers:
+export function validateTimeRange(startTime: string, endTime: string): void;
+export function validateNoMidnightCrossing(endTime: string): void;
+```
+
+##### 📄 `backend/src/services/CombinedAttendance.ts` Structure
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+import { AppError } from '../middleware/ErrorHandler';
+import { timeStringToDate, calculateDurationMinutes, validateTimeRange, validateNoMidnightCrossing } from '../utils/TimeValidation';
+
+interface CombinedAttendanceInput {
+  userId: bigint;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  timeLogs: Array<{
+    taskId: bigint;
+    duration?: number;
+    startTime?: string;
+    endTime?: string;
+    location: 'office' | 'client' | 'home';
+    description?: string;
+  }>;
+}
+
+interface CombinedAttendanceResult {
+  attendanceId: bigint;
+  timeLogIds: bigint[];
+}
+
+export async function createCombinedAttendance(
+  prisma: PrismaClient,
+  input: CombinedAttendanceInput
+): Promise<CombinedAttendanceResult> {
+  return prisma.$transaction(async (tx) => {
+    // 1. Validate no exclusive status exists
+    // 2. Validate time range and no midnight crossing
+    // 3. Check no overlap with existing attendances
+    // 4. Calculate attendance duration
+    // 5. Validate each time log
+    // 6. Validate sum(logs) >= attendance duration
+    // 7. Create attendance
+    // 8. Create all time logs
+    // 9. Return IDs
+  });
+}
+```
+
+---
+
+##### 🔄 Import Updates Required
+
+After moving helpers to `TimeValidation.ts`, update imports in:
+
+1. **`backend/src/routes/Attendance.ts`**:
+   ```typescript
+   import { 
+     timeStringToDate, dateToTimeString, calculateDurationMinutes, 
+     timeRangesOverlap, validateTimeRange, validateNoMidnightCrossing,
+     TIME_REGEX 
+   } from '../utils/TimeValidation';
+   ```
+
+2. **`backend/src/routes/TimeLogs.ts`**:
+   ```typescript
+   import { 
+     timeStringToDate, dateToTimeString, calculateDurationMinutes,
+     validateNoMidnightCrossing 
+   } from '../utils/TimeValidation';
+   ```
+
+3. **`backend/src/services/CombinedAttendance.ts`**:
+   ```typescript
+   import { 
+     timeStringToDate, calculateDurationMinutes, 
+     validateTimeRange, validateNoMidnightCrossing 
+   } from '../utils/TimeValidation';
+   ```
+
+---
+
+##### ✅ Implementation Checklist Summary
+
+| Step | Task | Files |
+|------|------|-------|
+| 1 | Create `TimeValidation.ts` with moved + new helpers | `utils/TimeValidation.ts` |
+| 2 | Update imports in existing files | `Attendance.ts`, `TimeLogs.ts` |
+| 3 | Update Prisma schema (if needed) | `schema.prisma` |
+| 4 | Run migration | - |
+| 5 | Create `CombinedAttendance.ts` service | `services/CombinedAttendance.ts` |
+| 6 | Add combined endpoint route | `Attendance.ts` |
+| 7 | Update `POST /api/attendance` for non-work | `Attendance.ts` |
+| 8 | Update `PUT /api/attendance/:id` | `Attendance.ts` |
+| 9 | Update `POST /api/time-logs` for reportingType | `TimeLogs.ts` |
+| 10 | Update `PUT /api/time-logs/:id` for reportingType | `TimeLogs.ts` |
+| 11 | Add tests for all new functionality | `*.test.ts` files |
+
+---
+
+#### TASK-M2-011G: Backend Architecture Refactoring (Per `doc/ARCHITECTURE.md`)
+
+**Purpose**: Refactor Member 2's backend code to follow the three-layer architecture pattern
+
+**Current State**: All code is mixed in route files (`Attendance.ts`, `TimeLogs.ts`)
+
+**Target Architecture**:
+```
+backend/src/
+├── controllers/                    # NEW - Route handlers
+│   ├── AttendanceController.ts
+│   └── TimeLogsController.ts
+├── services/                       # NEW - Business logic
+│   ├── AttendanceService.ts
+│   ├── TimeLogsService.ts
+│   └── CombinedAttendanceService.ts
+├── routes/                         # MODIFY - Route definitions only
+│   ├── attendance.routes.ts
+│   └── timeLogs.routes.ts
+├── validators/                     # NEW - Zod schemas
+│   ├── attendance.schema.ts
+│   └── timeLogs.schema.ts
+├── middleware/
+│   └── ErrorHandler.ts             # EXISTS
+└── utils/
+    ├── Response.ts                 # EXISTS
+    ├── AuditLog.ts                 # EXISTS
+    └── TimeValidation.ts           # NEW (from TASK-M2-011D)
+```
+
+##### Step 1: Create Validators (`validators/`)
+
+- [ ] Create `backend/src/validators/attendance.schema.ts`:
+  ```typescript
+  import { z } from 'zod';
+  
+  export const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  const timeSchema = z.string().regex(TIME_REGEX, 'Time must be in HH:mm format');
+
+  export const createAttendanceSchema = z.object({
+    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Invalid date format. Expected YYYY-MM-DD',
+    }),
+    startTime: timeSchema.optional().nullable(),
+    endTime: timeSchema.optional().nullable(),
+    status: z.enum(['work', 'sickness', 'reserves', 'dayOff', 'halfDayOff']),
+    userId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
+  });
+
+  export const updateAttendanceSchema = z.object({
+    startTime: timeSchema.optional().nullable(),
+    endTime: timeSchema.optional().nullable(),
+    status: z.enum(['work', 'sickness', 'reserves', 'dayOff', 'halfDayOff']).optional(),
+  });
+
+  export const monthHistoryQuerySchema = z.object({
+    month: z.string().transform((val) => parseInt(val, 10)).refine((val) => val >= 1 && val <= 12),
+    userId: z.string().transform((val) => BigInt(val)),
+  });
+
+  export const combinedAttendanceSchema = z.object({
+    userId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
+    date: z.string(),
+    startTime: timeSchema,
+    endTime: timeSchema,
+    status: z.literal('work'),
+    timeLogs: z.array(z.object({
+      taskId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
+      duration: z.number().int().positive().optional(),
+      startTime: timeSchema.optional(),
+      endTime: timeSchema.optional(),
+      location: z.enum(['office', 'client', 'home']),
+      description: z.string().optional(),
+    })).min(1, 'At least one time log is required'),
+  });
+  ```
+
+- [ ] Create `backend/src/validators/timeLogs.schema.ts`:
+  ```typescript
+  import { z } from 'zod';
+  
+  const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  const timeSchema = z.string().regex(TIME_REGEX, 'Time must be in HH:mm format');
+
+  export const createTimeLogSchema = z.object({
+    dailyAttendanceId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
+    taskId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
+    duration: z.number().int().positive().optional(),
+    startTime: timeSchema.optional(),
+    endTime: timeSchema.optional(),
+    location: z.enum(['office', 'client', 'home']),
+    description: z.string().optional(),
+  });
+
+  export const updateTimeLogSchema = z.object({
+    taskId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)).optional(),
+    duration: z.number().int().positive().optional(),
+    startTime: timeSchema.optional().nullable(),
+    endTime: timeSchema.optional().nullable(),
+    location: z.enum(['office', 'client', 'home']).optional(),
+    description: z.string().optional().nullable(),
+  });
+
+  export const queryTimeLogsSchema = z.object({
+    dailyAttendanceId: z.string().transform((val) => BigInt(val)),
+  });
+  ```
+
+##### Step 2: Create Services (`services/`)
+
+- [ ] Create `backend/src/services/AttendanceService.ts`:
+  - [ ] Move all Prisma operations from `Attendance.ts`
+  - [ ] Move validation logic (checkOverlap, checkDurationVsLogs, etc.)
+  - [ ] Move exclusive status helpers (checkExclusiveStatusExists, etc.)
+  - [ ] Export static methods for each operation:
+    ```typescript
+    export class AttendanceService {
+      static async createAttendance(data: CreateAttendanceInput): Promise<bigint>;
+      static async getMonthHistory(userId: bigint, month: number): Promise<AttendanceWithLogs[]>;
+      static async updateAttendance(id: bigint, data: UpdateAttendanceInput): Promise<void>;
+      static async checkOverlap(userId: bigint, date: Date, startTime: string | null, endTime: string | null, excludeId?: bigint): Promise<void>;
+      static async checkExclusiveStatusExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>;
+      static async checkAnyAttendanceExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>;
+      static async checkTimeLogsExist(attendanceId: bigint): Promise<number>;
+    }
+    ```
+
+- [ ] Create `backend/src/services/TimeLogsService.ts`:
+  - [ ] Move all Prisma operations from `TimeLogs.ts`
+  - [ ] Move validation helpers
+  - [ ] Export static methods:
+    ```typescript
+    export class TimeLogsService {
+      static async createTimeLog(data: CreateTimeLogInput): Promise<bigint>;
+      static async getTimeLogsByAttendance(attendanceId: bigint): Promise<TimeLog[]>;
+      static async updateTimeLog(id: bigint, data: UpdateTimeLogInput): Promise<void>;
+      static async deleteTimeLog(id: bigint): Promise<void>;
+      static async getTotalLogsDuration(attendanceId: bigint, excludeLogId?: bigint): Promise<number>;
+      static async getTaskWithProject(taskId: bigint): Promise<TaskWithProject>;
+    }
+    ```
+
+- [ ] Rename `backend/src/services/CombinedAttendance.ts` to `CombinedAttendanceService.ts`:
+  - [ ] Export as class with static methods:
+    ```typescript
+    export class CombinedAttendanceService {
+      static async createCombinedAttendance(input: CombinedAttendanceInput): Promise<CombinedAttendanceResult>;
+    }
+    ```
+
+##### Step 3: Create Controllers (`controllers/`)
+
+- [ ] Create `backend/src/controllers/AttendanceController.ts`:
+  ```typescript
+  import { Request, Response, NextFunction } from 'express';
+  import { AttendanceService } from '../services/AttendanceService';
+  import { CombinedAttendanceService } from '../services/CombinedAttendanceService';
+  import { ApiResponse } from '../utils/Response';
+  import { createAttendanceSchema, updateAttendanceSchema, monthHistoryQuerySchema, combinedAttendanceSchema } from '../validators/attendance.schema';
+  import { logAudit } from '../utils/AuditLog';
+
+  export class AttendanceController {
+    static async create(req: Request, res: Response, next: NextFunction) {
+      try {
+        const body = createAttendanceSchema.parse(req.body);
+        const id = await AttendanceService.createAttendance(body);
+        logAudit({ action: 'CREATE_ATTENDANCE', userId: body.userId, entity: 'DailyAttendance', entityId: id, payload: body, req });
+        ApiResponse.success(res, { id: id.toString() }, 201);
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async getMonthHistory(req: Request, res: Response, next: NextFunction) {
+      try {
+        const query = monthHistoryQuerySchema.parse(req.query);
+        const attendances = await AttendanceService.getMonthHistory(query.userId, query.month);
+        ApiResponse.success(res, attendances);
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async update(req: Request, res: Response, next: NextFunction) {
+      try {
+        const id = BigInt(req.params.id);
+        const body = updateAttendanceSchema.parse(req.body);
+        await AttendanceService.updateAttendance(id, body);
+        ApiResponse.success(res, { updated: true });
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async createCombined(req: Request, res: Response, next: NextFunction) {
+      try {
+        const body = combinedAttendanceSchema.parse(req.body);
+        const result = await CombinedAttendanceService.createCombinedAttendance(body);
+        ApiResponse.success(res, { 
+          attendanceId: result.attendanceId.toString(), 
+          timeLogIds: result.timeLogIds.map(id => id.toString()) 
+        }, 201);
+      } catch (error) {
+        next(error);
+      }
+    }
+  }
+  ```
+
+- [ ] Create `backend/src/controllers/TimeLogsController.ts`:
+  ```typescript
+  import { Request, Response, NextFunction } from 'express';
+  import { TimeLogsService } from '../services/TimeLogsService';
+  import { ApiResponse } from '../utils/Response';
+  import { createTimeLogSchema, updateTimeLogSchema, queryTimeLogsSchema } from '../validators/timeLogs.schema';
+
+  export class TimeLogsController {
+    static async create(req: Request, res: Response, next: NextFunction) {
+      try {
+        const body = createTimeLogSchema.parse(req.body);
+        const id = await TimeLogsService.createTimeLog(body);
+        ApiResponse.success(res, { id: id.toString() }, 201);
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async getByAttendance(req: Request, res: Response, next: NextFunction) {
+      try {
+        const query = queryTimeLogsSchema.parse(req.query);
+        const logs = await TimeLogsService.getTimeLogsByAttendance(query.dailyAttendanceId);
+        ApiResponse.success(res, logs);
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async update(req: Request, res: Response, next: NextFunction) {
+      try {
+        const id = BigInt(req.params.id);
+        const body = updateTimeLogSchema.parse(req.body);
+        await TimeLogsService.updateTimeLog(id, body);
+        ApiResponse.success(res, { updated: true });
+      } catch (error) {
+        next(error);
+      }
+    }
+
+    static async delete(req: Request, res: Response, next: NextFunction) {
+      try {
+        const id = BigInt(req.params.id);
+        await TimeLogsService.deleteTimeLog(id);
+        ApiResponse.success(res, { deleted: true });
+      } catch (error) {
+        next(error);
+      }
+    }
+  }
+  ```
+
+##### Step 4: Refactor Routes (`routes/`)
+
+- [ ] Rename `backend/src/routes/Attendance.ts` → `backend/src/routes/attendance.routes.ts`:
+  ```typescript
+  import { Router } from 'express';
+  import { AttendanceController } from '../controllers/AttendanceController';
+  // import { authMiddleware } from '../middleware/AuthMiddleware'; // Uncomment when auth ready
+
+  const router = Router();
+
+  // router.use(authMiddleware); // Uncomment when auth ready
+
+  router.post('/', AttendanceController.create);
+  router.post('/combined', AttendanceController.createCombined);
+  router.get('/month-history', AttendanceController.getMonthHistory);
+  router.put('/:id', AttendanceController.update);
+
+  export default router;
+  ```
+
+- [ ] Rename `backend/src/routes/TimeLogs.ts` → `backend/src/routes/timeLogs.routes.ts`:
+  ```typescript
+  import { Router } from 'express';
+  import { TimeLogsController } from '../controllers/TimeLogsController';
+  // import { authMiddleware } from '../middleware/AuthMiddleware'; // Uncomment when auth ready
+
+  const router = Router();
+
+  // router.use(authMiddleware); // Uncomment when auth ready
+
+  router.post('/', TimeLogsController.create);
+  router.get('/', TimeLogsController.getByAttendance);
+  router.put('/:id', TimeLogsController.update);
+  router.delete('/:id', TimeLogsController.delete);
+
+  export default router;
+  ```
+
+##### Step 5: Update App Entry Point
+
+- [ ] Update `backend/src/app.ts` to use new route files:
+  ```typescript
+  import attendanceRoutes from './routes/attendance.routes';
+  import timeLogsRoutes from './routes/timeLogs.routes';
+
+  app.use('/api/attendance', attendanceRoutes);
+  app.use('/api/time-logs', timeLogsRoutes);
+  ```
+
+##### Step 6: Auth Integration Preparation
+
+- [ ] Add commented auth middleware imports in route files (ready to uncomment when Member 1 completes auth)
+- [ ] Add `// TODO: Replace with req.user.id when auth ready` comments where userId is used
+- [ ] Prepare ownership validation helpers in services:
+  ```typescript
+  // In AttendanceService
+  static async validateOwnership(attendanceId: bigint, userId: bigint): Promise<void> {
+    const attendance = await prisma.dailyAttendance.findUnique({ where: { id: attendanceId } });
+    if (!attendance || attendance.userId !== userId) {
+      throw new AppError('FORBIDDEN', 'Access denied', 403);
+    }
+  }
+  ```
+
+##### Step 7: Update Tests
+
+- [ ] Update test imports to use new paths
+- [ ] Keep existing test logic (no behavior changes)
+- [ ] Add unit tests for services in `backend/src/services/*.test.ts`
+
+---
+
+##### File Ownership Map Update (Member 2)
+
+```
+backend/src/
+├── controllers/
+│   ├── AttendanceController.ts
+│   └── TimeLogsController.ts
+├── services/
+│   ├── AttendanceService.ts
+│   ├── TimeLogsService.ts
+│   └── CombinedAttendanceService.ts
+├── routes/
+│   ├── attendance.routes.ts
+│   └── timeLogs.routes.ts
+├── validators/
+│   ├── attendance.schema.ts
+│   └── timeLogs.schema.ts
+└── utils/
+    └── TimeValidation.ts
+```
+
+---
+
+##### Implementation Order
+
+| Priority | Task | Reason |
+|----------|------|--------|
+| 1 | Create `validators/` | No dependencies, extracts existing code |
+| 2 | Create `utils/TimeValidation.ts` | Required by services |
+| 3 | Create `services/` | Extracts business logic from routes |
+| 4 | Create `controllers/` | Thin layer that calls services |
+| 5 | Refactor `routes/` | Now just defines paths |
+| 6 | Update tests | Ensure nothing broke |
+
+---
+
+- **Coverage Target**: Maintain existing ≥60% coverage after refactoring
+- **Validation**: All existing API contracts remain unchanged, tests pass
+
+---
 
 #### TASK-M2-012: Project Selector Backend
 - [ ] Create `backend/src/services/ProjectSelector.ts`
@@ -663,6 +1550,8 @@ backend/src/
 ├── routes/TimeLogs.ts
 ├── routes/Projects.ts (selector endpoint)
 ├── services/ProjectSelector.ts
+├── services/CombinedAttendance.ts
+├── utils/TimeValidation.ts
 └── services/Cache.ts
 
 frontend_user/src/

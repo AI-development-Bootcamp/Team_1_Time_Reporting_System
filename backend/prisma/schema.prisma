@@ -34,6 +34,11 @@ enum LocationStatus {
   home
 }
 
+enum ReportingType {
+  duration
+  startEnd
+}
+
 // Models
 model User {
   id        BigInt   @id @default(autoincrement())
@@ -68,16 +73,17 @@ model Client {
 }
 
 model Project {
-  id               BigInt   @id @default(autoincrement())
+  id               BigInt        @id @default(autoincrement())
   name             String
-  clientId         BigInt   @map("client_id")
-  projectManagerId BigInt   @map("project_manager_id")
-  startDate        DateTime @map("start_date") @db.Date
-  endDate          DateTime? @map("end_date") @db.Date
+  clientId         BigInt        @map("client_id")
+  projectManagerId BigInt        @map("project_manager_id")
+  startDate        DateTime      @map("start_date") @db.Date
+  endDate          DateTime?     @map("end_date") @db.Date
   description      String?
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  reportingType    ReportingType @default(startEnd) @map("reporting_type")
+  active           Boolean       @default(true)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   client          Client @relation(fields: [clientId], references: [id])
