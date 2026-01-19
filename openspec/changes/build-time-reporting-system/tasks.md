@@ -184,6 +184,36 @@ Current `backend/prisma/schema.prisma` issues:
 
 **Feature Owner**: Attendance, Time Logs, Project Selector (full-stack)
 
+---
+
+#### 🔐 AUTH REQUIREMENTS FOR ALL MEMBER 2 ENDPOINTS
+
+**IMPORTANT**: All Member 2 endpoints MUST only allow valid, authenticated users.
+
+| Endpoint | Auth Required | Ownership Check |
+|----------|---------------|-----------------|
+| `POST /api/attendance` | ✅ Yes | User can only create for themselves |
+| `POST /api/attendance/combined` | ✅ Yes | User can only create for themselves |
+| `GET /api/attendance/month-history` | ✅ Yes | User can only view their own data |
+| `PUT /api/attendance/:id` | ✅ Yes | User can only update their own attendance |
+| `POST /api/time-logs` | ✅ Yes | Attendance must belong to user |
+| `GET /api/time-logs` | ✅ Yes | Attendance must belong to user |
+| `PUT /api/time-logs/:id` | ✅ Yes | Time log must belong to user's attendance |
+| `DELETE /api/time-logs/:id` | ✅ Yes | Time log must belong to user's attendance |
+| `GET /api/projects/selector` | ✅ Yes | Returns only user's assigned projects |
+
+**Implementation Requirements:**
+1. Apply `authMiddleware` to all routes (after Member 1 completes TASK-M1-010)
+2. Use `req.user.id` instead of `userId` from request body/query
+3. Validate that the user exists in the `users` table
+4. Enforce ownership: users can only access/modify their own data
+5. Return `401 Unauthorized` if no valid token
+6. Return `403 Forbidden` if trying to access another user's data
+
+**Current State**: Endpoints work without auth for development/testing. Auth integration is pending Member 1's TASK-M1-010.
+
+---
+
 #### TASK-M2-010: Attendance Backend (Per `doc/api/API.md` Section 7)
 - [x] Create `backend/src/routes/Attendance.ts`
 - [x] Wire Attendance routes in `backend/src/index.ts`
@@ -329,6 +359,11 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] Integration: time range validation (endTime > startTime)
 - **Coverage Target**: ≥60% for combined save service + route ✅
 - **Validation**: "Save" only succeeds when all validations pass and logs sum >= attendance duration ✅
+- [ ] **Auth integration (after TASK-M1-010):**
+  - [ ] Apply auth middleware to combined endpoint
+  - [ ] Use `req.user.id` instead of `userId` from request body
+  - [ ] Validate user exists in database before creating records
+  - [ ] Update tests to include auth (token or mocked user context)
 
 ---
 
@@ -1214,6 +1249,12 @@ backend/src/
 - [ ] Implement cache refresh triggers:
   - [ ] On POST /api/admin/assignments
   - [ ] On POST /api/attendance
+- [ ] **Auth integration (after TASK-M1-010):**
+  - [ ] Apply auth middleware to Project Selector routes
+  - [ ] Use `req.user.id` to get assignments for authenticated user only
+  - [ ] Validate user exists in database
+  - [ ] Return only projects/tasks the authenticated user is assigned to
+  - [ ] Update tests to include auth (token or mocked user context)
 - [ ] Tests (backend):
   - [ ] Unit: grouping by client/project/task
   - [ ] Unit: frequency ordering from last 7 days
