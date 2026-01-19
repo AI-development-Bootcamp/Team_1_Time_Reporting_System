@@ -40,14 +40,19 @@ export function ReportingSettingsSearch({
       placeholder={placeholder}
       value={searchValue}
       onChange={(event) => setSearchValue(event.currentTarget.value)}
-      rightSection={<span style={{ opacity: 0.5 }}>🔍</span>}
+      leftSection={<span style={{ opacity: 0.5 }}>🔍</span>}
       styles={{
-        input: {
-          textAlign: 'right',
-          direction: 'rtl',
+        root: {
+          width: '100%',
         },
-        wrapper: {
-          maxWidth: 300,
+        input: {
+          textAlign: 'left',
+          direction: 'ltr',
+          height: 40,
+          borderRadius: 8,
+          borderWidth: 1,
+          padding: '12px 12px 12px 40px',
+          fontFamily: 'SimplerPro, sans-serif',
         },
       }}
     />

@@ -19,8 +19,16 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={{ dir: 'rtl' }}>
-        <Notifications position="top-right" />
+      <MantineProvider 
+        theme={{ 
+          dir: 'rtl',
+          fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+          headings: {
+            fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+          },
+        }}
+      >
+        <Notifications position="top-right" autoClose={3000} />
         <App />
       </MantineProvider>
     </QueryClientProvider>

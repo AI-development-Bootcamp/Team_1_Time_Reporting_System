@@ -1,4 +1,4 @@
-import { Container, Title, Text, Stack, Alert, Button, Skeleton, Paper } from '@mantine/core';
+import { Container, Title, Text, Stack, Alert, Button, Skeleton, Paper, Box } from '@mantine/core';
 import { useState, useMemo, useEffect } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useReportingSettings } from '../hooks/useReportingSettings';
@@ -74,20 +74,49 @@ function ReportingSettingsPage() {
   };
 
   return (
-    <Container size="xl" py="xl" dir="rtl">
-      <Stack gap="md">
-        {/* Page Title */}
-        <Title order={1} ta="right">הגדרת דיווחי שעות</Title>
-        
-        {/* Page Subtitle */}
-        <Text c="dimmed" size="sm" ta="right">
-          כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
-        </Text>
+    <Container 
+      size="xl" 
+      dir="rtl" 
+      style={{ 
+        maxWidth: '100%',
+        width: '100%',
+        height: '100vh',
+        overflow: 'hidden',
+        padding: '24px 32px',
+        fontFamily: 'SimplerPro, sans-serif',
+      }}
+    >
+      <Stack gap={8}>
+        {/* Page Title and Search Bar Row */}
+        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+          <Box style={{ flex: 1 }}>
+            {/* Page Title */}
+            <Title 
+              order={2} 
+              ta="right" 
+              style={{ 
+                fontSize: '24px',
+                fontWeight: 700,
+                marginBottom: 4,
+                fontFamily: 'SimplerPro, sans-serif',
+              }}
+            >
+              הגדרת דיווחי שעות
+            </Title>
+            
+            {/* Page Subtitle */}
+            <Text c="dimmed" size="sm" ta="right" style={{ marginTop: 0, fontFamily: 'SimplerPro, sans-serif' }}>
+              כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
+            </Text>
+          </Box>
 
-        {/* Search Bar */}
-        {!isLoading && !isError && (
-          <ReportingSettingsSearch onSearchChange={setSearchValue} />
-        )}
+          {/* Search Bar */}
+          {!isLoading && !isError && (
+            <Box style={{ width: 350, flexShrink: 0 }}>
+              <ReportingSettingsSearch onSearchChange={setSearchValue} />
+            </Box>
+          )}
+        </Box>
 
         {/* Loading State with Skeleton */}
         {isLoading && (
@@ -117,9 +146,9 @@ function ReportingSettingsPage() {
           </Alert>
         )}
 
-        {/* Settings Table */}
+        {/* Settings Table and Pagination Container */}
         {!isLoading && !isError && (
-          <>
+          <Stack gap={0} style={{ flex: 1, maxWidth: '100%', overflow: 'hidden' }}>
             <ReportingSettingsTable
               projects={paginatedProjects}
               onReportingTypeChange={handleReportingTypeChange}
@@ -134,7 +163,7 @@ function ReportingSettingsPage() {
                 onPageChange={setCurrentPage}
               />
             )}
-          </>
+          </Stack>
         )}
       </Stack>
     </Container>

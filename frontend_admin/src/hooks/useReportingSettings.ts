@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// TODO: Uncomment these imports when backend is ready
-// import { apiClient } from '../utils/ApiClient';
-// import { apiClient as sharedApiClient } from '@shared/utils/ApiClient';
+import { apiClient } from '../utils/ApiClient';
+import { apiClient as sharedApiClient } from '@shared/utils/ApiClient';
 import type { Project, ReportingType } from '../types/Project';
+import type { Client } from '../types/Client';
 
 /**
  * Project with Client data joined
@@ -30,111 +30,43 @@ export function useReportingSettings() {
   /**
    * Fetch all projects with client data joined
    * 
-   * TODO: Remove mock data once backend endpoint is implemented by Member 3
+   * Fetches projects and clients from the backend, then joins them on the frontend
+   * Only returns active projects
    */
   const projectsQuery = useQuery<ProjectWithClient[]>({
     queryKey,
     queryFn: async () => {
-      // TEMPORARY MOCK DATA - Replace with actual API call once backend is ready
-      // Uncomment the lines below when backend is implemented:
-      // const response = await sharedApiClient.get<ProjectWithClient[]>('/admin/projects');
-      // return response.data;
-      
-      // Mock data for testing
-      return [
-        {
-          id: 1,
-          name: "Frontend Development",
-          clientId: 1,
-          projectManagerId: 1,
-          startDate: "2026-01-01",
-          endDate: null,
-          description: "Building the admin dashboard",
-          reportingType: "startEnd",
-          active: true,
-          createdAt: "2026-01-01T09:00:00.000Z",
-          updatedAt: "2026-01-10T09:00:00.000Z",
+      // Fetch both projects and clients in parallel
+      const [projectsResponse, clientsResponse] = await Promise.all([
+        sharedApiClient.get<Project[]>('/admin/projects'),
+        sharedApiClient.get<Client[]>('/admin/clients')
+      ]);
+
+      const projects = projectsResponse.data;
+      const clients = clientsResponse.data;
+
+      // Create a map of clients for quick lookup
+      const clientMap = new Map(clients.map(c => [c.id, c]));
+
+      // Filter active projects and join with client data
+      const activeProjects = projects
+        .filter(p => p.active) // Only show active projects
+        .map(project => ({
+          ...project,
           client: {
-            id: 1,
-            name: "Tech Corp"
+            id: project.clientId,
+            name: clientMap.get(project.clientId)?.name || 'Unknown Client'
           }
-        },
-        {
-          id: 2,
-          name: "Backend API",
-          clientId: 1,
-          projectManagerId: 1,
-          startDate: "2026-01-01",
-          endDate: null,
-          description: "REST API development",
-          reportingType: "duration",
-          active: true,
-          createdAt: "2026-01-01T09:00:00.000Z",
-          updatedAt: "2026-01-10T09:00:00.000Z",
-          client: {
-            id: 1,
-            name: "Tech Corp"
-          }
-        },
-        {
-          id: 3,
-          name: "Mobile App",
-          clientId: 2,
-          projectManagerId: 1,
-          startDate: "2026-01-15",
-          endDate: "2026-06-30",
-          description: "iOS and Android development",
-          reportingType: "startEnd",
-          active: true,
-          createdAt: "2026-01-15T09:00:00.000Z",
-          updatedAt: "2026-01-15T09:00:00.000Z",
-          client: {
-            id: 2,
-            name: "Startup Ltd"
-          }
-        },
-        {
-          id: 4,
-          name: "Database Migration",
-          clientId: 2,
-          projectManagerId: 1,
-          startDate: "2026-02-01",
-          endDate: null,
-          description: "PostgreSQL migration",
-          reportingType: "duration",
-          active: true,
-          createdAt: "2026-02-01T09:00:00.000Z",
-          updatedAt: "2026-02-01T09:00:00.000Z",
-          client: {
-            id: 2,
-            name: "Startup Ltd"
-          }
-        },
-        {
-          id: 5,
-          name: "DevOps Setup",
-          clientId: 3,
-          projectManagerId: 1,
-          startDate: "2026-01-10",
-          endDate: null,
-          description: "CI/CD pipeline setup",
-          reportingType: "startEnd",
-          active: true,
-          createdAt: "2026-01-10T09:00:00.000Z",
-          updatedAt: "2026-01-10T09:00:00.000Z",
-          client: {
-            id: 3,
-            name: "Enterprise Inc"
-          }
-        }
-      ];
+        }));
+
+      return activeProjects;
     },
   });
 
   /**
    * Update project reporting type with optimistic updates
    * 
-   * TODO: Remove mock mutation once backend endpoint is implemented by Member 3
+   * Sends PATCH request to backend and updates local cache optimistically
    */
   const updateReportingTypeMutation = useMutation({
     mutationFn: async ({
@@ -144,16 +76,7 @@ export function useReportingSettings() {
       projectId: number;
       reportingType: ReportingType;
     }) => {
-      // TEMPORARY MOCK - Replace with actual API call once backend is ready
-      // Uncomment the line below when backend is implemented:
-      // return await apiClient.patchProjectReportingType(projectId, reportingType);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Mock successful response
-      console.log(`Mock: Updated project ${projectId} to reporting type: ${reportingType}`);
-      return { success: true, data: { updated: true } } as any;
+      return await apiClient.patchProjectReportingType(projectId, reportingType);
     },
 
     // Optimistic update: update local state immediately
@@ -190,14 +113,7 @@ export function useReportingSettings() {
 
     // Invalidate and refetch on success
     onSuccess: () => {
-      // TODO: Uncomment when using real backend
-      // queryClient.invalidateQueries({ queryKey });
-      
-      // With mock data, we don't need to invalidate because:
-      // 1. There's no server state to sync
-      // 2. Invalidation would overwrite our optimistic update with stale mock data
-      // The optimistic update already reflects the change correctly
-      console.log('Mock: Update successful (no refetch needed with mock data)');
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 

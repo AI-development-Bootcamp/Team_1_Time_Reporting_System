@@ -8,7 +8,7 @@ function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<div><h1>מערכת דיווח שעות - ניהול</h1></div>} />
-          <Route path="/settings/reporting" element={<ReportingSettingsPage />} />
+          <Route path="/client-management/reporting-setting" element={<ReportingSettingsPage />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>

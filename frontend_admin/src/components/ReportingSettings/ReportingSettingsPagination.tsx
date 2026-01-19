@@ -33,7 +33,7 @@ export function ReportingSettingsPagination({
   onPageChange,
 }: ReportingSettingsPaginationProps) {
   return (
-    <Center mt="md">
+    <Center style={{ height: 50, padding: '8px 0', fontFamily: 'SimplerPro, sans-serif' }}>
       <Pagination
         value={currentPage}
         onChange={onPageChange}
@@ -41,6 +41,12 @@ export function ReportingSettingsPagination({
         siblings={1}
         boundaries={1}
         withEdges
+        size="sm"
+        styles={{
+          control: {
+            fontFamily: 'SimplerPro, sans-serif',
+          },
+        }}
       />
     </Center>
   );

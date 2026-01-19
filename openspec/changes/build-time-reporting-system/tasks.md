@@ -537,7 +537,7 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] Use `useMemo` for filtered results
 
 ##### Pagination
-- [x] 30.10 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsPagination.tsx`:
+image.png- [x] 30.10 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsPagination.tsx`:
   - [x] Mantine Pagination component
   - [x] Items per page: 10 (configurable)
   - [x] Display: page numbers with arrows
@@ -557,25 +557,36 @@ Current `backend/prisma/schema.prisma` issues:
 - [x] 30.17 Add icon for the menu item (clock/settings icon)
 
 ##### UI Polish & Backend Integration
-- [ ] 30.18 UI Polish and Refinement:
-  - [ ] TODO: Add specific styling requirements here
-  - [ ] Review spacing and padding across all components
-  - [ ] Verify RTL layout works correctly in all states
-  - [ ] Ensure consistent styling with other admin pages
+- [x] 30.18 UI Polish and Refinement:
+  - [x] Styled sidebar with #141e3e background, proper dimensions (280px width)
+  - [x] Added abraLogo_inverted.png to sidebar header
+  - [x] Styled table with correct row heights (header: 36px, data rows: 48px)
+  - [x] Added column borders for visual separation
+  - [x] Implemented search bar with correct dimensions (350px width, 40px height)
+  - [x] Added empty state with web_empty_list.png image
+  - [x] Applied SimplerPro font family throughout all components
+  - [x] Added hover effects for navigation buttons (#4a6fa5)
+  - [x] Added admin profile section with bottom_logo.png and dynamic name from localStorage
+  - [x] Verified RTL layout works correctly in all states
+  - [x] Ensured page fits within 1080px height without vertical scrolling
+  - [x] Removed hover effect from table rows
+  - [x] Configured toast notifications to auto-close after 3 seconds
 
-- [ ] 30.19 Remove Mock Data and Connect Real Backend:
-  - [ ] **Prerequisite**: Member 3 completes `GET /api/admin/projects` endpoint (Task M3-011)
-  - [ ] **Prerequisite**: Member 3 completes `PATCH /api/admin/projects/:id` endpoint
-  - [ ] In `frontend_admin/src/hooks/useReportingSettings.ts`:
-    - [ ] Remove mock data array from queryFn (lines 44-130)
-    - [ ] Uncomment real API call: `sharedApiClient.get<ProjectWithClient[]>('/admin/projects')`
-    - [ ] Remove mock mutation function (lines 146-155)
-    - [ ] Uncomment real API call: `apiClient.patchProjectReportingType(projectId, reportingType)`
-    - [ ] Uncomment imports for apiClient and sharedApiClient (lines 2-4)
-    - [ ] Uncomment `queryClient.invalidateQueries({ queryKey })` in onSuccess (line 192)
-    - [ ] Remove console.log statements from mock code
-  - [ ] In `frontend_admin/src/pages/ReportingSettingsPage.tsx`:
-    - [ ] Optional: Remove or keep console.log from handleReportingTypeChange (line 9) for debugging
+- [x] 30.19 Remove Mock Data and Connect Real Backend:
+  - [x] **Prerequisite**: Member 3 completes `GET /api/admin/projects` endpoint (Task M3-011)
+  - [x] **Prerequisite**: Member 3 completes `PATCH /api/admin/projects/:id` endpoint
+  - [x] **Prerequisite**: Member 3 completes `GET /api/admin/clients` endpoint
+  - [x] Created `frontend_admin/src/types/Client.ts` with Client interface
+  - [x] In `frontend_admin/src/hooks/useReportingSettings.ts`:
+    - [x] Removed mock data array from queryFn
+    - [x] Implemented real API calls to fetch both projects and clients in parallel
+    - [x] Joined projects with clients on frontend using clientId
+    - [x] Added filter for active projects only (`projects.filter(p => p.active)`)
+    - [x] Removed mock mutation function
+    - [x] Implemented real API call: `apiClient.patchProjectReportingType(projectId, reportingType)`
+    - [x] Uncommented imports for apiClient and sharedApiClient
+    - [x] Uncommented `queryClient.invalidateQueries({ queryKey })` in onSuccess
+    - [x] Removed console.log statements from mock code
   - [ ] Test end-to-end with real backend:
     - [ ] Verify projects load from database
     - [ ] Verify reporting type updates persist to database

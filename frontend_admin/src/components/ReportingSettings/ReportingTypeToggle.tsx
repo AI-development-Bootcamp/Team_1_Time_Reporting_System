@@ -46,6 +46,11 @@ export function ReportingTypeToggle({
           value="duration"
           label="סכום שעות"
           disabled={disabled}
+          styles={{
+            label: {
+              fontFamily: 'SimplerPro, sans-serif',
+            },
+          }}
         />
         
         {/* Start/End Times - Default */}
@@ -53,6 +58,11 @@ export function ReportingTypeToggle({
           value="startEnd"
           label="כניסה / יציאה"
           disabled={disabled}
+          styles={{
+            label: {
+              fontFamily: 'SimplerPro, sans-serif',
+            },
+          }}
         />
       </Group>
     </Radio.Group>
