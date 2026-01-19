@@ -262,6 +262,27 @@ Current `backend/prisma/schema.prisma` issues:
 - **Coverage Target**: ≥60% for TimeLogs route + helpers
 - **Validation**: Time logs work, multiple entries allowed, location required
 
+#### TASK-M2-011A: Combined Attendance + Time Logs Save (Atomic Flow)
+- [ ] Confirm API shape for combined save (new endpoint vs reuse existing)
+- [ ] Define request/response schema for combined save:
+  - [ ] Body: DailyAttendance fields + array of ProjectTimeLogs
+  - [ ] Return: `{ success: true, data: { attendanceId, timeLogIds[] } }`
+- [ ] Create service to perform atomic save with Prisma transaction:
+  - [ ] Validate attendance payload (overlap, time order)
+  - [ ] Validate time logs payload (required fields, duration > 0, location)
+  - [ ] Create DailyAttendance record
+  - [ ] Create ProjectTimeLogs records (use returned attendanceId)
+  - [ ] Validate total logs duration >= attendance duration
+  - [ ] Roll back on any failure (no partial saves)
+- [ ] Add route handler that calls the service and returns standard response
+- [ ] Decide whether to keep POST `/api/attendance` for non-combined flow
+- [ ] Tests (backend):
+  - [ ] Integration: success path creates attendance + logs atomically
+  - [ ] Integration: failure in logs rejects attendance creation
+  - [ ] Integration: duration-vs-logs failure rolls back all inserts
+- **Coverage Target**: ≥60% for combined save service + route
+- **Validation**: “Save” only succeeds when logs exist and totals are valid
+
 #### TASK-M2-012: Project Selector Backend
 - [ ] Create `backend/src/services/ProjectSelector.ts`
 - [ ] Define grouped response shape (Client → Project → Task) with ids/names
