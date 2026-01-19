@@ -242,13 +242,24 @@ Current `backend/prisma/schema.prisma` issues:
   - [ ] Required fields present (dailyAttendanceId, taskId, location)
   - [ ] Return `VALIDATION_ERROR` on failure
 - [ ] Validate attendance exists before creating time log
+- [ ] Validate task exists before creating time log
+- [ ] Allow overlapping time logs (per API spec)
 - [ ] Implement `GET /api/time-logs?dailyAttendanceId=X`
+  - [ ] Return flat list (no nested task/project/client)
 - [ ] Implement `PUT /api/time-logs/:id`
 - [ ] Implement `DELETE /api/time-logs/:id`
 - [ ] Re-check attendance duration rule after log create/update/delete:
   - [ ] Block if total logs would become < attendance duration
+- [ ] Return `NOT_FOUND` when attendance or task does not exist
+- [ ] Return `MONTH_LOCKED` when attendance date is locked
 - [ ] Add backend guard to prevent partial saves in combined flow:
   - [ ] If a log mutation fails, return error without leaving inconsistent totals
+- [ ] **Auth integration (after TASK-M1-010):**
+  - [ ] Apply auth middleware to Time Logs routes
+  - [ ] Enforce ownership on POST (dailyAttendance belongs to authenticated user)
+  - [ ] Enforce ownership on GET (only return logs for user attendance)
+  - [ ] Enforce ownership on update/delete (log belongs to authenticated user)
+  - [ ] Update tests to include auth (token or mocked user context)
 - [ ] Tests (backend):
   - [ ] Unit: duration mapping and validation, location validation
   - [ ] Integration: create/update/delete time logs
