@@ -330,11 +330,13 @@ Current `backend/prisma/schema.prisma` issues:
 
 ---
 
-#### TASK-M2-011B: Schema Changes for Time Logs (startTime/endTime columns)
+#### TASK-M2-011B: Schema Changes for Time Logs (startTime/endTime columns) ✅ COMPLETED
 
 **Purpose**: Add startTime/endTime columns to ProjectTimeLogs for projects with reportingType=startEnd
 
-- [ ] Update Prisma schema - add to `ProjectTimeLogs` model:
+**Status**: ✅ COMPLETED - All 153 tests passing (10 new tests for reporting types)
+
+- [x] Update Prisma schema - add to `ProjectTimeLogs` model:
   ```prisma
   model ProjectTimeLogs {
     // ... existing fields ...
@@ -344,23 +346,23 @@ Current `backend/prisma/schema.prisma` issues:
     // ... rest of fields ...
   }
   ```
-- [ ] Create migration: `npx prisma migrate dev --name add_timelog_start_end`
-- [ ] Update `POST /api/time-logs` to handle both reportingTypes:
-  - [ ] Get task's project to check `reportingType`
-  - [ ] If `reportingType = startEnd`:
-    - [ ] Require startTime and endTime in request
-    - [ ] Validate `endTime > startTime`
-    - [ ] Validate no midnight crossing (`endTime <= 23:59`)
-    - [ ] Calculate `durationMin` from endTime - startTime
-    - [ ] Store all three: startTime, endTime, durationMin
-  - [ ] If `reportingType = duration`:
-    - [ ] Require duration in request
-    - [ ] Store durationMin, set startTime/endTime to NULL
-- [ ] Update `PUT /api/time-logs/:id` to handle reportingType:
-  - [ ] Check project's current reportingType (may have changed since creation)
-  - [ ] If `reportingType = startEnd`: require startTime/endTime, recalculate duration
-  - [ ] If `reportingType = duration`: accept duration, set startTime/endTime to NULL
-- [ ] Update Zod schemas:
+- [x] Create migration: `npx prisma migrate dev --name add_timelog_start_end`
+- [x] Update `POST /api/time-logs` to handle both reportingTypes:
+  - [x] Get task's project to check `reportingType`
+  - [x] If `reportingType = startEnd`:
+    - [x] Require startTime and endTime in request
+    - [x] Validate `endTime > startTime`
+    - [x] Validate no midnight crossing (`endTime <= 23:59`)
+    - [x] Calculate `durationMin` from endTime - startTime
+    - [x] Store all three: startTime, endTime, durationMin
+  - [x] If `reportingType = duration`:
+    - [x] Require duration in request
+    - [x] Store durationMin, set startTime/endTime to NULL
+- [x] Update `PUT /api/time-logs/:id` to handle reportingType:
+  - [x] Check project's current reportingType (may have changed since creation)
+  - [x] If `reportingType = startEnd`: require startTime/endTime, recalculate duration
+  - [x] If `reportingType = duration`: accept duration, set startTime/endTime to NULL
+- [x] Update Zod schemas (already had optional startTime/endTime):
   ```typescript
   const createTimeLogSchema = z.object({
     dailyAttendanceId: z.bigint(),
@@ -372,14 +374,14 @@ Current `backend/prisma/schema.prisma` issues:
     description: z.string().optional(),
   });
   ```
-- [ ] Tests (backend):
-  - [ ] Unit: duration calculation from startTime/endTime
-  - [ ] Integration: create time log for startEnd project stores all 3 fields
-  - [ ] Integration: create time log for duration project stores only durationMin
-  - [ ] Integration: update time log when project type changed (duration→startEnd)
-  - [ ] Integration: midnight crossing validation for startEnd projects
-- **Coverage Target**: ≥60% for updated time log endpoints
-- **Validation**: Time logs correctly handle both project reporting types
+- [x] Tests (backend):
+  - [x] Unit: duration calculation from startTime/endTime
+  - [x] Integration: create time log for startEnd project stores all 3 fields
+  - [x] Integration: create time log for duration project stores only durationMin
+  - [x] Integration: update time log when project type changed (duration→startEnd)
+  - [x] Integration: midnight crossing validation for startEnd projects
+- **Coverage Target**: ≥60% for updated time log endpoints ✅
+- **Validation**: Time logs correctly handle both project reporting types ✅
 
 ---
 

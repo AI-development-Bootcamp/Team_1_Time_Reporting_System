@@ -1,6 +1,13 @@
-import { PrismaClient, LocationStatus } from '@prisma/client';
+import { PrismaClient, LocationStatus, ReportingType } from '@prisma/client';
 import { AppError } from '../middleware/ErrorHandler';
-import { calculateDurationFromDates } from '../utils/TimeValidation';
+import {
+  calculateDurationFromDates,
+  calculateDurationMinutes,
+  timeStringToDate,
+  dateToTimeString,
+  validateTimeRange,
+  validateNoMidnightCrossing,
+} from '../utils/TimeValidation';
 
 const prisma = new PrismaClient();
 
@@ -11,14 +18,18 @@ const prisma = new PrismaClient();
 export interface CreateTimeLogData {
   dailyAttendanceId: bigint;
   taskId: bigint;
-  duration: number;
+  duration?: number;           // Required for duration-based projects
+  startTime?: string | null;   // Required for startEnd-based projects (HH:mm)
+  endTime?: string | null;     // Required for startEnd-based projects (HH:mm)
   location: LocationStatus;
   description?: string | null;
 }
 
 export interface UpdateTimeLogData {
   taskId?: bigint;
-  duration?: number;
+  duration?: number;           // For duration-based projects
+  startTime?: string | null;   // For startEnd-based projects (HH:mm)
+  endTime?: string | null;     // For startEnd-based projects (HH:mm)
   location?: LocationStatus;
   description?: string | null;
 }
@@ -28,6 +39,8 @@ export interface SerializedTimeLog {
   dailyAttendanceId: string;
   taskId: string;
   duration: number;
+  startTime: string | null;    // HH:mm format or null
+  endTime: string | null;      // HH:mm format or null
   location: string;
   description: string | null;
   createdAt: string;
@@ -86,6 +99,82 @@ async function validateTaskExists(taskId: bigint): Promise<void> {
 }
 
 /**
+ * Get task with its project's reporting type
+ */
+async function getTaskWithProject(taskId: bigint): Promise<{
+  task: { id: bigint; projectId: bigint };
+  reportingType: ReportingType;
+}> {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      project: {
+        select: { reportingType: true },
+      },
+    },
+  });
+
+  if (!task) {
+    throw new AppError('NOT_FOUND', 'Task not found', 404);
+  }
+
+  return {
+    task: { id: task.id, projectId: task.projectId },
+    reportingType: task.project.reportingType,
+  };
+}
+
+/**
+ * Calculate and validate time log fields based on reporting type
+ * Returns the values to store in database
+ */
+function processTimeLogFields(
+  reportingType: ReportingType,
+  data: { duration?: number; startTime?: string | null; endTime?: string | null }
+): { durationMin: number; startTime: Date | null; endTime: Date | null } {
+  if (reportingType === 'startEnd') {
+    // For startEnd projects: require startTime and endTime
+    if (!data.startTime || !data.endTime) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        'Project requires startTime and endTime (reportingType=startEnd)',
+        400
+      );
+    }
+
+    // Validate time range and no midnight crossing
+    validateTimeRange(data.startTime, data.endTime);
+    validateNoMidnightCrossing(data.endTime);
+
+    // Calculate duration from times
+    const durationMin = calculateDurationMinutes(data.startTime, data.endTime);
+
+    return {
+      durationMin,
+      startTime: timeStringToDate(data.startTime),
+      endTime: timeStringToDate(data.endTime),
+    };
+  } else {
+    // For duration projects: require duration
+    if (data.duration === undefined || data.duration === null) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        'Project requires duration in minutes (reportingType=duration)',
+        400
+      );
+    }
+
+    validateDuration(data.duration);
+
+    return {
+      durationMin: data.duration,
+      startTime: null,
+      endTime: null,
+    };
+  }
+}
+
+/**
  * Validate duration is positive integer
  */
 function validateDuration(duration: number): void {
@@ -139,17 +228,24 @@ async function checkDurationVsLogsRule(
 export class TimeLogsService {
   /**
    * Create a new time log
+   * Handles both reportingType=duration and reportingType=startEnd projects
    */
   static async createTimeLog(data: CreateTimeLogData): Promise<bigint> {
     // Validate attendance exists
     await getAttendanceOrThrow(data.dailyAttendanceId);
 
-    // Validate task exists
-    await validateTaskExists(data.taskId);
+    // Get task and project's reporting type
+    const { reportingType } = await getTaskWithProject(data.taskId);
 
-    // Additional validations
-    validateDuration(data.duration);
+    // Validate location
     validateLocation(data.location);
+
+    // Process time fields based on reporting type
+    const { durationMin, startTime, endTime } = processTimeLogFields(reportingType, {
+      duration: data.duration,
+      startTime: data.startTime,
+      endTime: data.endTime,
+    });
 
     // Note: Overlapping time logs are allowed per API spec
 
@@ -158,7 +254,9 @@ export class TimeLogsService {
       data: {
         dailyAttendanceId: data.dailyAttendanceId,
         taskId: data.taskId,
-        durationMin: data.duration,
+        durationMin,
+        startTime,
+        endTime,
         location: data.location,
         description: data.description || null,
       },
@@ -189,6 +287,8 @@ export class TimeLogsService {
       dailyAttendanceId: log.dailyAttendanceId.toString(),
       taskId: log.taskId.toString(),
       duration: log.durationMin,
+      startTime: log.startTime ? dateToTimeString(log.startTime) : null,
+      endTime: log.endTime ? dateToTimeString(log.endTime) : null,
       location: log.location,
       description: log.description,
       createdAt: log.createdAt.toISOString(),
@@ -198,6 +298,7 @@ export class TimeLogsService {
 
   /**
    * Update an existing time log
+   * Handles reportingType changes - requires appropriate fields based on current project type
    */
   static async updateTimeLog(id: bigint, data: UpdateTimeLogData): Promise<void> {
     // Check if time log exists
@@ -209,28 +310,45 @@ export class TimeLogsService {
       throw new AppError('NOT_FOUND', 'Time log not found', 404);
     }
 
-    // If taskId is being changed, validate new task exists
-    if (data.taskId !== undefined) {
-      await validateTaskExists(data.taskId);
-    }
+    // Determine which task to use (new or existing)
+    const taskId = data.taskId ?? existing.taskId;
 
-    // If duration is being changed, check duration-vs-logs rule
-    if (data.duration !== undefined) {
-      validateDuration(data.duration);
+    // Get the project's current reporting type
+    const { reportingType } = await getTaskWithProject(taskId);
 
-      // Calculate what total would be after update
-      const currentTotal = await getTotalLogsDuration(existing.dailyAttendanceId, id);
-      const newTotal = currentTotal + data.duration;
-
-      await checkDurationVsLogsRule(existing.dailyAttendanceId, newTotal);
-    }
+    // Check if time-related fields are being updated
+    const hasTimeUpdate = data.duration !== undefined || data.startTime !== undefined || data.endTime !== undefined;
 
     // Build update data
     const updateData: Record<string, unknown> = {};
     if (data.taskId !== undefined) updateData.taskId = data.taskId;
-    if (data.duration !== undefined) updateData.durationMin = data.duration;
     if (data.location !== undefined) updateData.location = data.location;
     if (data.description !== undefined) updateData.description = data.description;
+
+    // Handle time fields based on reporting type
+    if (hasTimeUpdate) {
+      // Merge with existing values for partial updates
+      const mergedData = {
+        duration: data.duration ?? existing.durationMin,
+        startTime: data.startTime !== undefined 
+          ? data.startTime 
+          : (existing.startTime ? dateToTimeString(existing.startTime) : null),
+        endTime: data.endTime !== undefined 
+          ? data.endTime 
+          : (existing.endTime ? dateToTimeString(existing.endTime) : null),
+      };
+
+      const { durationMin, startTime, endTime } = processTimeLogFields(reportingType, mergedData);
+
+      // Check duration-vs-logs rule with new duration
+      const currentTotal = await getTotalLogsDuration(existing.dailyAttendanceId, id);
+      const newTotal = currentTotal + durationMin;
+      await checkDurationVsLogsRule(existing.dailyAttendanceId, newTotal);
+
+      updateData.durationMin = durationMin;
+      updateData.startTime = startTime;
+      updateData.endTime = endTime;
+    }
 
     await prisma.projectTimeLogs.update({
       where: { id },
@@ -288,4 +406,4 @@ export class TimeLogsService {
 // Exported Helpers (for testing)
 // ============================================================================
 
-export { validateDuration, validateLocation };
+export { validateDuration, validateLocation, getTaskWithProject, processTimeLogFields };

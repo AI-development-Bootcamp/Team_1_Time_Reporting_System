@@ -12,20 +12,18 @@ export class TimeLogsController {
   /**
    * POST /api/time-logs
    * Create a new time log entry
+   * Supports both reportingType=duration (requires duration) and reportingType=startEnd (requires startTime/endTime)
    */
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const body = createTimeLogSchema.parse(req.body);
 
-      // For now, duration is required (will be optional when startEnd projects are supported)
-      if (body.duration === undefined) {
-        body.duration = 0; // Will be handled by service validation
-      }
-
       const id = await TimeLogsService.createTimeLog({
         dailyAttendanceId: body.dailyAttendanceId,
         taskId: body.taskId,
         duration: body.duration,
+        startTime: body.startTime,
+        endTime: body.endTime,
         location: body.location as LocationStatus,
         description: body.description,
       });
@@ -55,6 +53,7 @@ export class TimeLogsController {
   /**
    * PUT /api/time-logs/:id
    * Update an existing time log
+   * Supports both reportingType=duration and reportingType=startEnd based on current project settings
    */
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
@@ -64,6 +63,8 @@ export class TimeLogsController {
       await TimeLogsService.updateTimeLog(id, {
         taskId: body.taskId,
         duration: body.duration,
+        startTime: body.startTime,
+        endTime: body.endTime,
         location: body.location as LocationStatus | undefined,
         description: body.description,
       });
