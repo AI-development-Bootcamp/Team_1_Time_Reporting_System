@@ -117,30 +117,30 @@ Current `backend/prisma/schema.prisma` issues:
 - [x] **Tests**: Unit tests for Bcrypt, validationSchemas; Integration tests for auth flow
 
 #### TASK-M1-011: User CRUD Backend (Per `doc/api/API.md` Section 2)
-- [ ] Create `backend/src/routes/admin/Users.ts`
-- [ ] Add admin role check middleware (`userType === 'admin'`)
-- [ ] Implement `GET /api/admin/users`:
-  - [ ] Query param: `active` (boolean, optional)
-  - [ ] Filter by active status, default to all
-  - [ ] Return user list (exclude passwords)
-- [ ] Implement `POST /api/admin/users`:
-  - [ ] Zod schema: `{ name, mail, password, userType }` with password validation (8 chars, 1 uppercase, 1 lowercase, 1 special char)
-  - [ ] Hash password before saving
-  - [ ] Return: `{ success: true, data: { id } }`
-  - [ ] 409 `CONFLICT` if mail already exists
-  - [ ] Throw `AppError` instead of using try/catch
-- [ ] Implement `PUT /api/admin/users/:id`:
-  - [ ] Zod schema: `{ name?, mail?, password?, userType?, active? }` (password validation if provided)
-  - [ ] Hash password if provided
-  - [ ] Return: `{ success: true, data: { updated: true } }`
-- [ ] Implement `DELETE /api/admin/users/:id`:
-  - [ ] Soft delete: set `active = false`
-  - [ ] Return: `{ success: true, data: { deleted: true } }`
-- [ ] Implement `POST /api/admin/users/:id/reset-password`:
-  - [ ] Zod schema: `{ newPassword }` with password validation
-  - [ ] Hash and update password
-  - [ ] Return: `{ success: true, data: { updated: true } }`
-- **Validation**: All CRUD works, soft delete filters correctly
+- [x] Create `backend/src/routes/admin/Users.ts`
+- [x] Add admin role check middleware (`userType === 'admin'`)
+- [x] Implement `GET /api/admin/users`:
+  - [x] Query param: `active` (boolean, optional)
+  - [x] Filter by active status, default to all
+  - [x] Return user list (exclude passwords)
+- [x] Implement `POST /api/admin/users`:
+  - [x] Zod schema: `{ name, mail, password, userType }` with password validation (8 chars, 1 uppercase, 1 lowercase, 1 special char)
+  - [x] Hash password before saving
+  - [x] Return: `{ success: true, data: { id } }` (201 Created)
+  - [x] 409 `CONFLICT` if mail already exists
+  - [x] Throw `AppError` instead of using try/catch
+- [x] Implement `PUT /api/admin/users/:id`:
+  - [x] Zod schema: `{ name?, mail?, userType?, active? }` (password NOT allowed - use reset-password endpoint)
+  - [x] Return: `{ success: true, data: { updated: true } }`
+- [x] Implement `DELETE /api/admin/users/:id`:
+  - [x] Soft delete: set `active = false`
+  - [x] Return: `{ success: true, data: { deleted: true } }`
+- [x] Implement `POST /api/admin/users/:id/reset-password`:
+  - [x] Zod schema: `{ newPassword }` with password validation
+  - [x] Hash and update password
+  - [x] Return: `{ success: true, data: { updated: true } }`
+- [x] **Validation**: All CRUD works, soft delete filters correctly
+- [x] **Tests**: Integration tests for all CRUD operations (`backend/tests/integration/users.test.ts`)
 
 #### TASK-M1-020: Login UI (Both Apps - Shared Components)
 - [x] Install `@mantine/notifications` in both frontends

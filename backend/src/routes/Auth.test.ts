@@ -26,7 +26,19 @@ describe('authMiddleware', () => {
 
   describe('valid cases', () => {
     it('should allow valid JWT token with admin userType', () => {
-      const token = jwt.sign({ userId: '1', userType: 'admin' }, 'test-secret-key');
+      const userData = {
+        id: 1,
+        name: 'Test Admin',
+        mail: 'admin@test.com',
+        userType: 'admin' as const,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const token = jwt.sign(
+        { userId: '1', userType: 'admin', user: userData },
+        'test-secret-key'
+      );
       mockReq.headers = { authorization: `Bearer ${token}` };
 
       expect(() => {
@@ -39,7 +51,19 @@ describe('authMiddleware', () => {
     });
 
     it('should allow valid JWT token with worker userType', () => {
-      const token = jwt.sign({ userId: '2', userType: 'worker' }, 'test-secret-key');
+      const userData = {
+        id: 2,
+        name: 'Test Worker',
+        mail: 'worker@test.com',
+        userType: 'worker' as const,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const token = jwt.sign(
+        { userId: '2', userType: 'worker', user: userData },
+        'test-secret-key'
+      );
       mockReq.headers = { authorization: `Bearer ${token}` };
 
       expect(() => {
@@ -52,7 +76,19 @@ describe('authMiddleware', () => {
     });
 
     it('should attach userId as BigInt to request', () => {
-      const token = jwt.sign({ userId: '123', userType: 'worker' }, 'test-secret-key');
+      const userData = {
+        id: 123,
+        name: 'Test User',
+        mail: 'test@test.com',
+        userType: 'worker' as const,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const token = jwt.sign(
+        { userId: '123', userType: 'worker', user: userData },
+        'test-secret-key'
+      );
       mockReq.headers = { authorization: `Bearer ${token}` };
 
       authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);

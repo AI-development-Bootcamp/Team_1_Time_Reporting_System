@@ -44,42 +44,26 @@ describe('useLogin Hook Logic', () => {
       const mockLoginResponse: LoginResponse = {
         token: 'valid-token-123',
         expiresInHours: 24,
-        user: {
-          id: 1,
-          name: 'Test User',
-          mail: 'test@example.com',
-          userType: 'worker',
-          active: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
       };
 
       // Logic validation: onSuccess should call login() and redirect
-      const shouldCallLogin = !!mockLoginResponse.token && !!mockLoginResponse.user;
+      // User data is decoded from token, not returned in response
+      const shouldCallLogin = !!mockLoginResponse.token;
       const shouldRedirect = true;
 
       expect(shouldCallLogin).toBe(true);
       expect(shouldRedirect).toBe(true);
     });
 
-    it('should handle login response with admin userType', () => {
+    it('should handle login response with token only', () => {
       const mockLoginResponse: LoginResponse = {
         token: 'admin-token-123',
         expiresInHours: 24,
-        user: {
-          id: 2,
-          name: 'Admin User',
-          mail: 'admin@example.com',
-          userType: 'admin',
-          active: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
       };
 
-      expect(mockLoginResponse.user.userType).toBe('admin');
+      // Token contains user data encoded in payload
       expect(mockLoginResponse.token).toBeDefined();
+      expect(mockLoginResponse.expiresInHours).toBe(24);
     });
   });
 

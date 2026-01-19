@@ -1,8 +1,6 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import { errorHandler } from './middleware/ErrorHandler';
 import { initializeDatabaseConfig } from './utils/DatabaseConfig';
+import { createApp } from './app';
 
 dotenv.config();
 
@@ -16,24 +14,8 @@ const startServer = async () => {
     process.exit(1);
   }
 
-  // Import routes AFTER database config is initialized
-  const authRoutes = (await import('./routes/Auth')).default;
-
-  const app = express();
+  const app = createApp();
   const port = process.env.PORT || 10000;
-
-  app.use(cors());
-  app.use(express.json());
-
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
-  });
-
-  // Mount API routes
-  app.use('/api/auth', authRoutes);
-
-  // Error handler must be last
-  app.use(errorHandler);
 
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

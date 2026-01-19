@@ -21,8 +21,8 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
       return response.data;
     },
     onSuccess: (data) => {
-      // Store token and user in context (which also saves to localStorage)
-      login(data.token, data.user);
+      // Store token and decode user data locally (no API call needed)
+      login(data.token);
       // Redirect to appropriate page
       onSuccessRedirect();
     },

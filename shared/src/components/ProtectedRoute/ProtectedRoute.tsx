@@ -8,7 +8,12 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
+
+  // Show nothing while loading user data
+  if (isLoading) {
+    return null; // Or return a loading spinner component
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

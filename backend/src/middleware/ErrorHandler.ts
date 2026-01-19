@@ -34,12 +34,22 @@ export const errorHandler = (
 
   // Custom application errors
   if (err instanceof AppError) {
+    // Handle structured errors with target field
+    let target: string | undefined;
+    let details: any = err.details;
+    
+    if (err.details && typeof err.details === 'object' && 'target' in err.details) {
+      target = err.details.target as string;
+      details = err.details.details || err.details;
+    }
+    
     ApiResponse.error(
       res,
       err.code,
       err.message,
       err.statusCode,
-      err.details
+      details,
+      target
     );
     return;
   }

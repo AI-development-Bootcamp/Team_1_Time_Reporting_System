@@ -13,7 +13,6 @@ export interface User {
 export interface LoginResponse {
   token: string;
   expiresInHours: number;
-  user: User;
 }
 
 export interface LoginRequest {

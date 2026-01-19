@@ -1,59 +1,87 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types/User';
+import { decodeJwtToken } from '../utils/JwtDecoder';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (token: string, user: User) => void;
+  isLoading: boolean;
+  login: (token: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'token';
-const USER_KEY = 'user';
 
 export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load user and token from localStorage on mount
+  // Decode user data from JWT token
+  const decodeToken = (authToken: string): User | null => {
+    try {
+      const decodedUser = decodeJwtToken(authToken);
+      return decodedUser;
+    } catch (error) {
+      // Invalid token format
+      return null;
+    }
+  };
+
+  // Load token from localStorage and decode user data on mount
   useEffect(() => {
+    // Clean up any old 'user' key from localStorage (legacy code)
+    localStorage.removeItem('user');
+    
     const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
-
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (error) {
-        // Invalid stored data, clear it
+    
+    if (storedToken) {
+      setToken(storedToken);
+      const decodedUser = decodeToken(storedToken);
+      
+      if (decodedUser) {
+        setUser(decodedUser);
+      } else {
+        // Invalid token, clear it
         localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        setToken(null);
       }
     }
+    
+    setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string) => {
     setToken(newToken);
-    setUser(newUser);
     localStorage.setItem(TOKEN_KEY, newToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+    
+    // Decode user data from token
+    const decodedUser = decodeToken(newToken);
+    if (decodedUser) {
+      setUser(decodedUser);
+    } else {
+      // Invalid token, clear it
+      localStorage.removeItem(TOKEN_KEY);
+      setToken(null);
+    }
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    // Clean up any old 'user' key from localStorage (legacy code)
+    localStorage.removeItem('user');
   };
 
   const value: AuthContextType = {
     user,
     token,
     isAuthenticated: !!token && !!user,
+    isLoading,
     login,
     logout,
   };

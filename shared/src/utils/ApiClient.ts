@@ -56,16 +56,16 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ApiErrorResponse>) => {
         if (error.response?.status === 401) {
-          // Skip auto-redirect for login endpoint - let the login component handle the error
+          // Skip auto-redirect for login and /auth/me endpoints
           const requestUrl = error.config?.url || '';
-          const isLoginEndpoint = requestUrl.includes('/auth/login');
+          const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/me');
           
-          if (!isLoginEndpoint) {
+          if (!isAuthEndpoint) {
             // Unauthorized on protected routes - clear token and redirect to login
             localStorage.removeItem('token');
             window.location.href = '/login';
           }
-          // For login endpoint, let the error propagate to the component's error handler
+          // For auth endpoints, let the error propagate to the component's error handler
         }
         return Promise.reject(error);
       }

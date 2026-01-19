@@ -188,8 +188,8 @@ npx prisma db seed
 **Note:** The seed script automatically clears existing seed data before creating new records, so it's safe to run multiple times.
 
 This will create:
-- Initial admin user (admin@timereporting.com / Password123)
-- Worker users (john.doe@timereporting.com, jane.smith@timereporting.com, david.cohen@timereporting.com / Password123)
+- Initial admin user (admin@timereporting.com / Password123!)
+- Worker users (john.doe@timereporting.com, jane.smith@timereporting.com, david.cohen@timereporting.com / Password123!)
 - Sample clients, projects, and tasks
 - User-task assignments
 - Sample daily attendance and time log records

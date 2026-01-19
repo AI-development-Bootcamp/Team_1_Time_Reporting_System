@@ -18,7 +18,8 @@ async function main() {
   console.log('✅ Cleared existing data');
 
   // Hash password for all users
-  const hashedPassword = await bcrypt.hash('Password123', 10);
+  // Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  const hashedPassword = await bcrypt.hash('Password123!', 10);
 
   // Create Admin User
   const admin = await prisma.user.create({
@@ -298,10 +299,10 @@ async function main() {
 
   console.log('🎉 Seed completed successfully!');
   console.log('\n📝 Login credentials:');
-  console.log('   Admin: admin@timereporting.com / Password123');
-  console.log('   Worker: john.doe@timereporting.com / Password123');
-  console.log('   Worker: jane.smith@timereporting.com / Password123');
-  console.log('   Worker: david.cohen@timereporting.com / Password123');
+  console.log('   Admin: admin@timereporting.com / Password123!');
+  console.log('   Worker: john.doe@timereporting.com / Password123!');
+  console.log('   Worker: jane.smith@timereporting.com / Password123!');
+  console.log('   Worker: david.cohen@timereporting.com / Password123!');
 }
 
 main()

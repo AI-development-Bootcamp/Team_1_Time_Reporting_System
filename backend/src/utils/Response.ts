@@ -10,6 +10,7 @@ export interface ErrorResponse {
   error: {
     code: string;
     message: string;
+    target?: string;
     details?: any;
   };
 }
@@ -28,13 +29,15 @@ export class ApiResponse {
     code: string,
     message: string,
     statusCode: number = 400,
-    details?: any
+    details?: any,
+    target?: string
   ): void {
     const response: ErrorResponse = {
       success: false,
       error: {
         code,
         message,
+        ...(target && { target }),
         ...(details && { details }),
       },
     };
