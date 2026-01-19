@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <MantineProvider theme={{ dir: 'rtl' }}>
-        <Notifications />
+        <Notifications position="top-center" zIndex={10000} />
         <App />
       </MantineProvider>
     </QueryClientProvider>

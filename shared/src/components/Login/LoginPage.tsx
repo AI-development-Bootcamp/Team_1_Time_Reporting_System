@@ -27,6 +27,7 @@ export const LoginPage = ({ appType }: LoginPageProps) => {
       password: '',
     },
     validate: {
+      // Only validate presence - let backend validate format to show notification errors
       mail: (value) => (!value ? 'כתובת אימייל נדרשת' : null),
       password: (value) => (!value ? 'סיסמה נדרשת' : null),
     },

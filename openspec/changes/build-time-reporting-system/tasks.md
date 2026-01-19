@@ -97,22 +97,22 @@ Current `backend/prisma/schema.prisma` issues:
 **Feature Owner**: Authentication and User CRUD (full-stack)
 
 #### TASK-M1-010: Auth Backend (Per `doc/api/API.md` Section 1)
-- [ ] Create `backend/src/routes/Auth.ts`
-- [ ] Create `backend/src/middleware/Auth.ts` - JWT validation middleware
-- [ ] Create `backend/src/utils/Bcrypt.ts` - Password hashing
-- [ ] Create `backend/src/utils/AppError.ts` - Custom error class
-- [ ] Create `backend/src/utils/validationSchemas.ts` - Zod schemas for auth
-- [ ] Implement `POST /api/auth/login`:
-  - [ ] Zod schema: `{ mail: string, password: string }`
-  - [ ] Validate credentials against database
-  - [ ] Compare password hash using bcrypt
-  - [ ] Generate JWT token (24h expiry)
-  - [ ] Return: `{ success: true, data: { token, expiresInHours: 24, user } }`
-  - [ ] Exclude password from user response
-  - [ ] Throw `AppError` instead of using try/catch
-- [ ] Error handling (via global `errorHandler` middleware):
-  - [ ] 400 `VALIDATION_ERROR` for missing/invalid fields (ZodError)
-  - [ ] 401 `UNAUTHORIZED` for wrong credentials
+- [x] Create `backend/src/routes/Auth.ts`
+- [x] Create `backend/src/middleware/Auth.ts` - JWT validation middleware
+- [x] Create `backend/src/utils/Bcrypt.ts` - Password hashing
+- [x] Create `backend/src/utils/AppError.ts` - Custom error class (exists in ErrorHandler.ts)
+- [x] Create `backend/src/utils/validationSchemas.ts` - Zod schemas for auth
+- [x] Implement `POST /api/auth/login`:
+  - [x] Zod schema: `{ mail: string, password: string }`
+  - [x] Validate credentials against database
+  - [x] Compare password hash using bcrypt
+  - [x] Generate JWT token (24h expiry)
+  - [x] Return: `{ success: true, data: { token, expiresInHours: 24, user } }`
+  - [x] Exclude password from user response
+  - [x] Throw `AppError` instead of using try/catch
+- [x] Error handling (via global `errorHandler` middleware):
+  - [x] 400 `VALIDATION_ERROR` for missing/invalid fields (ZodError)
+  - [x] 401 `UNAUTHORIZED` for wrong credentials
 - **Validation**: Login returns JWT, invalid credentials return 401
 
 #### TASK-M1-011: User CRUD Backend (Per `doc/api/API.md` Section 2)
@@ -142,48 +142,48 @@ Current `backend/prisma/schema.prisma` issues:
 - **Validation**: All CRUD works, soft delete filters correctly
 
 #### TASK-M1-020: Login UI (Both Apps - Shared Components)
-- [ ] Install `@mantine/notifications` in both frontends
-- [ ] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
-- [ ] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
-- [ ] Create **shared** `shared/src/context/AuthContext.tsx`:
-  - [ ] Store JWT token in localStorage (key: `token`)
-  - [ ] Store user info in localStorage (key: `user`) and state
-  - [ ] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
-  - [ ] Load user from localStorage on mount
-  - [ ] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)
-- [ ] Create **shared** `shared/src/hooks/useLogin.ts`:
-  - [ ] Uses `useMutation` from TanStack Query
-  - [ ] Calls `POST /api/auth/login` via `apiClient`
-  - [ ] 3-layer error handling:
+- [x] Install `@mantine/notifications` in both frontends
+- [x] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
+- [x] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
+- [x] Create **shared** `shared/src/context/AuthContext.tsx`:
+  - [x] Store JWT token in localStorage (key: `token`)
+  - [x] Store user info in localStorage (key: `user`) and state
+  - [x] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
+  - [x] Load user from localStorage on mount
+  - [x] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)
+- [x] Create **shared** `shared/src/hooks/useLogin.ts`:
+  - [x] Uses `useMutation` from TanStack Query
+  - [x] Calls `POST /api/auth/login` via `apiClient`
+  - [x] 3-layer error handling:
     - 400 validation errors: Use `form.setFieldError()` for inline red text on inputs
     - 401/409/500 operational errors: Use `notifications.show()` for toast messages
-  - [ ] On success: Call `login()` from AuthContext, redirect to appropriate page
-- [ ] Create **shared** `shared/src/components/Login/LoginPage.tsx`:
-  - [ ] Accept `appType: 'user' | 'admin'` prop
-  - [ ] Adapt images based on appType:
-    - Admin: `@shared/image_components/log_in_backround.png`, `Login card.png`, `abraLogo.png`
-    - User: `@shared/image_components/login_mobile.png`, `abraLogo.png`
-  - [ ] Same welcome text for both (Hebrew, styled appropriately)
-  - [ ] Replace "התחברות באמצעות azure" with "התחברות" on login button/text
-  - [ ] Implement login form with Mantine:
-    - [ ] TextInput for mail (required)
-    - [ ] PasswordInput for password (required)
-    - [ ] Button for submit
-    - [ ] Use `@mantine/form` with `getInputProps` pattern
-    - [ ] Basic validation: mail and password required (no password strength check for login)
-- [ ] Create **shared** `shared/src/components/ProtectedRoute/ProtectedRoute.tsx`:
-  - [ ] Accept `children`, `requireAdmin?: boolean` props
-  - [ ] Redirect to `/login` if not authenticated
-  - [ ] If `requireAdmin=true`: also check `userType === 'admin'`, redirect to `/login` if not admin
-- [ ] Create **shared** `shared/src/hooks/useAuth.ts` for easy access to auth context
-- [ ] Update `App.tsx` in both apps:
-  - [ ] Wrap with `AuthContextProvider` from shared
-  - [ ] Setup React Router v7 routes:
-    - [ ] `/login` - public route (uses shared LoginPage with appType prop)
-    - [ ] User app: `/month-history` - protected route (placeholder page for now)
-    - [ ] Admin app: `/client-management` - protected route with `requireAdmin=true` (placeholder page for now)
-  - [ ] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
-- [ ] **Note**: `ApiClient.ts` already includes `Authorization: Bearer <token>` header (shared)
+  - [x] On success: Call `login()` from AuthContext, redirect to appropriate page
+- [x] Create **shared** `shared/src/components/Login/LoginPage.tsx`:
+  - [x] Accept `appType: 'user' | 'admin'` prop
+  - [x] Adapt images based on appType:
+    - Admin: `@shared/image_components/log_in_backround.png`, `abraLogo.png`
+    - User: `@shared/image_components/login_mobile.png`, `log_in_backround.png` background
+  - [x] Same welcome text for both (Hebrew, styled appropriately)
+  - [x] Replace "התחברות באמצעות azure" with "התחברות" on login button/text
+  - [x] Implement login form with Mantine:
+    - [x] TextInput for mail (required)
+    - [x] PasswordInput for password (required)
+    - [x] Button for submit
+    - [x] Use `@mantine/form` with `getInputProps` pattern
+    - [x] Basic validation: mail and password required (no password strength check for login)
+- [x] Create **shared** `shared/src/components/ProtectedRoute/ProtectedRoute.tsx`:
+  - [x] Accept `children`, `requireAdmin?: boolean` props
+  - [x] Redirect to `/login` if not authenticated
+  - [x] If `requireAdmin=true`: also check `userType === 'admin'`, redirect to `/login` if not admin
+- [x] Create **shared** `shared/src/hooks/useAuth.ts` for easy access to auth context
+- [x] Update `App.tsx` in both apps:
+  - [x] Wrap with `AuthContextProvider` from shared
+  - [x] Setup React Router v7 routes:
+    - [x] `/login` - public route (uses shared LoginPage with appType prop)
+    - [x] User app: `/month-history` - protected route (placeholder page for now)
+    - [x] Admin app: `/client-management` - protected route with `requireAdmin=true` (placeholder page for now)
+  - [x] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
+- [x] **Note**: `ApiClient.ts` already includes `Authorization: Bearer <token>` header (shared)
 - **Validation**: Users can login, token persists on refresh, protected routes work, redirects to correct pages after login
 
 #### TASK-M1-021: User Management UI (Admin App)

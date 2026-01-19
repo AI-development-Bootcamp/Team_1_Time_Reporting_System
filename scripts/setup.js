@@ -87,8 +87,18 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 3: Find available port for PostgreSQL
-  console.log('🔍 Step 3: Checking for available PostgreSQL port...');
+  // Step 3: Stop existing containers (if any) to free up ports
+  console.log('🛑 Step 3: Stopping existing containers (if any)...');
+  try {
+    execSync('docker-compose down', { stdio: 'ignore', cwd: __dirname + '/..' });
+    console.log('✅ Existing containers stopped\n');
+  } catch (error) {
+    // Ignore errors - containers might not exist
+    console.log('ℹ️  No existing containers to stop\n');
+  }
+
+  // Step 4: Find available port for PostgreSQL
+  console.log('🔍 Step 4: Finding available PostgreSQL port (starting from 5432)...');
   const selectedPort = await findAvailablePort(5432, 10);
   
   if (!selectedPort) {
@@ -98,17 +108,17 @@ async function main() {
 
   if (selectedPort !== 5432) {
     console.log(`⚠️  Port 5432 is occupied, using port ${selectedPort} instead`);
-    updateDockerComposePort(selectedPort);
-    updateBackendEnv(selectedPort);
   } else {
     console.log('✅ Port 5432 is available');
-    // Still update .env to ensure it's correct
-    updateBackendEnv(selectedPort);
   }
-  console.log('');
+  
+  // Always update docker-compose.yml and .env with the selected port
+  updateDockerComposePort(selectedPort);
+  updateBackendEnv(selectedPort);
+  console.log(`📝 Configured PostgreSQL to use port ${selectedPort}\n`);
 
-  // Step 4: Start Docker Compose
-  console.log('🐳 Step 4: Starting Docker Compose...');
+  // Step 5: Start Docker Compose
+  console.log('🐳 Step 5: Starting Docker Compose...');
   try {
     execSync('docker-compose up -d', { stdio: 'inherit', cwd: __dirname + '/..' });
     console.log('✅ Docker Compose started\n');
@@ -117,8 +127,8 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 4: Wait for database to be ready
-  console.log('⏳ Step 4: Waiting for database to be ready...');
+  // Step 6: Wait for database to be ready
+  console.log('⏳ Step 6: Waiting for database to be ready...');
   const maxAttempts = 30;
   let attempts = 0;
   let dbReady = false;
@@ -145,8 +155,8 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 6: Generate Prisma Client
-  console.log('🔧 Step 6: Generating Prisma Client...');
+  // Step 7: Generate Prisma Client
+  console.log('🔧 Step 7: Generating Prisma Client...');
   try {
     execSync('npm run prisma:generate -w backend', { stdio: 'inherit', cwd: __dirname + '/..' });
     console.log('✅ Prisma Client generated\n');
@@ -171,8 +181,8 @@ async function main() {
     }
   }
 
-  // Step 8: Seed database
-  console.log('🌱 Step 8: Seeding database...');
+  // Step 9: Seed database
+  console.log('🌱 Step 9: Seeding database...');
   try {
     execSync('npm run prisma:seed -w backend', { stdio: 'inherit', cwd: __dirname + '/..' });
     console.log('✅ Database seeded\n');

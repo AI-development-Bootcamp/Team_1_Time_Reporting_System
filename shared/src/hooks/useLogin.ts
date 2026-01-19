@@ -27,27 +27,94 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
       onSuccessRedirect();
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:29','message':'onError called','data':{status:error.response?.status,url:error.config?.url,errorCode:error.response?.data?.error?.code,errorMessage:error.response?.data?.error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       const status = error.response?.status;
       const errorData = error.response?.data;
 
       if (status === 400 && errorData?.error?.details) {
-        // 400 Validation errors - set field errors
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:35','message':'Handling 400 validation error','data':{details:errorData.error.details},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+        // 400 Validation errors - set field errors AND show notification
         const details = errorData.error.details;
         
+        // Set field errors
         if (details.mail) {
           form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
         }
         if (details.password) {
           form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
         }
+        
+        // Also show notification for validation errors
+        // Extract specific error message from details if available
+        let validationMessage = errorData?.error?.message || 'פרטי ההתחברות שגויים. אנא בדוק את השדות.';
+        
+        // If details exist, try to extract a more specific message
+        if (details && typeof details === 'object') {
+          const detailMessages: string[] = [];
+          
+          // Handle Zod error format (array of error objects)
+          if (Array.isArray(details)) {
+            details.forEach((err: any) => {
+              if (err.path && err.message) {
+                const field = err.path[0] || 'field';
+                detailMessages.push(`${field}: ${err.message}`);
+              }
+            });
+          } else {
+            // Handle object format
+            Object.keys(details).forEach((key) => {
+              const fieldError = details[key];
+              if (Array.isArray(fieldError)) {
+                detailMessages.push(fieldError[0]);
+              } else if (typeof fieldError === 'string') {
+                detailMessages.push(fieldError);
+              }
+            });
+          }
+          
+          if (detailMessages.length > 0) {
+            validationMessage = detailMessages[0]; // Use first error message
+          }
+        }
+        
+        notifications.show({
+          id: 'login-validation-error',
+          title: 'שגיאת אימות',
+          message: validationMessage,
+          color: 'red',
+          autoClose: 6000,
+          withCloseButton: true,
+          style: {
+            zIndex: 10001,
+          },
+        });
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:52','message':'Validation error notification shown','data':{message:validationMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
       } else {
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:44','message':'Handling operational error, showing notification','data':{status,message:errorData?.error?.message || 'שגיאה בהתחברות. נסה שוב.'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         // 401/409/500 Operational errors - show toast notification
         const message = errorData?.error?.message || 'שגיאה בהתחברות. נסה שוב.';
         notifications.show({
+          id: 'login-error', // Prevent duplicate notifications
           title: 'שגיאה',
           message,
           color: 'red',
+          autoClose: 6000, // Show for 6 seconds
+          withCloseButton: true, // Allow manual close
+          style: {
+            zIndex: 10001, // Ensure it's above everything
+          },
         });
+        // #region agent log
+        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:52','message':'Notification.show() called','data':{message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
       }
     },
   });
