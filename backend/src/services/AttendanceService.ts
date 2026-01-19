@@ -1,80 +1,69 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
 import { PrismaClient, DailyAttendanceStatus } from '@prisma/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
-import { logAudit } from '../utils/AuditLog';
+import {
+  timeStringToDate,
+  dateToTimeString,
+  calculateDurationMinutes,
+  timeRangesOverlap,
+} from '../utils/TimeValidation';
 
 // Enable UTC plugin for consistent timezone handling
 dayjs.extend(utc);
 
-const router = Router();
 const prisma = new PrismaClient();
 
 // ============================================================================
-// Time Helpers
+// Types
 // ============================================================================
 
-/**
- * Regex for HH:mm format (24-hour)
- */
-const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-/**
- * Convert HH:mm string to a Date anchored at 1970-01-01 UTC
- * This ensures consistent storage in PostgreSQL TIME column
- */
-function timeStringToDate(time: string): Date {
-  const match = time.match(TIME_REGEX);
-  if (!match) {
-    throw new AppError('VALIDATION_ERROR', `Invalid time format: ${time}. Expected HH:mm`, 400);
-  }
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  return new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
+export interface CreateAttendanceData {
+  userId: bigint;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  status: DailyAttendanceStatus;
 }
 
-/**
- * Convert Date (from Prisma TIME column) to HH:mm string
- */
-function dateToTimeString(date: Date): string {
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+export interface UpdateAttendanceData {
+  startTime?: string | null;
+  endTime?: string | null;
+  status?: DailyAttendanceStatus;
 }
 
-/**
- * Calculate duration in minutes between two HH:mm times
- */
-function calculateDurationMinutes(startTime: string, endTime: string): number {
-  const startMatch = startTime.match(TIME_REGEX);
-  const endMatch = endTime.match(TIME_REGEX);
-  if (!startMatch || !endMatch) return 0;
-
-  const startMinutes = parseInt(startMatch[1], 10) * 60 + parseInt(startMatch[2], 10);
-  const endMinutes = parseInt(endMatch[1], 10) * 60 + parseInt(endMatch[2], 10);
-  return endMinutes - startMinutes;
-}
-
-/**
- * Check if two time ranges overlap
- * Returns true if they overlap
- */
-function timeRangesOverlap(
-  start1: string,
-  end1: string,
-  start2: string,
-  end2: string
-): boolean {
-  const s1 = parseInt(start1.replace(':', ''), 10);
-  const e1 = parseInt(end1.replace(':', ''), 10);
-  const s2 = parseInt(start2.replace(':', ''), 10);
-  const e2 = parseInt(end2.replace(':', ''), 10);
-
-  // Ranges overlap if one starts before the other ends
-  return s1 < e2 && s2 < e1;
+export interface AttendanceWithLogs {
+  id: string;
+  userId: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  status: DailyAttendanceStatus;
+  document: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+  projectTimeLogs: Array<{
+    id: string;
+    dailyAttendanceId: string;
+    taskId: string;
+    duration: number;
+    location: string;
+    description: string | null;
+    createdAt: string;
+    updatedAt: string;
+    task: {
+      id: string;
+      name: string;
+      project: {
+        id: string;
+        name: string;
+        client: {
+          id: string;
+          name: string;
+        };
+      };
+    };
+  }>;
 }
 
 // ============================================================================
@@ -83,11 +72,6 @@ function timeRangesOverlap(
 
 /**
  * Check if a new attendance record overlaps with existing ones on the same date
- * @param userId User ID
- * @param date Date to check
- * @param startTime Start time (HH:mm)
- * @param endTime End time (HH:mm)
- * @param excludeId Optional ID to exclude (for updates)
  */
 async function checkOverlap(
   userId: bigint,
@@ -183,97 +167,46 @@ export async function validateAttendance(
 }
 
 // ============================================================================
-// Zod Schemas
+// Service Methods
 // ============================================================================
 
-const timeSchema = z.string().regex(TIME_REGEX, 'Time must be in HH:mm format (24-hour)');
-
-const createAttendanceSchema = z.object({
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Invalid date format. Expected YYYY-MM-DD',
-  }),
-  startTime: timeSchema.optional().nullable(),
-  endTime: timeSchema.optional().nullable(),
-  status: z.enum(['work', 'sickness', 'reserves', 'dayOff', 'halfDayOff']),
-  userId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
-});
-
-const updateAttendanceSchema = z.object({
-  startTime: timeSchema.optional().nullable(),
-  endTime: timeSchema.optional().nullable(),
-  status: z.enum(['work', 'sickness', 'reserves', 'dayOff', 'halfDayOff']).optional(),
-});
-
-const monthHistoryQuerySchema = z.object({
-  month: z.string().transform((val) => parseInt(val, 10)).refine((val) => val >= 1 && val <= 12, {
-    message: 'Month must be between 1 and 12',
-  }),
-  userId: z.string().transform((val) => BigInt(val)),
-});
-
-// ============================================================================
-// Route Handlers
-// ============================================================================
-
-/**
- * POST /api/attendance
- * Create a new DailyAttendance record
- */
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const body = createAttendanceSchema.parse(req.body);
-
-    // TODO: Get userId from authenticated user (req.user.id) when auth is ready
-    const userId = body.userId;
-    const dateObj = dayjs.utc(body.date).toDate(); // Use UTC to avoid timezone shifts
-    const startTime = body.startTime || null;
-    const endTime = body.endTime || null;
+export class AttendanceService {
+  /**
+   * Create a new attendance record
+   */
+  static async createAttendance(data: CreateAttendanceData): Promise<bigint> {
+    const dateObj = dayjs.utc(data.date).toDate();
+    const startTime = data.startTime || null;
+    const endTime = data.endTime || null;
 
     // Run all validations
-    await validateAttendance(userId, dateObj, startTime, endTime, body.status);
+    await validateAttendance(data.userId, dateObj, startTime, endTime, data.status);
 
     const attendance = await prisma.dailyAttendance.create({
       data: {
-        userId,
+        userId: data.userId,
         date: dateObj,
         startTime: startTime ? timeStringToDate(startTime) : null,
         endTime: endTime ? timeStringToDate(endTime) : null,
-        status: body.status as DailyAttendanceStatus,
+        status: data.status,
       },
     });
 
-    // Audit log after successful create
-    logAudit({
-      action: 'CREATE_ATTENDANCE',
-      userId,
-      entity: 'DailyAttendance',
-      entityId: attendance.id,
-      payload: { date: body.date, startTime, endTime, status: body.status },
-      req,
-    });
-
-    ApiResponse.success(res, { id: attendance.id.toString() }, 201);
-  } catch (error) {
-    next(error);
+    return attendance.id;
   }
-});
 
-/**
- * GET /api/attendance/month-history
- * Get attendance records for a specific month
- */
-router.get('/month-history', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const query = monthHistoryQuerySchema.parse(req.query);
-
+  /**
+   * Get month history for a user
+   */
+  static async getMonthHistory(userId: bigint, month: number): Promise<AttendanceWithLogs[]> {
     // Use current year with UTC to avoid timezone issues
     const year = dayjs.utc().year();
-    const startDate = dayjs.utc().year(year).month(query.month - 1).date(1).startOf('day').toDate();
-    const endDate = dayjs.utc().year(year).month(query.month - 1).endOf('month').toDate();
+    const startDate = dayjs.utc().year(year).month(month - 1).date(1).startOf('day').toDate();
+    const endDate = dayjs.utc().year(year).month(month - 1).endOf('month').toDate();
 
     const attendances = await prisma.dailyAttendance.findMany({
       where: {
-        userId: query.userId,
+        userId,
         date: {
           gte: startDate,
           lte: endDate,
@@ -300,7 +233,7 @@ router.get('/month-history', async (req: Request, res: Response, next: NextFunct
     });
 
     // Transform BigInt to string and format times as HH:mm
-    const serializedAttendances = attendances.map((attendance) => ({
+    return attendances.map((attendance) => ({
       id: attendance.id.toString(),
       userId: attendance.userId.toString(),
       date: attendance.date.toISOString().split('T')[0],
@@ -333,28 +266,12 @@ router.get('/month-history', async (req: Request, res: Response, next: NextFunct
         },
       })),
     }));
-
-    ApiResponse.success(res, serializedAttendances);
-  } catch (error) {
-    next(error);
   }
-});
 
-/**
- * PUT /api/attendance/:id
- * Update an existing DailyAttendance record
- */
-router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = BigInt(req.params.id);
-
-    // Business rule: date cannot be changed on an existing attendance
-    if (req.body.date !== undefined) {
-      throw new AppError('VALIDATION_ERROR', 'Date cannot be changed on an existing attendance record', 400);
-    }
-
-    const body = updateAttendanceSchema.parse(req.body);
-
+  /**
+   * Update an existing attendance record
+   */
+  static async updateAttendance(id: bigint, data: UpdateAttendanceData): Promise<void> {
     // Check if attendance exists
     const existing = await prisma.dailyAttendance.findUnique({
       where: { id },
@@ -365,20 +282,20 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Determine final values (merge with existing)
-    const newStatus = body.status || existing.status;
+    const newStatus = data.status || existing.status;
 
     // Handle time updates
     let newStartTime: string | null = null;
     let newEndTime: string | null = null;
 
-    if (body.startTime !== undefined) {
-      newStartTime = body.startTime;
+    if (data.startTime !== undefined) {
+      newStartTime = data.startTime;
     } else if (existing.startTime) {
       newStartTime = dateToTimeString(existing.startTime);
     }
 
-    if (body.endTime !== undefined) {
-      newEndTime = body.endTime;
+    if (data.endTime !== undefined) {
+      newEndTime = data.endTime;
     } else if (existing.endTime) {
       newEndTime = dateToTimeString(existing.endTime);
     }
@@ -387,52 +304,53 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     await validateAttendance(existing.userId, existing.date, newStartTime, newEndTime, newStatus, id);
 
     // If time range is being changed, check duration-vs-logs
-    const timeChanged = body.startTime !== undefined || body.endTime !== undefined;
+    const timeChanged = data.startTime !== undefined || data.endTime !== undefined;
     if (timeChanged && newStartTime && newEndTime) {
       await checkDurationVsLogs(id, newStartTime, newEndTime);
     }
 
     // Build update data (date is not allowed to be updated)
     const updateData: Record<string, unknown> = {};
-    if (body.startTime !== undefined) {
-      updateData.startTime = body.startTime ? timeStringToDate(body.startTime) : null;
+    if (data.startTime !== undefined) {
+      updateData.startTime = data.startTime ? timeStringToDate(data.startTime) : null;
     }
-    if (body.endTime !== undefined) {
-      updateData.endTime = body.endTime ? timeStringToDate(body.endTime) : null;
+    if (data.endTime !== undefined) {
+      updateData.endTime = data.endTime ? timeStringToDate(data.endTime) : null;
     }
-    if (body.status !== undefined) updateData.status = body.status as DailyAttendanceStatus;
+    if (data.status !== undefined) updateData.status = data.status;
 
     await prisma.dailyAttendance.update({
       where: { id },
       data: updateData,
     });
+  }
 
-    // Audit log after successful update
-    logAudit({
-      action: 'UPDATE_ATTENDANCE',
-      userId: existing.userId,
-      entity: 'DailyAttendance',
-      entityId: id,
-      payload: { startTime: newStartTime, endTime: newEndTime, status: newStatus },
-      req,
+  /**
+   * Get attendance by ID
+   */
+  static async getAttendanceById(id: bigint) {
+    const attendance = await prisma.dailyAttendance.findUnique({
+      where: { id },
     });
 
-    ApiResponse.success(res, { updated: true });
-  } catch (error) {
-    next(error);
+    if (!attendance) {
+      throw new AppError('NOT_FOUND', 'Attendance record not found', 404);
+    }
+
+    return attendance;
   }
-});
 
-// ============================================================================
-// Exported Helpers (for use in TimeLogs route)
-// ============================================================================
-
-export {
-  calculateDurationMinutes,
-  checkDurationVsLogs,
-  timeStringToDate,
-  dateToTimeString,
-  timeRangesOverlap,
-};
-
-export default router;
+  /**
+   * Validate ownership - check if attendance belongs to user
+   * Prepared for auth integration
+   */
+  static async validateOwnership(attendanceId: bigint, userId: bigint): Promise<void> {
+    const attendance = await prisma.dailyAttendance.findUnique({
+      where: { id: attendanceId },
+    });
+    
+    if (!attendance || attendance.userId !== userId) {
+      throw new AppError('FORBIDDEN', 'Access denied', 403);
+    }
+  }
+}

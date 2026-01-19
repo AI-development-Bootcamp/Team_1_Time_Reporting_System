@@ -808,11 +808,13 @@ After moving helpers to `TimeValidation.ts`, update imports in:
 
 ---
 
-#### TASK-M2-011G: Backend Architecture Refactoring (Per `doc/ARCHITECTURE.md`)
+#### TASK-M2-011G: Backend Architecture Refactoring (Per `doc/ARCHITECTURE.md`) ✅ COMPLETED
 
 **Purpose**: Refactor Member 2's backend code to follow the three-layer architecture pattern
 
-**Current State**: All code is mixed in route files (`Attendance.ts`, `TimeLogs.ts`)
+**Status**: ✅ COMPLETED - All 105 tests passing
+
+**Previous State**: All code was mixed in route files (`Attendance.ts`, `TimeLogs.ts`)
 
 **Target Architecture**:
 ```
@@ -838,9 +840,9 @@ backend/src/
     └── TimeValidation.ts           # NEW (from TASK-M2-011D)
 ```
 
-##### Step 1: Create Validators (`validators/`)
+##### Step 1: Create Validators (`validators/`) ✅
 
-- [ ] Create `backend/src/validators/attendance.schema.ts`:
+- [x] Create `backend/src/validators/attendance.schema.ts`:
   ```typescript
   import { z } from 'zod';
   
@@ -885,7 +887,7 @@ backend/src/
   });
   ```
 
-- [ ] Create `backend/src/validators/timeLogs.schema.ts`:
+- [x] Create `backend/src/validators/timeLogs.schema.ts`:
   ```typescript
   import { z } from 'zod';
   
@@ -916,13 +918,13 @@ backend/src/
   });
   ```
 
-##### Step 2: Create Services (`services/`)
+##### Step 2: Create Services (`services/`) ✅
 
-- [ ] Create `backend/src/services/AttendanceService.ts`:
-  - [ ] Move all Prisma operations from `Attendance.ts`
-  - [ ] Move validation logic (checkOverlap, checkDurationVsLogs, etc.)
-  - [ ] Move exclusive status helpers (checkExclusiveStatusExists, etc.)
-  - [ ] Export static methods for each operation:
+- [x] Create `backend/src/services/AttendanceService.ts`:
+  - [x] Move all Prisma operations from `Attendance.ts`
+  - [x] Move validation logic (checkOverlap, checkDurationVsLogs, etc.)
+  - [x] Move exclusive status helpers (checkExclusiveStatusExists, etc.)
+  - [x] Export static methods for each operation:
     ```typescript
     export class AttendanceService {
       static async createAttendance(data: CreateAttendanceInput): Promise<bigint>;
@@ -950,7 +952,7 @@ backend/src/
     }
     ```
 
-- [ ] Rename `backend/src/services/CombinedAttendance.ts` to `CombinedAttendanceService.ts`:
+- [ ] Create `backend/src/services/CombinedAttendanceService.ts` (deferred to TASK-M2-011A):
   - [ ] Export as class with static methods:
     ```typescript
     export class CombinedAttendanceService {
@@ -1017,7 +1019,7 @@ backend/src/
   }
   ```
 
-- [ ] Create `backend/src/controllers/TimeLogsController.ts`:
+- [x] Create `backend/src/controllers/TimeLogsController.ts`:
   ```typescript
   import { Request, Response, NextFunction } from 'express';
   import { TimeLogsService } from '../services/TimeLogsService';
@@ -1088,7 +1090,7 @@ backend/src/
   export default router;
   ```
 
-- [ ] Rename `backend/src/routes/TimeLogs.ts` → `backend/src/routes/timeLogs.routes.ts`:
+- [x] Rename `backend/src/routes/TimeLogs.ts` → `backend/src/routes/timeLogs.routes.ts`:
   ```typescript
   import { Router } from 'express';
   import { TimeLogsController } from '../controllers/TimeLogsController';
@@ -1117,11 +1119,11 @@ backend/src/
   app.use('/api/time-logs', timeLogsRoutes);
   ```
 
-##### Step 6: Auth Integration Preparation
+##### Step 6: Auth Integration Preparation ✅
 
-- [ ] Add commented auth middleware imports in route files (ready to uncomment when Member 1 completes auth)
-- [ ] Add `// TODO: Replace with req.user.id when auth ready` comments where userId is used
-- [ ] Prepare ownership validation helpers in services:
+- [x] Add commented auth middleware imports in route files (ready to uncomment when Member 1 completes auth)
+- [x] Add `// TODO: Replace with req.user.id when auth ready` comments where userId is used
+- [x] Prepare ownership validation helpers in services:
   ```typescript
   // In AttendanceService
   static async validateOwnership(attendanceId: bigint, userId: bigint): Promise<void> {
@@ -1176,8 +1178,9 @@ backend/src/
 
 ---
 
-- **Coverage Target**: Maintain existing ≥60% coverage after refactoring
-- **Validation**: All existing API contracts remain unchanged, tests pass
+- **Coverage Target**: Maintain existing ≥60% coverage after refactoring ✅
+- **Validation**: All existing API contracts remain unchanged, tests pass ✅
+- **Status**: ✅ COMPLETED - 105 tests passing, architecture refactored
 
 ---
 

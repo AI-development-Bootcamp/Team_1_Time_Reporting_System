@@ -4,7 +4,7 @@ import {
   timeStringToDate,
   dateToTimeString,
   timeRangesOverlap,
-} from './Attendance';
+} from '../utils/TimeValidation';
 
 // ============================================================================
 // Unit Tests: Time Helpers
