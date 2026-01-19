@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { DailyAttendanceStatus } from '@prisma/client';
+import { DailyAttendanceStatus, LocationStatus } from '@prisma/client';
 import { AttendanceService } from '../services/AttendanceService';
+import { CombinedAttendanceService } from '../services/CombinedAttendanceService';
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
 import { logAudit } from '../utils/AuditLog';
@@ -8,6 +9,7 @@ import {
   createAttendanceSchema,
   updateAttendanceSchema,
   monthHistoryQuerySchema,
+  combinedAttendanceSchema,
 } from '../validators/attendance.schema';
 
 export class AttendanceController {
@@ -98,6 +100,54 @@ export class AttendanceController {
       });
 
       ApiResponse.success(res, { updated: true });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/attendance/combined
+   * Create DailyAttendance + ProjectTimeLogs atomically (for work status only)
+   */
+  static async createCombined(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = combinedAttendanceSchema.parse(req.body);
+
+      // TODO: Get userId from authenticated user (req.user.id) when auth is ready
+      const userId = body.userId;
+
+      const result = await CombinedAttendanceService.createCombined({
+        userId,
+        date: body.date,
+        startTime: body.startTime,
+        endTime: body.endTime,
+        timeLogs: body.timeLogs.map((log) => ({
+          taskId: log.taskId,
+          duration: log.duration,
+          startTime: log.startTime,
+          endTime: log.endTime,
+          location: log.location as LocationStatus,
+          description: log.description,
+        })),
+      });
+
+      // Audit log after successful combined create
+      logAudit({
+        action: 'CREATE_COMBINED_ATTENDANCE',
+        userId,
+        entity: 'DailyAttendance',
+        entityId: BigInt(result.attendanceId),
+        payload: {
+          date: body.date,
+          startTime: body.startTime,
+          endTime: body.endTime,
+          status: 'work',
+          timeLogsCount: body.timeLogs.length,
+        },
+        req,
+      });
+
+      ApiResponse.success(res, result, 201);
     } catch (error) {
       next(error);
     }

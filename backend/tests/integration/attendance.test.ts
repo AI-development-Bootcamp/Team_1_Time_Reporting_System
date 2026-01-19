@@ -35,12 +35,14 @@ describe('Attendance API Integration Tests', () => {
     testClientId = client.id;
 
     // Create test project (requires projectManagerId and startDate)
+    // Using reportingType: duration for backward compatibility with existing tests
     const project = await prisma.project.create({
       data: {
         name: `Test Project ${Date.now()}`,
         clientId: testClientId,
         projectManagerId: testUserId,
         startDate: new Date('2026-01-01'),
+        reportingType: 'duration',
         active: true,
       },
     });
@@ -679,6 +681,407 @@ describe('Attendance API Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
+    });
+  });
+
+  // ============================================================================
+  // POST /api/attendance/combined - Combined Attendance + Time Logs (Atomic)
+  // ============================================================================
+
+  describe('POST /api/attendance/combined', () => {
+    it('should create attendance and time logs atomically', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 480, // 8 hours = attendance duration
+              location: 'office',
+              description: 'Full day work',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.attendanceId).toBeDefined();
+      expect(response.body.data.timeLogIds).toBeDefined();
+      expect(response.body.data.timeLogIds.length).toBe(1);
+    });
+
+    it('should create multiple time logs in one request', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 300, // 5 hours
+              location: 'office',
+              description: 'Morning work',
+            },
+            {
+              taskId: testTaskId.toString(),
+              duration: 180, // 3 hours
+              location: 'home',
+              description: 'Afternoon work',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.data.timeLogIds.length).toBe(2);
+    });
+
+    it('should reject if total time logs < attendance duration', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00', // 8 hours = 480 min
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 240, // Only 4 hours - not enough!
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('must be >= attendance duration');
+    });
+
+    it('should reject if endTime <= startTime', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '17:00',
+          endTime: '09:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 480,
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('End time must be after start time');
+    });
+
+    it('should reject if exclusive status exists on date', async () => {
+      // Create dayOff first
+      await prisma.dailyAttendance.create({
+        data: {
+          userId: testUserId,
+          date: new Date('2026-01-21'),
+          status: 'dayOff',
+        },
+      });
+
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-21',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 480,
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('exclusive status');
+    });
+
+    it('should reject if overlaps with existing work attendance', async () => {
+      // Create existing work attendance
+      await prisma.dailyAttendance.create({
+        data: {
+          userId: testUserId,
+          date: new Date('2026-01-22'),
+          startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+          endTime: new Date(Date.UTC(1970, 0, 1, 14, 0, 0)),
+          status: 'work',
+        },
+      });
+
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-22',
+          startTime: '12:00', // Overlaps with 09:00-14:00
+          endTime: '18:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 360,
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('overlaps');
+    });
+
+    it('should reject if task does not exist', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: '999999', // Non-existent task
+              duration: 480,
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.message).toContain('Task not found');
+    });
+
+    it('should reject if no time logs provided', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [], // Empty array
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should reject invalid location in time log', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 480,
+              location: 'invalid_location',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should rollback everything if validation fails mid-transaction', async () => {
+      // Try to create with invalid second time log (non-existent task)
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-23',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 240,
+              location: 'office',
+            },
+            {
+              taskId: '999999', // This will fail
+              duration: 240,
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(404);
+
+      // Verify no attendance was created (transaction rolled back)
+      const attendance = await prisma.dailyAttendance.findFirst({
+        where: {
+          userId: testUserId,
+          date: new Date('2026-01-23'),
+        },
+      });
+      expect(attendance).toBeNull();
+    });
+
+    it('should allow time logs sum > attendance duration', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-20',
+          startTime: '09:00',
+          endTime: '17:00', // 8 hours
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: testTaskId.toString(),
+              duration: 600, // 10 hours - more than attendance
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+    });
+  });
+
+  // ============================================================================
+  // Combined Save with startEnd Project Type
+  // ============================================================================
+
+  describe('POST /api/attendance/combined with startEnd project', () => {
+    let startEndProjectId: bigint;
+    let startEndTaskId: bigint;
+
+    beforeAll(async () => {
+      // Create a project with reportingType=startEnd
+      const project = await prisma.project.create({
+        data: {
+          name: `StartEnd Project Combined ${Date.now()}`,
+          clientId: testClientId,
+          projectManagerId: testUserId,
+          startDate: new Date('2026-01-01'),
+          reportingType: 'startEnd',
+          active: true,
+        },
+      });
+      startEndProjectId = project.id;
+
+      const task = await prisma.task.create({
+        data: {
+          name: `StartEnd Task Combined ${Date.now()}`,
+          projectId: startEndProjectId,
+          status: 'open',
+        },
+      });
+      startEndTaskId = task.id;
+    });
+
+    afterAll(async () => {
+      await prisma.projectTimeLogs.deleteMany({
+        where: { taskId: startEndTaskId },
+      });
+      await prisma.task.deleteMany({
+        where: { id: startEndTaskId },
+      });
+      await prisma.project.deleteMany({
+        where: { id: startEndProjectId },
+      });
+    });
+
+    it('should create combined with startEnd time log', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-24',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: startEndTaskId.toString(),
+              startTime: '09:00',
+              endTime: '17:00', // 8 hours
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should reject startEnd project without startTime/endTime', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-25',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: startEndTaskId.toString(),
+              duration: 480, // Wrong! Should use startTime/endTime
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('startTime and endTime');
+    });
+
+    it('should reject startEnd time log with endTime <= startTime', async () => {
+      const response = await request(app)
+        .post('/api/attendance/combined')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-01-25',
+          startTime: '09:00',
+          endTime: '17:00',
+          status: 'work',
+          timeLogs: [
+            {
+              taskId: startEndTaskId.toString(),
+              startTime: '14:00',
+              endTime: '10:00', // Invalid!
+              location: 'office',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('End time must be after start time');
     });
   });
 });

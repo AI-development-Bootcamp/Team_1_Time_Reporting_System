@@ -273,13 +273,15 @@ Current `backend/prisma/schema.prisma` issues:
 - **Coverage Achieved**: 97% statements, 93% branches for TimeLogs route (exceeds 60% target)
 - **Validation**: Time logs work, multiple entries allowed, location required
 
-#### TASK-M2-011A: Combined Attendance + Time Logs Save (Atomic Flow)
+#### TASK-M2-011A: Combined Attendance + Time Logs Save (Atomic Flow) ✅ COMPLETED
 
 **Purpose**: Create atomic endpoint for saving work attendance + time logs together (no partial saves)
 
+**Status**: ✅ COMPLETED - All 167 tests passing (14 new tests for combined save)
+
 **API Endpoint**: `POST /api/attendance/combined`
 
-- [ ] Define request schema for combined save:
+- [x] Define request schema for combined save:
   ```typescript
   {
     userId: number;           // (Will be from auth token later)
@@ -297,36 +299,36 @@ Current `backend/prisma/schema.prisma` issues:
     }>;
   }
   ```
-- [ ] Define response schema:
+- [x] Define response schema:
   ```typescript
   { success: true, data: { attendanceId: string, timeLogIds: string[] } }
   ```
-- [ ] Create `backend/src/services/CombinedAttendance.ts` service:
-  - [ ] Use Prisma `$transaction` for atomic operations
-  - [ ] Validation Step 1: Check no exclusive status exists on date (dayOff/sickness/reserves)
-  - [ ] Validation Step 2: Validate time range (`endTime > startTime`)
-  - [ ] Validation Step 3: Validate no midnight crossing (`endTime <= 23:59`)
-  - [ ] Validation Step 4: Check no overlap with existing work/halfDayOff attendances
-  - [ ] Validation Step 5: Calculate attendance duration in minutes
-  - [ ] Validation Step 6: Validate each time log (duration > 0, task exists, location valid)
-  - [ ] Validation Step 7: Calculate total logs duration based on project reportingType
-  - [ ] Validation Step 8: Validate `sumOfTimeLogs >= attendanceDuration`
-  - [ ] Create Step 1: Create DailyAttendance record
-  - [ ] Create Step 2: Create all ProjectTimeLogs records with returned attendanceId
-  - [ ] Return IDs on success, rollback entire transaction on any failure
-- [ ] Add route handler in `backend/src/routes/Attendance.ts`:
-  - [ ] `POST /api/attendance/combined` calls CombinedAttendance service
-  - [ ] Returns standard response envelope
-- [ ] Keep `POST /api/attendance` for non-work statuses (halfDayOff/dayOff/sickness/reserves)
-- [ ] Tests (backend):
-  - [ ] Integration: success path creates attendance + logs atomically
-  - [ ] Integration: failure in time log validation rejects entire operation
-  - [ ] Integration: duration-vs-logs failure rolls back all inserts
-  - [ ] Integration: exclusive status blocks creation
-  - [ ] Integration: overlap with existing work attendance blocks creation
-  - [ ] Integration: midnight crossing (endTime > 23:59) rejected
-- **Coverage Target**: ≥60% for combined save service + route
-- **Validation**: "Save" only succeeds when all validations pass and logs sum >= attendance duration
+- [x] Create `backend/src/services/CombinedAttendanceService.ts` service:
+  - [x] Use Prisma `$transaction` for atomic operations
+  - [x] Validation Step 1: Check no exclusive status exists on date (dayOff/sickness/reserves)
+  - [x] Validation Step 2: Validate time range (`endTime > startTime`)
+  - [x] Validation Step 3: Validate no midnight crossing (`endTime <= 23:59`)
+  - [x] Validation Step 4: Check no overlap with existing work/halfDayOff attendances
+  - [x] Validation Step 5: Calculate attendance duration in minutes
+  - [x] Validation Step 6: Validate each time log (duration > 0, task exists, location valid)
+  - [x] Validation Step 7: Calculate total logs duration based on project reportingType
+  - [x] Validation Step 8: Validate `sumOfTimeLogs >= attendanceDuration`
+  - [x] Create Step 1: Create DailyAttendance record
+  - [x] Create Step 2: Create all ProjectTimeLogs records with returned attendanceId
+  - [x] Return IDs on success, rollback entire transaction on any failure
+- [x] Add route handler in `backend/src/routes/attendance.routes.ts`:
+  - [x] `POST /api/attendance/combined` calls CombinedAttendance service
+  - [x] Returns standard response envelope
+- [x] Keep `POST /api/attendance` for non-work statuses (halfDayOff/dayOff/sickness/reserves)
+- [x] Tests (backend):
+  - [x] Integration: success path creates attendance + logs atomically
+  - [x] Integration: failure in time log validation rejects entire operation
+  - [x] Integration: duration-vs-logs failure rolls back all inserts
+  - [x] Integration: exclusive status blocks creation
+  - [x] Integration: overlap with existing work attendance blocks creation
+  - [x] Integration: time range validation (endTime > startTime)
+- **Coverage Target**: ≥60% for combined save service + route ✅
+- **Validation**: "Save" only succeeds when all validations pass and logs sum >= attendance duration ✅
 
 ---
 

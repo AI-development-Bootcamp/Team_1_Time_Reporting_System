@@ -3,6 +3,7 @@ import { Request } from 'express';
 export type AuditAction =
   | 'CREATE_ATTENDANCE'
   | 'UPDATE_ATTENDANCE'
+  | 'CREATE_COMBINED_ATTENDANCE'
   | 'CREATE_TIME_LOG'
   | 'UPDATE_TIME_LOG'
   | 'DELETE_TIME_LOG';
