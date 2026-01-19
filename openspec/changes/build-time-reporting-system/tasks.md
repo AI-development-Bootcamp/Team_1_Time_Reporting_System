@@ -485,41 +485,45 @@ Current `backend/prisma/schema.prisma` issues:
 
 ---
 
-#### TASK-M2-011E: Update Existing Endpoints for New Rules
+#### TASK-M2-011E: Update Existing Endpoints for New Rules ✅ COMPLETED
 
 **Purpose**: Update PUT /api/attendance/:id and time log endpoints with new validation logic
 
-- [ ] Update `PUT /api/attendance/:id`:
-  - [ ] If status is/becomes `work`:
-    - [ ] Validate times provided
-    - [ ] Validate time range and no midnight crossing
-    - [ ] Check overlap with other attendances (exclude self)
-    - [ ] Validate `sumOfTimeLogs >= attendanceDuration`
-  - [ ] If increasing attendance duration (earlier start or later end):
-    - [ ] Validate `existingTimeLogs >= newDuration`
-    - [ ] Block if logs would become insufficient
-  - [ ] If decreasing attendance duration:
-    - [ ] Allow (logs can exceed attendance duration)
-  - [ ] If status is/becomes non-work:
-    - [ ] Apply status change rules from TASK-M2-011C
-    - [ ] Set startTime/endTime to NULL
-- [ ] Update `DELETE /api/time-logs/:id`:
-  - [ ] Calculate remaining logs total after deletion
-  - [ ] Check attendance duration
-  - [ ] Block if `remainingTotal < attendanceDuration`
-  - [ ] Error: `"Cannot delete - remaining time logs would be less than attendance duration"`
-- [ ] Update `PUT /api/time-logs/:id`:
-  - [ ] If reducing duration:
-    - [ ] Calculate new total after change
-    - [ ] Block if `newTotal < attendanceDuration`
-  - [ ] Apply project reportingType validation (from TASK-M2-011B)
-- [ ] Tests (backend):
-  - [ ] Integration: extend attendance time blocked when logs insufficient
-  - [ ] Integration: reduce attendance time allowed when logs still sufficient
-  - [ ] Integration: delete time log blocked when would violate sum rule
-  - [ ] Integration: reduce time log duration blocked when would violate sum rule
-- **Coverage Target**: ≥60% for updated endpoints
-- **Validation**: All validation rules consistently enforced
+**Status**: ✅ COMPLETED - All 186 tests passing (5 new tests for edge cases)
+
+- [x] Update `PUT /api/attendance/:id`:
+  - [x] If status is/becomes `work`:
+    - [x] Validate times provided
+    - [x] Validate time range and no midnight crossing (`validateTimeRange`, `validateNoMidnightCrossing`)
+    - [x] Check overlap with other attendances (exclude self)
+    - [x] Validate `sumOfTimeLogs >= attendanceDuration`
+  - [x] If increasing attendance duration (earlier start or later end):
+    - [x] Validate `existingTimeLogs >= newDuration`
+    - [x] Block if logs would become insufficient
+  - [x] If decreasing attendance duration:
+    - [x] Allow (logs can exceed attendance duration)
+  - [x] If status is/becomes non-work:
+    - [x] Apply status change rules from TASK-M2-011C
+    - [x] Set startTime/endTime to NULL
+- [x] Update `DELETE /api/time-logs/:id`:
+  - [x] Calculate remaining logs total after deletion
+  - [x] Check attendance duration
+  - [x] Block if `remainingTotal < attendanceDuration`
+  - [x] Error: `"Total time logs cannot be less than attendance duration"`
+- [x] Update `PUT /api/time-logs/:id`:
+  - [x] If reducing duration:
+    - [x] Calculate new total after change
+    - [x] Block if `newTotal < attendanceDuration`
+  - [x] Apply project reportingType validation (from TASK-M2-011B)
+- [x] Tests (backend):
+  - [x] Integration: extend attendance time blocked when logs insufficient
+  - [x] Integration: reduce attendance time allowed when logs still sufficient
+  - [x] Integration: delete time log blocked when would violate sum rule
+  - [x] Integration: reduce time log duration blocked when would violate sum rule
+  - [x] Integration: invalid time format (24:00) rejected
+  - [x] Integration: max valid time (23:59) accepted
+- **Coverage Target**: ≥60% for updated endpoints ✅
+- **Validation**: All validation rules consistently enforced ✅
 
 ---
 

@@ -1417,4 +1417,138 @@ describe('Attendance API Integration Tests', () => {
       });
     });
   });
+
+  // ============================================================================
+  // Time Validation Edge Cases (TASK-M2-011E)
+  // ============================================================================
+
+  describe('Time Validation Edge Cases', () => {
+    it('should reject attendance with invalid time format (24:00)', async () => {
+      const response = await request(app)
+        .post('/api/attendance')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-02-25',
+          startTime: '22:00',
+          endTime: '24:00', // Invalid - should be rejected
+          status: 'work',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should reject update with endTime exceeding 23:59', async () => {
+      // Create valid attendance first
+      const attendance = await prisma.dailyAttendance.create({
+        data: {
+          userId: testUserId,
+          date: new Date('2026-02-26'),
+          startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+          endTime: new Date(Date.UTC(1970, 0, 1, 17, 0, 0)),
+          status: 'work',
+        },
+      });
+
+      // Add time logs to cover the duration
+      await prisma.projectTimeLogs.create({
+        data: {
+          dailyAttendanceId: attendance.id,
+          taskId: testTaskId,
+          durationMin: 480,
+          location: 'office',
+        },
+      });
+
+      // Try to update with invalid time - schema should reject 24:00
+      const response = await request(app)
+        .put(`/api/attendance/${attendance.id}`)
+        .send({
+          endTime: '24:00', // Invalid
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should accept attendance with max valid time (23:59)', async () => {
+      const response = await request(app)
+        .post('/api/attendance')
+        .send({
+          userId: testUserId.toString(),
+          date: '2026-02-27',
+          startTime: '22:00',
+          endTime: '23:59', // Valid - max allowed
+          status: 'work',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should reject extending attendance when logs are insufficient', async () => {
+      // Create attendance with 2 hours (120 min)
+      const attendance = await prisma.dailyAttendance.create({
+        data: {
+          userId: testUserId,
+          date: new Date('2026-02-28'),
+          startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+          endTime: new Date(Date.UTC(1970, 0, 1, 11, 0, 0)), // 2 hours
+          status: 'work',
+        },
+      });
+
+      // Add time logs covering exactly 2 hours
+      await prisma.projectTimeLogs.create({
+        data: {
+          dailyAttendanceId: attendance.id,
+          taskId: testTaskId,
+          durationMin: 120,
+          location: 'office',
+        },
+      });
+
+      // Try to extend to 4 hours - should fail (120 < 240)
+      const response = await request(app)
+        .put(`/api/attendance/${attendance.id}`)
+        .send({
+          endTime: '13:00', // 4 hours = 240 min
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('must be >= attendance duration');
+    });
+
+    it('should allow reducing attendance when logs are sufficient', async () => {
+      // Create attendance with 4 hours (240 min)
+      const attendance = await prisma.dailyAttendance.create({
+        data: {
+          userId: testUserId,
+          date: new Date('2026-03-01'),
+          startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+          endTime: new Date(Date.UTC(1970, 0, 1, 13, 0, 0)), // 4 hours
+          status: 'work',
+        },
+      });
+
+      // Add time logs covering 4 hours
+      await prisma.projectTimeLogs.create({
+        data: {
+          dailyAttendanceId: attendance.id,
+          taskId: testTaskId,
+          durationMin: 240,
+          location: 'office',
+        },
+      });
+
+      // Reduce to 2 hours - should succeed (240 >= 120)
+      const response = await request(app)
+        .put(`/api/attendance/${attendance.id}`)
+        .send({
+          endTime: '11:00', // 2 hours = 120 min
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+  });
 });

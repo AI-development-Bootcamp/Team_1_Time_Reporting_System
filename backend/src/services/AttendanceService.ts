@@ -7,6 +7,8 @@ import {
   dateToTimeString,
   calculateDurationMinutes,
   timeRangesOverlap,
+  validateTimeRange,
+  validateNoMidnightCrossing,
 } from '../utils/TimeValidation';
 
 // Enable UTC plugin for consistent timezone handling
@@ -250,10 +252,11 @@ export async function validateAttendance(
   // ==========================================================================
 
   if (startTime && endTime) {
-    const duration = calculateDurationMinutes(startTime, endTime);
-    if (duration <= 0) {
-      throw new AppError('VALIDATION_ERROR', 'End time must be after start time', 400);
-    }
+    // Validate time range (endTime > startTime)
+    validateTimeRange(startTime, endTime);
+
+    // Validate no midnight crossing (endTime <= 23:59)
+    validateNoMidnightCrossing(endTime);
 
     // Check for overlapping attendance
     await checkOverlap(userId, date, startTime, endTime, excludeId);
