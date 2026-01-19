@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../utils/ApiClient';
-import { apiClient as sharedApiClient } from '@shared/utils/ApiClient';
-import type { Project, ReportingType } from '../types/Project';
-import type { Client } from '../types/Client';
+import { projectService } from '@services/ProjectService';
+import { clientService } from '@services/ClientService';
+import type { Project, ReportingType } from '@types/Project';
 
 /**
  * Project with Client data joined
@@ -36,14 +35,11 @@ export function useReportingSettings() {
   const projectsQuery = useQuery<ProjectWithClient[]>({
     queryKey,
     queryFn: async () => {
-      // Fetch both projects and clients in parallel
-      const [projectsResponse, clientsResponse] = await Promise.all([
-        sharedApiClient.get<Project[]>('/admin/projects'),
-        sharedApiClient.get<Client[]>('/admin/clients')
+      // Fetch both projects and clients in parallel using services
+      const [projects, clients] = await Promise.all([
+        projectService.getProjects(),
+        clientService.getClients()
       ]);
-
-      const projects = projectsResponse.data;
-      const clients = clientsResponse.data;
 
       // Create a map of clients for quick lookup
       const clientMap = new Map(clients.map(c => [c.id, c]));
@@ -75,7 +71,7 @@ export function useReportingSettings() {
       projectId: number;
       reportingType: ReportingType;
     }) => {
-      return await apiClient.patchProjectReportingType(projectId, reportingType);
+      return await projectService.updateReportingType(projectId, reportingType);
     },
 
     // Optimistic update: update local state immediately
