@@ -387,9 +387,11 @@ Current `backend/prisma/schema.prisma` issues:
 
 ---
 
-#### TASK-M2-011C: Non-Work Status Handling (halfDayOff/dayOff/sickness/reserves)
+#### TASK-M2-011C: Non-Work Status Handling (halfDayOff/dayOff/sickness/reserves) ✅ COMPLETED
 
 **Purpose**: Handle attendance creation/update for non-work statuses with proper validation
+
+**Status**: ✅ COMPLETED - All 181 tests passing (14 new tests for status handling)
 
 **Status Rules**:
 | Status | Exclusive? | Requires Times? | Requires Time Logs? | Requires Document? |
@@ -400,40 +402,40 @@ Current `backend/prisma/schema.prisma` issues:
 | `sickness` | Yes | No (NULL) | No | Soft (badge=missing if null) |
 | `reserves` | Yes | No (NULL) | No | Soft (badge=missing if null) |
 
-- [ ] Update `POST /api/attendance` for non-work statuses:
-  - [ ] Accept: `{ userId, date, status, document? }` (no startTime/endTime)
-  - [ ] For `halfDayOff`:
-    - [ ] Check no exclusive status exists on date (dayOff/sickness/reserves)
-    - [ ] Allow coexistence with work attendances
-    - [ ] Store with startTime=NULL, endTime=NULL
-  - [ ] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
-    - [ ] Check NO other attendance exists on this date (any status)
-    - [ ] Store with startTime=NULL, endTime=NULL
-    - [ ] For sickness/reserves: document is optional (can be NULL, frontend shows "missing" badge)
-- [ ] Update `PUT /api/attendance/:id` for status changes:
-  - [ ] **Work → Non-work**: Block if time logs exist (require delete logs first)
-  - [ ] **Non-work → Work**: Require startTime/endTime in request
-  - [ ] **Work → Work**: Validate times, overlap, and logs sum
-  - [ ] **Exclusive → Any**: Check new status rules allow the change
-  - [ ] **Any → Exclusive**: Check no other records exist on date
-  - [ ] **halfDayOff ↔ Work**: Validate coexistence rules
-- [ ] Update validation helpers:
-  - [ ] `checkExclusiveStatusExists(userId, date, excludeId?)` - returns true if dayOff/sickness/reserves exists
-  - [ ] `checkAnyAttendanceExists(userId, date, excludeId?)` - returns true if any attendance exists
-  - [ ] `checkTimeLogsExist(attendanceId)` - returns count of time logs
-- [ ] Error messages:
-  - [ ] `"Cannot add work attendance - exclusive status (dayOff/sickness/reserves) already exists on this date"`
-  - [ ] `"Cannot add {status} - other attendance already exists on this date"`
-  - [ ] `"Cannot change to non-work status while time logs exist. Delete time logs first."`
-- [ ] Tests (backend):
-  - [ ] Integration: create halfDayOff alongside work attendance (allowed)
-  - [ ] Integration: create dayOff when work exists (blocked)
-  - [ ] Integration: create work when dayOff exists (blocked)
-  - [ ] Integration: change work→halfDayOff with time logs (blocked)
-  - [ ] Integration: change work→halfDayOff after deleting time logs (allowed)
-  - [ ] Integration: sickness without document saves successfully (frontend handles badge)
-- **Coverage Target**: ≥60% for status handling logic
-- **Validation**: All status rules enforced correctly
+- [x] Update `POST /api/attendance` for non-work statuses:
+  - [x] Accept: `{ userId, date, status, document? }` (no startTime/endTime)
+  - [x] For `halfDayOff`:
+    - [x] Check no exclusive status exists on date (dayOff/sickness/reserves)
+    - [x] Allow coexistence with work attendances
+    - [x] Store with startTime=NULL, endTime=NULL
+  - [x] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
+    - [x] Check NO other attendance exists on this date (any status)
+    - [x] Store with startTime=NULL, endTime=NULL
+    - [x] For sickness/reserves: document is optional (can be NULL, frontend shows "missing" badge)
+- [x] Update `PUT /api/attendance/:id` for status changes:
+  - [x] **Work → Non-work**: Block if time logs exist (require delete logs first)
+  - [x] **Non-work → Work**: Require startTime/endTime in request
+  - [x] **Work → Work**: Validate times, overlap, and logs sum
+  - [x] **Exclusive → Any**: Check new status rules allow the change
+  - [x] **Any → Exclusive**: Check no other records exist on date
+  - [x] **halfDayOff ↔ Work**: Validate coexistence rules
+- [x] Update validation helpers:
+  - [x] `checkExclusiveStatusExists(userId, date, excludeId?)` - returns status if dayOff/sickness/reserves exists
+  - [x] `checkAnyAttendanceExists(userId, date, excludeId?)` - returns true if any attendance exists
+  - [x] `getTimeLogsCount(attendanceId)` - returns count of time logs
+- [x] Error messages:
+  - [x] `"Cannot add work attendance - exclusive status (dayOff/sickness/reserves) already exists on this date"`
+  - [x] `"Cannot add {status} - other attendance already exists on this date"`
+  - [x] `"Cannot change to {status} status while time logs exist ({count} logs). Delete time logs first."`
+- [x] Tests (backend):
+  - [x] Integration: create halfDayOff alongside work attendance (allowed)
+  - [x] Integration: create dayOff when work exists (blocked)
+  - [x] Integration: create work when dayOff exists (blocked)
+  - [x] Integration: change work→halfDayOff with time logs (blocked)
+  - [x] Integration: change work→halfDayOff after deleting time logs (allowed)
+  - [x] Integration: sickness without document saves successfully (frontend handles badge)
+- **Coverage Target**: ≥60% for status handling logic ✅
+- **Validation**: All status rules enforced correctly ✅
 
 ---
 

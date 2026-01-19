@@ -67,8 +67,65 @@ export interface AttendanceWithLogs {
 }
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const EXCLUSIVE_STATUSES: DailyAttendanceStatus[] = ['dayOff', 'sickness', 'reserves'];
+const NON_WORK_STATUSES: DailyAttendanceStatus[] = ['dayOff', 'sickness', 'reserves', 'halfDayOff'];
+
+// ============================================================================
 // Validation Helpers
 // ============================================================================
+
+/**
+ * Check if an exclusive status (dayOff/sickness/reserves) exists on this date
+ * Returns the status if found, null otherwise
+ */
+async function checkExclusiveStatusExists(
+  userId: bigint,
+  date: Date,
+  excludeId?: bigint
+): Promise<DailyAttendanceStatus | null> {
+  const exclusive = await prisma.dailyAttendance.findFirst({
+    where: {
+      userId,
+      date,
+      status: { in: EXCLUSIVE_STATUSES },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+  });
+
+  return exclusive?.status || null;
+}
+
+/**
+ * Check if any attendance exists on this date
+ * Returns true if any attendance exists
+ */
+async function checkAnyAttendanceExists(
+  userId: bigint,
+  date: Date,
+  excludeId?: bigint
+): Promise<boolean> {
+  const count = await prisma.dailyAttendance.count({
+    where: {
+      userId,
+      date,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+  });
+
+  return count > 0;
+}
+
+/**
+ * Get count of time logs for an attendance record
+ */
+async function getTimeLogsCount(attendanceId: bigint): Promise<number> {
+  return prisma.projectTimeLogs.count({
+    where: { dailyAttendanceId: attendanceId },
+  });
+}
 
 /**
  * Check if a new attendance record overlaps with existing ones on the same date
@@ -137,33 +194,70 @@ async function checkDurationVsLogs(
 
 /**
  * Validate attendance data before save
- * Combines all validation rules
+ * Combines all validation rules based on status
  */
 export async function validateAttendance(
   userId: bigint,
   date: Date,
   startTime: string | null,
   endTime: string | null,
-  status: string,
+  status: DailyAttendanceStatus,
   excludeId?: bigint
 ): Promise<void> {
-  // For work status, times are required
+  // ==========================================================================
+  // Status-specific validation rules
+  // ==========================================================================
+
   if (status === 'work') {
+    // Work status requires times
     if (!startTime || !endTime) {
       throw new AppError('VALIDATION_ERROR', 'Start time and end time are required for work status', 400);
     }
+
+    // Check no exclusive status exists on this date
+    const existingExclusive = await checkExclusiveStatusExists(userId, date, excludeId);
+    if (existingExclusive) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        `Cannot add work attendance - exclusive status (${existingExclusive}) already exists on this date`,
+        400
+      );
+    }
+  } else if (status === 'halfDayOff') {
+    // halfDayOff can coexist with work, but not with exclusive statuses
+    const existingExclusive = await checkExclusiveStatusExists(userId, date, excludeId);
+    if (existingExclusive) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        `Cannot add halfDayOff - exclusive status (${existingExclusive}) already exists on this date`,
+        400
+      );
+    }
+  } else if (EXCLUSIVE_STATUSES.includes(status)) {
+    // Exclusive statuses (dayOff/sickness/reserves) cannot coexist with ANY other attendance
+    const anyExists = await checkAnyAttendanceExists(userId, date, excludeId);
+    if (anyExists) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        `Cannot add ${status} - other attendance already exists on this date`,
+        400
+      );
+    }
   }
 
-  // Validate endTime > startTime
+  // ==========================================================================
+  // Time validation (only if times are provided)
+  // ==========================================================================
+
   if (startTime && endTime) {
     const duration = calculateDurationMinutes(startTime, endTime);
     if (duration <= 0) {
       throw new AppError('VALIDATION_ERROR', 'End time must be after start time', 400);
     }
-  }
 
-  // Check for overlapping attendance
-  await checkOverlap(userId, date, startTime, endTime, excludeId);
+    // Check for overlapping attendance
+    await checkOverlap(userId, date, startTime, endTime, excludeId);
+  }
 }
 
 // ============================================================================
@@ -270,6 +364,10 @@ export class AttendanceService {
 
   /**
    * Update an existing attendance record
+   * Handles status change validations including:
+   * - Work → Non-work: Block if time logs exist
+   * - Non-work → Work: Require startTime/endTime
+   * - Any → Exclusive: Check no other records exist
    */
   static async updateAttendance(id: bigint, data: UpdateAttendanceData): Promise<void> {
     // Check if attendance exists
@@ -282,9 +380,47 @@ export class AttendanceService {
     }
 
     // Determine final values (merge with existing)
+    const oldStatus = existing.status;
     const newStatus = data.status || existing.status;
+    const statusChanging = data.status !== undefined && data.status !== oldStatus;
 
+    // ==========================================================================
+    // Status change validations
+    // ==========================================================================
+
+    if (statusChanging) {
+      const oldIsWork = oldStatus === 'work';
+      const newIsWork = newStatus === 'work';
+      const newIsNonWork = NON_WORK_STATUSES.includes(newStatus);
+
+      // Work → Non-work: Block if time logs exist
+      if (oldIsWork && newIsNonWork) {
+        const logsCount = await getTimeLogsCount(id);
+        if (logsCount > 0) {
+          throw new AppError(
+            'VALIDATION_ERROR',
+            `Cannot change to ${newStatus} status while time logs exist (${logsCount} logs). Delete time logs first.`,
+            400
+          );
+        }
+      }
+
+      // Non-work → Work: Require startTime/endTime in request
+      if (!oldIsWork && newIsWork) {
+        if (!data.startTime || !data.endTime) {
+          throw new AppError(
+            'VALIDATION_ERROR',
+            'Start time and end time are required when changing to work status',
+            400
+          );
+        }
+      }
+    }
+
+    // ==========================================================================
     // Handle time updates
+    // ==========================================================================
+
     let newStartTime: string | null = null;
     let newEndTime: string | null = null;
 
@@ -300,23 +436,42 @@ export class AttendanceService {
       newEndTime = dateToTimeString(existing.endTime);
     }
 
+    // For non-work statuses, clear times
+    if (NON_WORK_STATUSES.includes(newStatus)) {
+      newStartTime = null;
+      newEndTime = null;
+    }
+
     // Run validations (exclude current record from overlap check)
     await validateAttendance(existing.userId, existing.date, newStartTime, newEndTime, newStatus, id);
 
-    // If time range is being changed, check duration-vs-logs
+    // If time range is being changed and OLD status was work, check duration-vs-logs
+    // (Don't check if changing FROM non-work TO work - there are no logs yet)
     const timeChanged = data.startTime !== undefined || data.endTime !== undefined;
-    if (timeChanged && newStartTime && newEndTime) {
+    const wasWork = oldStatus === 'work';
+    if (timeChanged && newStartTime && newEndTime && newStatus === 'work' && wasWork) {
       await checkDurationVsLogs(id, newStartTime, newEndTime);
     }
 
+    // ==========================================================================
     // Build update data (date is not allowed to be updated)
+    // ==========================================================================
+
     const updateData: Record<string, unknown> = {};
-    if (data.startTime !== undefined) {
-      updateData.startTime = data.startTime ? timeStringToDate(data.startTime) : null;
+
+    // For non-work statuses, always clear times
+    if (NON_WORK_STATUSES.includes(newStatus)) {
+      updateData.startTime = null;
+      updateData.endTime = null;
+    } else {
+      if (data.startTime !== undefined) {
+        updateData.startTime = data.startTime ? timeStringToDate(data.startTime) : null;
+      }
+      if (data.endTime !== undefined) {
+        updateData.endTime = data.endTime ? timeStringToDate(data.endTime) : null;
+      }
     }
-    if (data.endTime !== undefined) {
-      updateData.endTime = data.endTime ? timeStringToDate(data.endTime) : null;
-    }
+
     if (data.status !== undefined) updateData.status = data.status;
 
     await prisma.dailyAttendance.update({

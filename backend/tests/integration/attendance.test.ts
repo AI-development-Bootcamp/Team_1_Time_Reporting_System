@@ -1084,4 +1084,337 @@ describe('Attendance API Integration Tests', () => {
       expect(response.body.error.message).toContain('End time must be after start time');
     });
   });
+
+  // ============================================================================
+  // Non-Work Status Handling Tests (TASK-M2-011C)
+  // ============================================================================
+
+  describe('Non-Work Status Handling', () => {
+    describe('Exclusive status rules (dayOff/sickness/reserves)', () => {
+      it('should create dayOff when no other attendance exists', async () => {
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-01',
+            status: 'dayOff',
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should create sickness without document (frontend shows badge)', async () => {
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-02',
+            status: 'sickness',
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should reject dayOff when work attendance exists', async () => {
+        // Create work attendance first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-03'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 17, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-03',
+            status: 'dayOff',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('other attendance already exists');
+      });
+
+      it('should reject work when dayOff exists', async () => {
+        // Create dayOff first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-04'),
+            status: 'dayOff',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-04',
+            startTime: '09:00',
+            endTime: '17:00',
+            status: 'work',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('exclusive status');
+      });
+
+      it('should reject sickness when halfDayOff exists', async () => {
+        // Create halfDayOff first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-05'),
+            status: 'halfDayOff',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-05',
+            status: 'sickness',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('other attendance already exists');
+      });
+    });
+
+    describe('halfDayOff coexistence rules', () => {
+      it('should allow halfDayOff alongside work attendance', async () => {
+        // Create work attendance first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-10'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 13, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-10',
+            status: 'halfDayOff',
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should allow work alongside halfDayOff', async () => {
+        // Create halfDayOff first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-11'),
+            status: 'halfDayOff',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-11',
+            startTime: '14:00',
+            endTime: '18:00',
+            status: 'work',
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should reject halfDayOff when dayOff exists', async () => {
+        // Create dayOff first
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-12'),
+            status: 'dayOff',
+          },
+        });
+
+        const response = await request(app)
+          .post('/api/attendance')
+          .send({
+            userId: testUserId.toString(),
+            date: '2026-02-12',
+            status: 'halfDayOff',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('exclusive status');
+      });
+    });
+
+    describe('Status change rules on update', () => {
+      it('should block work→halfDayOff when time logs exist', async () => {
+        // Create work attendance with time log
+        const attendance = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-15'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 17, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        await prisma.projectTimeLogs.create({
+          data: {
+            dailyAttendanceId: attendance.id,
+            taskId: testTaskId,
+            durationMin: 480,
+            location: 'office',
+          },
+        });
+
+        const response = await request(app)
+          .put(`/api/attendance/${attendance.id}`)
+          .send({
+            status: 'halfDayOff',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('time logs exist');
+      });
+
+      it('should allow work→halfDayOff after deleting time logs', async () => {
+        // Create work attendance WITHOUT time logs
+        const attendance = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-16'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 17, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        const response = await request(app)
+          .put(`/api/attendance/${attendance.id}`)
+          .send({
+            status: 'halfDayOff',
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should require times when changing halfDayOff→work', async () => {
+        // Create halfDayOff
+        const attendance = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-17'),
+            status: 'halfDayOff',
+          },
+        });
+
+        const response = await request(app)
+          .put(`/api/attendance/${attendance.id}`)
+          .send({
+            status: 'work',
+            // Missing startTime and endTime!
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('Start time and end time are required');
+      });
+
+      it('should allow halfDayOff→work with times provided', async () => {
+        // Create halfDayOff
+        const attendance = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-18'),
+            status: 'halfDayOff',
+          },
+        });
+
+        const response = await request(app)
+          .put(`/api/attendance/${attendance.id}`)
+          .send({
+            status: 'work',
+            startTime: '14:00',
+            endTime: '18:00',
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+      });
+
+      it('should block change to exclusive status when other attendance exists', async () => {
+        // Create two attendances on same date
+        const attendance1 = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-19'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 13, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-19'),
+            status: 'halfDayOff',
+          },
+        });
+
+        // Try to change first to dayOff - should fail
+        const response = await request(app)
+          .put(`/api/attendance/${attendance1.id}`)
+          .send({
+            status: 'dayOff',
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain('other attendance already exists');
+      });
+
+      it('should clear times when changing to non-work status', async () => {
+        // Create work attendance
+        const attendance = await prisma.dailyAttendance.create({
+          data: {
+            userId: testUserId,
+            date: new Date('2026-02-20'),
+            startTime: new Date(Date.UTC(1970, 0, 1, 9, 0, 0)),
+            endTime: new Date(Date.UTC(1970, 0, 1, 17, 0, 0)),
+            status: 'work',
+          },
+        });
+
+        await request(app)
+          .put(`/api/attendance/${attendance.id}`)
+          .send({
+            status: 'sickness',
+          });
+
+        // Verify times are cleared
+        const updated = await prisma.dailyAttendance.findUnique({
+          where: { id: attendance.id },
+        });
+
+        expect(updated?.status).toBe('sickness');
+        expect(updated?.startTime).toBeNull();
+        expect(updated?.endTime).toBeNull();
+      });
+    });
+  });
 });
