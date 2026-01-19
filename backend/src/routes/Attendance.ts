@@ -1,8 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { PrismaClient, DailyAttendanceStatus } from '@prisma/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
+
+// Enable UTC plugin for consistent timezone handling
+dayjs.extend(utc);
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -219,7 +224,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     // TODO: Get userId from authenticated user (req.user.id) when auth is ready
     const userId = body.userId;
-    const dateObj = new Date(body.date);
+    const dateObj = dayjs.utc(body.date).toDate(); // Use UTC to avoid timezone shifts
     const startTime = body.startTime || null;
     const endTime = body.endTime || null;
 
@@ -250,10 +255,10 @@ router.get('/month-history', async (req: Request, res: Response, next: NextFunct
   try {
     const query = monthHistoryQuerySchema.parse(req.query);
 
-    // Use current year
-    const year = new Date().getFullYear();
-    const startDate = new Date(year, query.month - 1, 1);
-    const endDate = new Date(year, query.month, 0); // Last day of month
+    // Use current year with UTC to avoid timezone issues
+    const year = dayjs.utc().year();
+    const startDate = dayjs.utc().year(year).month(query.month - 1).date(1).startOf('day').toDate();
+    const endDate = dayjs.utc().year(year).month(query.month - 1).endOf('month').toDate();
 
     const attendances = await prisma.dailyAttendance.findMany({
       where: {
