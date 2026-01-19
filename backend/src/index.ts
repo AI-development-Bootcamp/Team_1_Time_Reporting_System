@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import app from './app';
+dotenv.config(); // Must run before importing app so env vars are available
 
-dotenv.config();
+import app from './app';
 
 const port = process.env.PORT || 10000;
 
