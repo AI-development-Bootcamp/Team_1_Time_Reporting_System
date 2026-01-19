@@ -27,16 +27,10 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
       onSuccessRedirect();
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:29','message':'onError called','data':{status:error.response?.status,url:error.config?.url,errorCode:error.response?.data?.error?.code,errorMessage:error.response?.data?.error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       const status = error.response?.status;
       const errorData = error.response?.data;
 
       if (status === 400 && errorData?.error?.details) {
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:35','message':'Handling 400 validation error','data':{details:errorData.error.details},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         // 400 Validation errors - set field errors AND show notification
         const details = errorData.error.details;
         
@@ -92,13 +86,7 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
             zIndex: 10001,
           },
         });
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:52','message':'Validation error notification shown','data':{message:validationMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
       } else {
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:44','message':'Handling operational error, showing notification','data':{status,message:errorData?.error?.message || 'שגיאה בהתחברות. נסה שוב.'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
         // 401/409/500 Operational errors - show toast notification
         const message = errorData?.error?.message || 'שגיאה בהתחברות. נסה שוב.';
         notifications.show({
@@ -112,9 +100,6 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
             zIndex: 10001, // Ensure it's above everything
           },
         });
-        // #region agent log
-        fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLogin.ts:52','message':'Notification.show() called','data':{message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
       }
     },
   });

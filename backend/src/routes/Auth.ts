@@ -6,6 +6,67 @@ import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
 import { Bcrypt } from '../utils/Bcrypt';
 
+// ============================================================================
+// Types & Interfaces
+// ============================================================================
+
+export interface AuthRequest extends Request {
+  userId?: bigint;
+  userType?: 'admin' | 'worker';
+}
+
+// ============================================================================
+// Middleware
+// ============================================================================
+
+/**
+ * Authentication middleware to verify JWT tokens and attach user info to request
+ */
+export const authMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AppError('UNAUTHORIZED', 'Missing or invalid authorization header', 401);
+    }
+
+    const token = authHeader.substring(7);
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      throw new AppError('INTERNAL_ERROR', 'JWT secret not configured', 500);
+    }
+
+    const decoded = jwt.verify(token, secret) as { userId: string; userType: 'admin' | 'worker' };
+    
+    if (!decoded.userId || !decoded.userType) {
+      throw new AppError('UNAUTHORIZED', 'Invalid token payload', 401);
+    }
+    
+    if (decoded.userType !== 'admin' && decoded.userType !== 'worker') {
+      throw new AppError('UNAUTHORIZED', 'Invalid user type', 401);
+    }
+    
+    req.userId = BigInt(decoded.userId);
+    req.userType = decoded.userType;
+    
+    next();
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError('UNAUTHORIZED', 'Invalid or expired token', 401);
+  }
+};
+
+// ============================================================================
+// Routes
+// ============================================================================
+
 const router = Router();
 const prisma = new PrismaClient();
 

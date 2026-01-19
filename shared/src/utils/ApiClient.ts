@@ -56,24 +56,14 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ApiErrorResponse>) => {
         if (error.response?.status === 401) {
-          // #region agent log
-          fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ApiClient.ts:58','message':'401 error intercepted','data':{url:error.config?.url,isLoginEndpoint:error.config?.url?.includes('/auth/login')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-          // #endregion
           // Skip auto-redirect for login endpoint - let the login component handle the error
           const requestUrl = error.config?.url || '';
           const isLoginEndpoint = requestUrl.includes('/auth/login');
           
           if (!isLoginEndpoint) {
-            // #region agent log
-            fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ApiClient.ts:65','message':'Redirecting to login (not login endpoint)','data':{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
             // Unauthorized on protected routes - clear token and redirect to login
             localStorage.removeItem('token');
             window.location.href = '/login';
-          } else {
-            // #region agent log
-            fetch('http://127.0.0.1:7247/ingest/63c0bca4-1606-456f-930f-3bc967d7d81a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ApiClient.ts:70','message':'Skipping redirect for login endpoint, propagating error','data':{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
           }
           // For login endpoint, let the error propagate to the component's error handler
         }

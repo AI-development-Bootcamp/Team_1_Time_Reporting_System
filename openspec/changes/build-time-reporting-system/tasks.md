@@ -114,6 +114,7 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] 400 `VALIDATION_ERROR` for missing/invalid fields (ZodError)
   - [x] 401 `UNAUTHORIZED` for wrong credentials
 - **Validation**: Login returns JWT, invalid credentials return 401
+- [x] **Tests**: Unit tests for Bcrypt, validationSchemas; Integration tests for auth flow
 
 #### TASK-M1-011: User CRUD Backend (Per `doc/api/API.md` Section 2)
 - [ ] Create `backend/src/routes/admin/Users.ts`
@@ -185,6 +186,7 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
 - [x] **Note**: `ApiClient.ts` already includes `Authorization: Bearer <token>` header (shared)
 - **Validation**: Users can login, token persists on refresh, protected routes work, redirects to correct pages after login
+- [x] **Tests**: Unit tests for AuthContext, ProtectedRoute, ApiClient logic
 
 #### TASK-M1-021: User Management UI (Admin App)
 - [ ] Create `frontend_admin/src/components/Users/UsersTable.tsx`:

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1768820688922" clover="3.2.0">
+  <project timestamp="1768820688924" name="All files">
+    <metrics statements="49" coveredstatements="31" conditionals="28" coveredconditionals="19" methods="6" coveredmethods="5" elements="83" coveredelements="55" complexity="0" loc="49" ncloc="49" packages="2" files="3" classes="3"/>
+    <package name="routes">
+      <metrics statements="39" coveredstatements="22" conditionals="24" coveredconditionals="15" methods="2" coveredmethods="1"/>
+      <file name="Auth.ts" path="C:\Users\Lior\Desktop\abra AI bootcamp\2_week\8_Day\Team_1_Time_Reporting_System\backend\src\routes\Auth.ts">
+        <metrics statements="39" coveredstatements="22" conditionals="24" coveredconditionals="15" methods="2" coveredmethods="1"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="30" count="17" type="stmt"/>
+        <line num="31" count="17" type="stmt"/>
+        <line num="33" count="17" type="cond" truecount="4" falsecount="0"/>
+        <line num="34" count="5" type="stmt"/>
+        <line num="37" count="12" type="stmt"/>
+        <line num="38" count="12" type="stmt"/>
+        <line num="40" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="41" count="2" type="stmt"/>
+        <line num="44" count="10" type="stmt"/>
+        <line num="46" count="10" type="cond" truecount="4" falsecount="0"/>
+        <line num="47" count="3" type="stmt"/>
+        <line num="50" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="54" count="3" type="stmt"/>
+        <line num="55" count="3" type="stmt"/>
+        <line num="57" count="3" type="stmt"/>
+        <line num="59" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="60" count="10" type="stmt"/>
+        <line num="62" count="4" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="73" count="1" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="83" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="88" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="95" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="100" count="0" type="stmt"/>
+        <line num="101" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="102" count="0" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
+        <line num="112" count="0" type="stmt"/>
+        <line num="126" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="utils">
+      <metrics statements="10" coveredstatements="9" conditionals="4" coveredconditionals="4" methods="4" coveredmethods="4"/>
+      <file name="Bcrypt.ts" path="C:\Users\Lior\Desktop\abra AI bootcamp\2_week\8_Day\Team_1_Time_Reporting_System\backend\src\utils\Bcrypt.ts">
+        <metrics statements="6" coveredstatements="5" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="5" count="13" type="stmt"/>
+        <line num="9" count="11" type="cond" truecount="4" falsecount="0"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="12" count="8" type="stmt"/>
+        <line num="13" count="8" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+      </file>
+      <file name="validationSchemas.ts" path="C:\Users\Lior\Desktop\abra AI bootcamp\2_week\8_Day\Team_1_Time_Reporting_System\backend\src\utils\validationSchemas.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="7" count="15" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="15" count="14" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

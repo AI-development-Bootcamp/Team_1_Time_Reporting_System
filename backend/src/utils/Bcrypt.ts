@@ -6,6 +6,13 @@ export class Bcrypt {
   }
 
   static async compare(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
+    if (!password || !hash) {
+      return false;
+    }
+    try {
+      return await bcrypt.compare(password, hash);
+    } catch (error) {
+      return false;
+    }
   }
 }
