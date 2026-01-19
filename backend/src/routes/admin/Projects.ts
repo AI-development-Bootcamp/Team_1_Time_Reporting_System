@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient, ReportingType, Project } from '@prisma/client';
+import { ReportingType, Project } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
 import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema, parseDateString, dateStringSchema, optionalDateStringSchema } from '../../utils/routeUtils';
+import { prisma } from '../../utils/prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Zod schemas for validation
 const createProjectSchema = z.object({

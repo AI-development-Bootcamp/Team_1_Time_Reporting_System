@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { PrismaClient } from '@prisma/client';
 import express from 'express';
 import request from 'supertest';
 import { errorHandler } from '../../src/middleware/ErrorHandler';
 import tasksRouter from '../../src/routes/admin/Tasks';
+import { prisma } from '../../src/utils/prisma';
 
-const prisma = new PrismaClient();
 const app = express();
 app.use(express.json());
 app.use('/api/admin/tasks', tasksRouter);

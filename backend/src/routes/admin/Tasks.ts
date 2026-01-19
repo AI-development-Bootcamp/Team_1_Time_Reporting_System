@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient, TaskStatus } from '@prisma/client';
+import { TaskStatus } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
 import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema, parseDateString, optionalDateStringSchema } from '../../utils/routeUtils';
+import { prisma } from '../../utils/prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Zod schemas for validation
 const createTaskSchema = z.object({
