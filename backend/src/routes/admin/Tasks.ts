@@ -3,7 +3,7 @@ import { PrismaClient, TaskStatus } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
-import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema } from '../../utils/routeUtils';
+import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema, parseDateString } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -115,8 +115,8 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     data: {
       name: validatedData.name,
       projectId: validatedData.projectId,
-      startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
-      endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
+      startDate: validatedData.startDate ? parseDateString(validatedData.startDate) : null,
+      endDate: validatedData.endDate ? parseDateString(validatedData.endDate) : null,
       description: validatedData.description,
       status: (validatedData.status || 'open') as TaskStatus,
     },
@@ -173,12 +173,12 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
   }
   if (validatedData.startDate !== undefined) {
     updateData.startDate = validatedData.startDate
-      ? new Date(validatedData.startDate)
+      ? parseDateString(validatedData.startDate)
       : null;
   }
   if (validatedData.endDate !== undefined) {
     updateData.endDate = validatedData.endDate
-      ? new Date(validatedData.endDate)
+      ? parseDateString(validatedData.endDate)
       : null;
   }
   if (validatedData.description !== undefined) {

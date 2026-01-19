@@ -29,6 +29,20 @@ export const bigIntIdSchema = z
 export const optionalBigIntIdSchema = bigIntIdSchema.optional();
 
 /**
+ * Converts a date string in YYYY-MM-DD format to a Date object at midnight UTC
+ * This ensures consistent timezone handling regardless of server timezone
+ * 
+ * @param dateString - Date string in YYYY-MM-DD format (e.g., "2023-10-01")
+ * @returns Date object representing midnight UTC on the specified date
+ */
+export function parseDateString(dateString: string): Date {
+  // Parse YYYY-MM-DD and create date at midnight UTC
+  // This prevents timezone issues when server is in different timezone
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+}
+
+/**
  * Serializes data to make it JSON-safe
  * Converts BigInt values to strings and Date objects to ISO strings
  * Handles nested objects and arrays recursively

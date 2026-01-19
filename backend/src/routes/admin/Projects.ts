@@ -3,7 +3,7 @@ import { PrismaClient, ReportingType, Project } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
-import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema } from '../../utils/routeUtils';
+import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema, parseDateString } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -149,9 +149,9 @@ router.post(
         name: validatedData.name,
         clientId: validatedData.clientId,
         projectManagerId: validatedData.projectManagerId,
-        startDate: new Date(validatedData.startDate),
+        startDate: parseDateString(validatedData.startDate),
         endDate: validatedData.endDate
-          ? new Date(validatedData.endDate)
+          ? parseDateString(validatedData.endDate)
           : null,
         description: validatedData.description,
         // Default to startEnd if not provided
@@ -226,11 +226,11 @@ router.put(
       updateData.projectManagerId = validatedData.projectManagerId;
     }
     if (validatedData.startDate !== undefined) {
-      updateData.startDate = new Date(validatedData.startDate);
+      updateData.startDate = parseDateString(validatedData.startDate);
     }
     if (validatedData.endDate !== undefined) {
       updateData.endDate = validatedData.endDate
-        ? new Date(validatedData.endDate)
+        ? parseDateString(validatedData.endDate)
         : null;
     }
     if (validatedData.description !== undefined) {
