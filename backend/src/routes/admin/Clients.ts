@@ -1,47 +1,12 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
+import { asyncHandler, serializeData } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
-
-// Wrapper pour capturer les erreurs async
-const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
-
-// Local serialization helper to handle BigInt and Date objects
-function serializeData<T>(obj: T): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (typeof obj === 'bigint') {
-    return obj.toString();
-  }
-
-  if (obj instanceof Date) {
-    return obj.toISOString();
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(item => serializeData(item));
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = serializeData(value);
-    }
-    return result;
-  }
-
-  return obj;
-}
 
 // Zod schemas for validation
 const createClientSchema = z.object({
@@ -53,6 +18,11 @@ const updateClientSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
   active: z.boolean().optional(),
+});
+
+// Schema for validating route parameters
+const clientIdParamSchema = z.object({
+  id: z.string().regex(/^\d+$/, 'ID must be a valid number').transform(val => BigInt(val)),
 });
 
 /**
@@ -124,7 +94,8 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
 router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
   // TODO: Add admin auth middleware check (userType === 'admin')
 
-  const clientId = BigInt(req.params.id);
+  // Validate route parameter
+  const { id: clientId } = clientIdParamSchema.parse({ id: req.params.id });
 
   // Check if client exists
   const existingClient = await prisma.client.findUnique({
@@ -172,7 +143,8 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
 router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
   // TODO: Add admin auth middleware check (userType === 'admin')
 
-  const clientId = BigInt(req.params.id);
+  // Validate route parameter
+  const { id: clientId } = clientIdParamSchema.parse({ id: req.params.id });
 
   // Check if client exists
   const existingClient = await prisma.client.findUnique({

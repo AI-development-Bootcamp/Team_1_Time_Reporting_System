@@ -1,52 +1,17 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { PrismaClient, TaskStatus } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
+import { asyncHandler, serializeData, bigIntIdSchema, optionalBigIntIdSchema } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-// Wrapper pour capturer les erreurs async
-const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
-
-// Local serialization helper to handle BigInt and Date objects
-function serializeData<T>(obj: T): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (typeof obj === 'bigint') {
-    return obj.toString();
-  }
-
-  if (obj instanceof Date) {
-    return obj.toISOString();
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(item => serializeData(item));
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = serializeData(value);
-    }
-    return result;
-  }
-
-  return obj;
-}
-
 // Zod schemas for validation
 const createTaskSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  projectId: z.number().int().positive('Project ID must be a positive integer'),
+  projectId: bigIntIdSchema,
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
@@ -63,11 +28,21 @@ const createTaskSchema = z.object({
 
 const updateTaskSchema = z.object({
   name: z.string().min(1).optional(),
-  projectId: z.number().int().positive().optional(),
+  projectId: optionalBigIntIdSchema,
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   description: z.string().nullable().optional(),
   status: z.enum(['open', 'closed']).optional(),
+});
+
+// Schema for validating route parameters
+const taskIdParamSchema = z.object({
+  id: z.string().regex(/^\d+$/, 'ID must be a valid number').transform(val => BigInt(val)),
+});
+
+// Schema for validating query parameters
+const projectIdQuerySchema = z.object({
+  projectId: z.string().regex(/^\d+$/, 'Project ID must be a valid number').transform(val => BigInt(val)).optional(),
 });
 
 /**
@@ -79,11 +54,16 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
   // TODO: Add admin auth middleware check (userType === 'admin')
   // For now, this endpoint is accessible without auth (will be secured by Member 1)
 
-  // Query param: projectId (optional filter)
-  const projectIdFilter =
-    typeof req.query.projectId === 'string'
-      ? BigInt(req.query.projectId)
-      : undefined;
+  // Query param: projectId (optional filter) - validate with Zod
+  let projectIdFilter: bigint | undefined;
+  if (req.query.projectId) {
+    try {
+      const queryValidation = projectIdQuerySchema.parse({ projectId: req.query.projectId });
+      projectIdFilter = queryValidation.projectId;
+    } catch (error) {
+      throw new AppError('VALIDATION_ERROR', 'Invalid projectId parameter', 400);
+    }
+  }
 
   // Query param: status (optional filter)
   // Default to 'open' if not specified (show only active/open tasks)
@@ -123,7 +103,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
 
   // Check if project exists
   const project = await prisma.project.findUnique({
-    where: { id: BigInt(validatedData.projectId) },
+    where: { id: validatedData.projectId },
   });
 
   if (!project) {
@@ -134,7 +114,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
   const task = await prisma.task.create({
     data: {
       name: validatedData.name,
-      projectId: BigInt(validatedData.projectId),
+      projectId: validatedData.projectId,
       startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
       endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
       description: validatedData.description,
@@ -153,7 +133,8 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
 router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
   // TODO: Add admin auth middleware check (userType === 'admin')
 
-  const taskId = BigInt(req.params.id);
+  // Validate route parameter
+  const { id: taskId } = taskIdParamSchema.parse({ id: req.params.id });
 
   // Check if task exists
   const existingTask = await prisma.task.findUnique({
@@ -183,12 +164,12 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
   if (validatedData.projectId !== undefined) {
     // Verify project exists
     const project = await prisma.project.findUnique({
-      where: { id: BigInt(validatedData.projectId) },
+      where: { id: validatedData.projectId },
     });
     if (!project) {
       throw new AppError('NOT_FOUND', 'Project not found', 404);
     }
-    updateData.projectId = BigInt(validatedData.projectId);
+    updateData.projectId = validatedData.projectId;
   }
   if (validatedData.startDate !== undefined) {
     updateData.startDate = validatedData.startDate
@@ -225,7 +206,8 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
 router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
   // TODO: Add admin auth middleware check (userType === 'admin')
 
-  const taskId = BigInt(req.params.id);
+  // Validate route parameter
+  const { id: taskId } = taskIdParamSchema.parse({ id: req.params.id });
 
   // Check if task exists
   const existingTask = await prisma.task.findUnique({

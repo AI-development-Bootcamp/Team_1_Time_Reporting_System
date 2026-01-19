@@ -289,6 +289,16 @@ describe('Tasks Router', () => {
         },
       });
     });
+
+    it('should return 400 for invalid projectId query parameter (non-numeric)', async () => {
+      const response = await request(app)
+        .get('/api/admin/tasks?projectId=abc')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.task.findMany).not.toHaveBeenCalled();
+    });
   });
 
   describe('POST /api/admin/tasks', () => {
@@ -822,6 +832,75 @@ describe('Tasks Router', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Task not found');
       expect(mockPrisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .put('/api/admin/tasks/xyz')
+        .send({
+          name: 'Updated Task',
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.task.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /api/admin/tasks/:id', () => {
+    it('should soft delete task (set status=closed)', async () => {
+      const existingTask = {
+        id: BigInt(1),
+        name: 'Task to Delete',
+        projectId: BigInt(1),
+        startDate: null,
+        endDate: null,
+        description: null,
+        status: 'open' as TaskStatus,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockPrisma.task.findUnique.mockResolvedValue(existingTask);
+      mockPrisma.task.update.mockResolvedValue({
+        ...existingTask,
+        status: 'closed' as TaskStatus,
+      });
+
+      const response = await request(app)
+        .delete('/api/admin/tasks/1')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.deleted).toBe(true);
+      expect(mockPrisma.task.update).toHaveBeenCalledWith({
+        where: { id: BigInt(1) },
+        data: { status: 'closed' },
+      });
+    });
+
+    it('should return 404 if task does not exist', async () => {
+      mockPrisma.task.findUnique.mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete('/api/admin/tasks/999')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('NOT_FOUND');
+      expect(response.body.error.message).toBe('Task not found');
+      expect(mockPrisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .delete('/api/admin/tasks/invalid')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.task.findUnique).not.toHaveBeenCalled();
     });
   });
 });

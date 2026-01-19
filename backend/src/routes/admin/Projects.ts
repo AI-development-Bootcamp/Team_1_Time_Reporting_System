@@ -1,29 +1,18 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { PrismaClient, ReportingType, Project } from '@prisma/client';
 import { z } from 'zod';
 import { ApiResponse } from '../../utils/Response';
 import { AppError } from '../../middleware/ErrorHandler';
+import { asyncHandler, bigIntIdSchema, optionalBigIntIdSchema } from '../../utils/routeUtils';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-// Wrapper to catch async errors and forward them to the error handler
-const asyncHandler = (
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>,
-) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
-
 // Zod schemas for validation
 const createProjectSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  clientId: z.number().int().positive('Client ID must be a positive integer'),
-  projectManagerId: z
-    .number()
-    .int()
-    .positive('Project Manager ID must be a positive integer'),
+  clientId: bigIntIdSchema,
+  projectManagerId: bigIntIdSchema,
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
@@ -39,8 +28,8 @@ const createProjectSchema = z.object({
 
 const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
-  clientId: z.number().int().positive().optional(),
-  projectManagerId: z.number().int().positive().optional(),
+  clientId: optionalBigIntIdSchema,
+  projectManagerId: optionalBigIntIdSchema,
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   endDate: z
     .string()
@@ -50,6 +39,16 @@ const updateProjectSchema = z.object({
   description: z.string().nullable().optional(),
   reportingType: z.enum(['duration', 'startEnd']).optional(),
   active: z.boolean().optional(),
+});
+
+// Schema for validating route parameters
+const projectIdParamSchema = z.object({
+  id: z.string().regex(/^\d+$/, 'ID must be a valid number').transform(val => BigInt(val)),
+});
+
+// Schema for validating query parameters
+const clientIdQuerySchema = z.object({
+  clientId: z.string().regex(/^\d+$/, 'Client ID must be a valid number').transform(val => BigInt(val)).optional(),
 });
 
 // Helper to convert a Project entity into a JSON-safe response object
@@ -80,11 +79,16 @@ router.get(
     // TODO: Add admin auth middleware check (userType === 'admin')
     // For now, this endpoint is accessible without auth (will be secured by Member 1)
 
-    // Query param: clientId (optional filter)
-    const clientIdFilter =
-      typeof req.query.clientId === 'string'
-        ? BigInt(req.query.clientId)
-        : undefined;
+    // Query param: clientId (optional filter) - validate with Zod
+    let clientIdFilter: bigint | undefined;
+    if (req.query.clientId) {
+      try {
+        const queryValidation = clientIdQuerySchema.parse({ clientId: req.query.clientId });
+        clientIdFilter = queryValidation.clientId;
+      } catch (error) {
+        throw new AppError('VALIDATION_ERROR', 'Invalid clientId parameter', 400);
+      }
+    }
 
     // Query param: active (boolean, optional)
     // Default to true if not specified (show only active projects)
@@ -123,7 +127,7 @@ router.post(
 
     // Check if client exists
     const client = await prisma.client.findUnique({
-      where: { id: BigInt(validatedData.clientId) },
+      where: { id: validatedData.clientId },
     });
 
     if (!client) {
@@ -132,7 +136,7 @@ router.post(
 
     // Check if project manager exists
     const projectManager = await prisma.user.findUnique({
-      where: { id: BigInt(validatedData.projectManagerId) },
+      where: { id: validatedData.projectManagerId },
     });
 
     if (!projectManager) {
@@ -143,8 +147,8 @@ router.post(
     const project = await prisma.project.create({
       data: {
         name: validatedData.name,
-        clientId: BigInt(validatedData.clientId),
-        projectManagerId: BigInt(validatedData.projectManagerId),
+        clientId: validatedData.clientId,
+        projectManagerId: validatedData.projectManagerId,
         startDate: new Date(validatedData.startDate),
         endDate: validatedData.endDate
           ? new Date(validatedData.endDate)
@@ -171,7 +175,8 @@ router.put(
   asyncHandler(async (req: Request, res: Response) => {
     // TODO: Add admin auth middleware check (userType === 'admin')
 
-    const projectId = BigInt(req.params.id);
+    // Validate route parameter
+    const { id: projectId } = projectIdParamSchema.parse({ id: req.params.id });
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -203,22 +208,22 @@ router.put(
     if (validatedData.clientId !== undefined) {
       // Verify client exists
       const client = await prisma.client.findUnique({
-        where: { id: BigInt(validatedData.clientId) },
+        where: { id: validatedData.clientId },
       });
       if (!client) {
         throw new AppError('NOT_FOUND', 'Client not found', 404);
       }
-      updateData.clientId = BigInt(validatedData.clientId);
+      updateData.clientId = validatedData.clientId;
     }
     if (validatedData.projectManagerId !== undefined) {
       // Verify project manager exists
       const projectManager = await prisma.user.findUnique({
-        where: { id: BigInt(validatedData.projectManagerId) },
+        where: { id: validatedData.projectManagerId },
       });
       if (!projectManager) {
         throw new AppError('NOT_FOUND', 'Project manager not found', 404);
       }
-      updateData.projectManagerId = BigInt(validatedData.projectManagerId);
+      updateData.projectManagerId = validatedData.projectManagerId;
     }
     if (validatedData.startDate !== undefined) {
       updateData.startDate = new Date(validatedData.startDate);
@@ -258,7 +263,8 @@ router.patch(
   asyncHandler(async (req: Request, res: Response) => {
     // TODO: Add admin auth middleware check (userType === 'admin')
 
-    const projectId = BigInt(req.params.id);
+    // Validate route parameter
+    const { id: projectId } = projectIdParamSchema.parse({ id: req.params.id });
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -296,7 +302,8 @@ router.delete(
   asyncHandler(async (req: Request, res: Response) => {
     // TODO: Add admin auth middleware check (userType === 'admin')
 
-    const projectId = BigInt(req.params.id);
+    // Validate route parameter
+    const { id: projectId } = projectIdParamSchema.parse({ id: req.params.id });
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({

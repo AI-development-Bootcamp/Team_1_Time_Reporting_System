@@ -201,6 +201,16 @@ describe('Projects Router', () => {
         },
       });
     });
+
+    it('should return 400 for invalid clientId query parameter (non-numeric)', async () => {
+      const response = await request(app)
+        .get('/api/admin/projects?clientId=abc')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findMany).not.toHaveBeenCalled();
+    });
   });
 
   describe('POST /api/admin/projects', () => {
@@ -359,6 +369,17 @@ describe('Projects Router', () => {
       expect(response.body.error.message).toBe('Project not found');
     });
 
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .put('/api/admin/projects/abc')
+        .send({ name: 'Updated Project' })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
+    });
+
     it('should validate client exists when updating clientId', async () => {
       const existingProject = {
         id: BigInt(1),
@@ -470,6 +491,17 @@ describe('Projects Router', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Project not found');
     });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .patch('/api/admin/projects/xyz')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
+    });
   });
 
   describe('DELETE /api/admin/projects/:id', () => {
@@ -516,6 +548,16 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Project not found');
+    });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .delete('/api/admin/projects/invalid')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
     });
   });
 
