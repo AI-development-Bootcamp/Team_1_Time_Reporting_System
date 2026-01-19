@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
+import { logAudit } from '../utils/AuditLog';
 
 // Enable UTC plugin for consistent timezone handling
 dayjs.extend(utc);
@@ -241,6 +242,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       },
     });
 
+    // Audit log after successful create
+    logAudit({
+      action: 'CREATE_ATTENDANCE',
+      userId,
+      entity: 'DailyAttendance',
+      entityId: attendance.id,
+      payload: { date: body.date, startTime, endTime, status: body.status },
+      req,
+    });
+
     ApiResponse.success(res, { id: attendance.id.toString() }, 201);
   } catch (error) {
     next(error);
@@ -394,6 +405,16 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     await prisma.dailyAttendance.update({
       where: { id },
       data: updateData,
+    });
+
+    // Audit log after successful update
+    logAudit({
+      action: 'UPDATE_ATTENDANCE',
+      userId: existing.userId,
+      entity: 'DailyAttendance',
+      entityId: id,
+      payload: { startTime: newStartTime, endTime: newEndTime, status: newStatus },
+      req,
     });
 
     ApiResponse.success(res, { updated: true });
