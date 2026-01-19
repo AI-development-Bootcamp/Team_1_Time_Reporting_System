@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { errorHandler } from './middleware/ErrorHandler';
 import attendanceRoutes from './routes/Attendance';
+import timeLogsRoutes from './routes/TimeLogs';
 
 const app = express();
 
@@ -26,6 +27,8 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/attendance', attendanceRoutes);
+
+app.use('/api/time-logs', timeLogsRoutes);
 
 app.use(errorHandler);
 
