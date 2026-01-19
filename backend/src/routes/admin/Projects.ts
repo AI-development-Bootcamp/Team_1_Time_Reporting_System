@@ -71,7 +71,7 @@ function mapProjectToResponse(project: Project) {
 
 /**
  * GET /api/admin/projects
- * List projects (optional filter by clientId)
+ * List projects (optional filter by clientId and active status)
  * Auth: Required, Role: admin
  */
 router.get(
@@ -86,9 +86,17 @@ router.get(
         ? BigInt(req.query.clientId)
         : undefined;
 
+    // Query param: active (boolean, optional)
+    // Default to true if not specified (show only active projects)
+    const activeFilter =
+      req.query.active !== undefined
+        ? req.query.active === 'true'
+        : true;
+
     const projects = await prisma.project.findMany({
       where: {
         ...(clientIdFilter && { clientId: clientIdFilter }),
+        active: activeFilter,
       },
       orderBy: {
         createdAt: 'desc',

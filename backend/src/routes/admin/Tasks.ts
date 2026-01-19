@@ -72,7 +72,7 @@ const updateTaskSchema = z.object({
 
 /**
  * GET /api/admin/tasks
- * List tasks (optional filter by projectId)
+ * List tasks (optional filter by projectId and status)
  * Auth: Required, Role: admin
  */
 router.get('/', asyncHandler(async (req: Request, res: Response) => {
@@ -85,12 +85,22 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
       ? BigInt(req.query.projectId)
       : undefined;
 
-  // Hide inactive (closed) tasks by default (soft delete behavior)
-  // Note: we use status='open' as default filter
+  // Query param: status (optional filter)
+  // Default to 'open' if not specified (show only active/open tasks)
+  // Options: 'open', 'closed', or 'all' to show all tasks
+  let statusFilter: 'open' | 'closed' | undefined;
+  if (req.query.status === 'closed') {
+    statusFilter = 'closed';
+  } else if (req.query.status === 'all') {
+    statusFilter = undefined; // Show all tasks
+  } else {
+    statusFilter = 'open'; // Default to open tasks
+  }
+
   const tasks = await prisma.task.findMany({
     where: {
       ...(projectIdFilter && { projectId: projectIdFilter }),
-      status: 'open', // Hide closed tasks by default (soft delete)
+      ...(statusFilter && { status: statusFilter }),
     },
     orderBy: {
       createdAt: 'desc',

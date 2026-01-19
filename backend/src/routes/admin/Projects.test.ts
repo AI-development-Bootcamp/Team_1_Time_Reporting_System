@@ -86,7 +86,9 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(true);
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
-        where: {},
+        where: {
+          active: true,
+        },
         orderBy: {
           createdAt: 'desc',
         },
@@ -120,6 +122,7 @@ describe('Projects Router', () => {
       expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
         where: {
           clientId: BigInt(1),
+          active: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -129,6 +132,74 @@ describe('Projects Router', () => {
       // Verify all returned projects belong to the filtered client
       const allMatch = response.body.data.every((p: any) => p.clientId === 1);
       expect(allMatch).toBe(true);
+    });
+
+    it('should filter by active=true when query param is provided', async () => {
+      const mockProjects = [
+        {
+          id: BigInt(1),
+          name: 'Active Project',
+          clientId: BigInt(1),
+          projectManagerId: BigInt(1),
+          startDate: new Date('2026-01-01'),
+          endDate: null,
+          description: null,
+          reportingType: 'startEnd' as ReportingType,
+          active: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.project.findMany.mockResolvedValue(mockProjects);
+
+      const response = await request(app)
+        .get('/api/admin/projects?active=true')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+        where: {
+          active: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should filter by active=false when query param is provided', async () => {
+      const mockProjects = [
+        {
+          id: BigInt(1),
+          name: 'Inactive Project',
+          clientId: BigInt(1),
+          projectManagerId: BigInt(1),
+          startDate: new Date('2026-01-01'),
+          endDate: null,
+          description: null,
+          reportingType: 'startEnd' as ReportingType,
+          active: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.project.findMany.mockResolvedValue(mockProjects);
+
+      const response = await request(app)
+        .get('/api/admin/projects?active=false')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+        where: {
+          active: false,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
     });
   });
 

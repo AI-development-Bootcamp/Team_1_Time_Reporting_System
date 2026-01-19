@@ -151,6 +151,144 @@ describe('Tasks Router', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual([]);
     });
+
+    it('should filter by status=open when query param is provided', async () => {
+      const mockTasks = [
+        {
+          id: BigInt(1),
+          name: 'Open Task',
+          projectId: BigInt(1),
+          startDate: null,
+          endDate: null,
+          description: null,
+          status: 'open' as TaskStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.task.findMany.mockResolvedValue(mockTasks);
+
+      const response = await request(app)
+        .get('/api/admin/tasks?status=open')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.task.findMany).toHaveBeenCalledWith({
+        where: {
+          status: 'open',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should filter by status=closed when query param is provided', async () => {
+      const mockTasks = [
+        {
+          id: BigInt(1),
+          name: 'Closed Task',
+          projectId: BigInt(1),
+          startDate: null,
+          endDate: null,
+          description: null,
+          status: 'closed' as TaskStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.task.findMany.mockResolvedValue(mockTasks);
+
+      const response = await request(app)
+        .get('/api/admin/tasks?status=closed')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.task.findMany).toHaveBeenCalledWith({
+        where: {
+          status: 'closed',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should return all tasks when status=all is provided', async () => {
+      const mockTasks = [
+        {
+          id: BigInt(1),
+          name: 'Open Task',
+          projectId: BigInt(1),
+          startDate: null,
+          endDate: null,
+          description: null,
+          status: 'open' as TaskStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: BigInt(2),
+          name: 'Closed Task',
+          projectId: BigInt(1),
+          startDate: null,
+          endDate: null,
+          description: null,
+          status: 'closed' as TaskStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.task.findMany.mockResolvedValue(mockTasks);
+
+      const response = await request(app)
+        .get('/api/admin/tasks?status=all')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.task.findMany).toHaveBeenCalledWith({
+        where: {},
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should combine projectId and status filters', async () => {
+      const mockTasks = [
+        {
+          id: BigInt(1),
+          name: 'Closed Task for Project 1',
+          projectId: BigInt(1),
+          startDate: null,
+          endDate: null,
+          description: null,
+          status: 'closed' as TaskStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.task.findMany.mockResolvedValue(mockTasks);
+
+      const response = await request(app)
+        .get('/api/admin/tasks?projectId=1&status=closed')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.task.findMany).toHaveBeenCalledWith({
+        where: {
+          projectId: BigInt(1),
+          status: 'closed',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
   });
 
   describe('POST /api/admin/tasks', () => {
