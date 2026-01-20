@@ -11,10 +11,11 @@ type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 // Helper to convert a Project entity into a JSON-safe response object
 function mapProjectToResponse(project: Project) {
   return {
-    id: Number(project.id),
+    // Keep IDs as strings (BigInt serialized) to match client ID representation
+    id: project.id.toString(),
     name: project.name,
-    clientId: Number(project.clientId),
-    projectManagerId: Number(project.projectManagerId),
+    clientId: project.clientId.toString(),
+    projectManagerId: project.projectManagerId.toString(),
     startDate: project.startDate.toISOString().slice(0, 10), // YYYY-MM-DD
     endDate: project.endDate ? project.endDate.toISOString().slice(0, 10) : null,
     description: project.description,
@@ -77,7 +78,8 @@ export class ProjectService {
       },
     });
 
-    return { id: Number(project.id) };
+    // Return ID as string to be consistent with client ID serialization
+    return { id: project.id.toString() };
   }
 
   static async updateProject(id: bigint, data: UpdateProjectInput) {
