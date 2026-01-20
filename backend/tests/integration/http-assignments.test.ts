@@ -277,7 +277,7 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
 
         // Should not include inactive worker
         const inactiveWorkerInResponse = response.body.data.find(
-            (w: any) => w.id === Number(inactiveWorkerUserId)
+            (w: { id: number }) => w.id === Number(inactiveWorkerUserId)
         );
         expect(inactiveWorkerInResponse).toBeUndefined();
     });
@@ -325,6 +325,11 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
         expect(response.body.error).toHaveProperty('code', 'FORBIDDEN');
     });
 
+    interface WorkerSummary {
+        id: number;
+        name: string;
+    }
+
     it('should only return id and name fields', async () => {
         const response = await request(app)
             .get(`/api/admin/assignments/${taskId}/users`)
@@ -333,7 +338,7 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveLength(2);
 
-        response.body.data.forEach((worker: any) => {
+        response.body.data.forEach((worker: WorkerSummary) => {
             expect(Object.keys(worker)).toEqual(['id', 'name']);
             expect(worker).toHaveProperty('id');
             expect(worker).toHaveProperty('name');

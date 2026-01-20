@@ -4,7 +4,7 @@
 Comprehensive integration tests for all User CRUD endpoints covering edge cases, error scenarios, and validation.
 
 ## Test File
-`backend/tests/integration/users-crud.test.ts`
+`backend/tests/integration/http-users.test.ts`
 
 ## Test Coverage
 

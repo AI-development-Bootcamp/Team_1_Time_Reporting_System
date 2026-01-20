@@ -147,8 +147,8 @@ Current `backend/prisma/schema.prisma` issues:
 - [x] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
 - [x] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
 - [x] Create **shared** `shared/src/context/AuthContext.tsx`:
-  - [x] Store JWT token in localStorage (key: `token`)
-  - [x] Store user info in localStorage (key: `user`) and state
+  - [ ] Store JWT token in HTTP-Only Cookie (Secure, SameSite) - ✅ SECURE
+  - [ ] Store user info in client state/memory (minimal profile in localStorage allowed if non-sensitive)
   - [x] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
   - [x] Load user from localStorage on mount
   - [x] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)

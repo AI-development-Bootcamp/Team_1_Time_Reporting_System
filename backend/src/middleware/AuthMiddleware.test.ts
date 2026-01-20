@@ -3,12 +3,23 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { authMiddleware, AuthRequest } from '../middleware/AuthMiddleware';
 import { AppError } from '../middleware/ErrorHandler';
+import { prisma } from '../utils/prismaClient';
+
+// Mock prisma client
+vi.mock('../utils/prismaClient', () => ({
+    prisma: {
+        user: {
+            findUnique: vi.fn(),
+        },
+    },
+}));
 
 describe('authMiddleware', () => {
     let mockReq: Partial<AuthRequest>;
     let mockRes: Partial<Response>;
     let mockNext: NextFunction;
     const originalSecret = process.env.JWT_SECRET;
+    const mockedPrisma = vi.mocked(prisma);
 
     beforeEach(() => {
         mockReq = {
@@ -17,6 +28,7 @@ describe('authMiddleware', () => {
         mockRes = {};
         mockNext = vi.fn();
         process.env.JWT_SECRET = 'test-secret-key';
+        vi.clearAllMocks();
     });
 
     afterEach(() => {
@@ -25,7 +37,7 @@ describe('authMiddleware', () => {
     });
 
     describe('valid cases', () => {
-        it('should allow valid JWT token with admin userType', () => {
+        it('should allow valid JWT token with admin userType', async () => {
             const userData = {
                 id: 1,
                 name: 'Test Admin',
@@ -41,16 +53,24 @@ describe('authMiddleware', () => {
             );
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).not.toThrow();
+            // Mock DB response
+            (mockedPrisma.user.findUnique as any).mockResolvedValue({
+                ...userData,
+                id: BigInt(1),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                password: 'hashed_password' // Missing in original object but required by type
+            });
+
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
             expect(mockNext).toHaveBeenCalled();
             expect(mockReq.userId).toBeDefined();
             expect(mockReq.userType).toBe('admin');
+            expect(mockedPrisma.user.findUnique).toHaveBeenCalledWith({ where: { id: BigInt(1) } });
         });
 
-        it('should allow valid JWT token with worker userType', () => {
+        it('should allow valid JWT token with worker userType', async () => {
             const userData = {
                 id: 2,
                 name: 'Test Worker',
@@ -66,16 +86,22 @@ describe('authMiddleware', () => {
             );
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).not.toThrow();
+            (mockedPrisma.user.findUnique as any).mockResolvedValue({
+                ...userData,
+                id: BigInt(2),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                password: 'hashed_password'
+            });
+
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
             expect(mockNext).toHaveBeenCalled();
             expect(mockReq.userId).toBeDefined();
             expect(mockReq.userType).toBe('worker');
         });
 
-        it('should attach userId as BigInt to request', () => {
+        it('should attach userId as BigInt to request', async () => {
             const userData = {
                 id: 123,
                 name: 'Test User',
@@ -91,7 +117,15 @@ describe('authMiddleware', () => {
             );
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+            (mockedPrisma.user.findUnique as any).mockResolvedValue({
+                ...userData,
+                id: BigInt(123),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                password: 'hashed_password'
+            });
+
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
             expect(typeof mockReq.userId === 'bigint').toBe(true);
             expect(mockReq.userId?.toString()).toBe('123');
@@ -99,119 +133,145 @@ describe('authMiddleware', () => {
     });
 
     describe('invalid cases', () => {
-        it('should throw UNAUTHORIZED when authorization header is missing', () => {
+        it('should call next with UNAUTHORIZED error when authorization header is missing', async () => {
             mockReq.headers = {};
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
-            try {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            } catch (error) {
-                expect(error).toBeInstanceOf(AppError);
-                expect((error as AppError).code).toBe('UNAUTHORIZED');
-                expect((error as AppError).statusCode).toBe(401);
-            }
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
+            expect(error.statusCode).toBe(401);
         });
 
-        it('should throw UNAUTHORIZED when authorization header does not start with Bearer', () => {
+        it('should call next with UNAUTHORIZED error when authorization header does not start with Bearer', async () => {
             mockReq.headers = { authorization: 'InvalidToken' };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
-            try {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            } catch (error) {
-                expect(error).toBeInstanceOf(AppError);
-                expect((error as AppError).code).toBe('UNAUTHORIZED');
-            }
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
         });
 
-        it('should throw UNAUTHORIZED when authorization header has wrong format', () => {
+        it('should call next with UNAUTHORIZED error when authorization header has wrong format', async () => {
             mockReq.headers = { authorization: 'TokenWithoutBearer' };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
         });
 
-        it('should throw INTERNAL_ERROR when JWT_SECRET is not configured', () => {
+        it('should call next with INTERNAL_ERROR when JWT_SECRET is not configured', async () => {
             delete process.env.JWT_SECRET;
             const token = jwt.sign({ userId: '1', userType: 'admin' }, 'test-secret-key');
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
-            try {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            } catch (error) {
-                expect(error).toBeInstanceOf(AppError);
-                expect((error as AppError).code).toBe('INTERNAL_ERROR');
-                expect((error as AppError).statusCode).toBe(500);
-            }
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('INTERNAL_ERROR');
+            expect(error.statusCode).toBe(500);
         });
 
-        it('should throw UNAUTHORIZED when token is invalid', () => {
+        it('should call next with UNAUTHORIZED error when token is invalid', async () => {
             mockReq.headers = { authorization: 'Bearer invalid-token-string' };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
-            try {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            } catch (error) {
-                expect(error).toBeInstanceOf(AppError);
-                expect((error as AppError).code).toBe('UNAUTHORIZED');
-            }
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
         });
 
-        it('should throw UNAUTHORIZED when token is signed with wrong secret', () => {
+        it('should call next with UNAUTHORIZED error when token is signed with wrong secret', async () => {
             const token = jwt.sign({ userId: '1', userType: 'admin' }, 'wrong-secret');
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
         });
 
-        it('should throw UNAUTHORIZED when token is expired', () => {
+        it('should call next with UNAUTHORIZED error when token is expired', async () => {
             const token = jwt.sign({ userId: '1', userType: 'admin' }, 'test-secret-key', { expiresIn: '-1h' });
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
         });
 
-        it('should throw UNAUTHORIZED when token payload is missing userId', () => {
+        it('should call next with error when token payload is missing userId', async () => {
             const token = jwt.sign({ userType: 'admin' }, 'test-secret-key');
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow();
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.anything());
         });
 
-        it('should throw UNAUTHORIZED when token payload is missing userType', () => {
+        it('should call next with UNAUTHORIZED error when token payload is missing userType', async () => {
             const token = jwt.sign({ userId: '1' }, 'test-secret-key');
             mockReq.headers = { authorization: `Bearer ${token}` };
 
-            expect(() => {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            }).toThrow(AppError);
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
 
-            try {
-                authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
-            } catch (error) {
-                expect(error).toBeInstanceOf(AppError);
-                expect((error as AppError).code).toBe('UNAUTHORIZED');
-            }
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
+        });
+
+        it('should call next with UNAUTHORIZED error when user is not found in database', async () => {
+            const userData = {
+                id: 999,
+                userType: 'worker' as const,
+            };
+            const token = jwt.sign(
+                { userId: '999', userType: 'worker', user: userData },
+                'test-secret-key'
+            );
+            mockReq.headers = { authorization: `Bearer ${token}` };
+
+            // Mock DB returning null
+            (mockedPrisma.user.findUnique as any).mockResolvedValue(null);
+
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
+        });
+
+        it('should call next with UNAUTHORIZED error when user is inactive', async () => {
+            const userData = {
+                id: 3,
+                active: false,
+            };
+            const token = jwt.sign(
+                { userId: '3', userType: 'worker', user: userData },
+                'test-secret-key'
+            );
+            mockReq.headers = { authorization: `Bearer ${token}` };
+
+            // Mock DB returning inactive user
+            (mockedPrisma.user.findUnique as any).mockResolvedValue({
+                id: BigInt(3),
+                active: false,
+                name: 'Inactive',
+                mail: 'inactive@test.com',
+                password: 'hash',
+                userType: 'worker',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            await authMiddleware(mockReq as AuthRequest, mockRes as Response, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+            const error = (mockNext as any).mock.calls[0][0] as AppError;
+            expect(error.code).toBe('UNAUTHORIZED');
         });
     });
 });

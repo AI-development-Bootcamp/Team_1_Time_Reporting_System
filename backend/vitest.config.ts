@@ -30,11 +30,19 @@ export default defineConfig({
         // Exclude other members' files
         'src/routes/Attendance.ts',
         'src/routes/TimeLogs.ts',
-        'src/services/**',
+        // 'src/services/**', // Removed to allow coverage for our services
         'src/index.ts', // Entry point, not unit testable
         'src/utils/DatabaseConfig.ts', // Infrastructure setup
         'src/utils/prismaClient.ts', // Prisma singleton
       ],
+      thresholds: {
+        global: {
+          lines: 60,
+          functions: 60,
+          branches: 60,
+          statements: 60,
+        },
+      },
     },
   },
 });

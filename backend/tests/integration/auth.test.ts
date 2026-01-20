@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { Bcrypt } from '@/utils/Bcrypt';
 import { loginSchema } from '@/validators/auth.schema';
 
@@ -7,8 +7,8 @@ import { loginSchema } from '@/validators/auth.schema';
 const prisma = new PrismaClient();
 
 describe('Auth Integration Tests', () => {
-  let testUser: any;
-  let inactiveUser: any;
+  let testUser: User;
+  let inactiveUser: User;
 
   beforeAll(async () => {
     // Create active test user

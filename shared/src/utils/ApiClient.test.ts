@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
+import type { AxiosInstance } from 'axios';
 import axios from 'axios';
-import { apiClient, ApiErrorResponse } from './ApiClient';
+import { ApiErrorResponse } from './ApiClient';
 
-// Mock axios
+// Mock axios - MUST be before any import that uses it
 vi.mock('axios');
 const mockedAxios = vi.mocked(axios);
 
-// Mock localStorage for node environment
+// Mock localStorage with proper typing
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -20,9 +21,10 @@ const localStorageMock = (() => {
     clear: () => {
       store = {};
     },
-  };
+  } as Storage;
 })();
 
+// Setup global window and localStorage
 if (typeof window === 'undefined') {
   (global as any).window = {};
   (global as any).localStorage = localStorageMock;
@@ -37,6 +39,7 @@ describe('ApiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorageMock.clear();
+    vi.resetModules(); // crucial for re-importing modules
   });
 
   describe('request interceptor', () => {
@@ -54,11 +57,11 @@ describe('ApiClient', () => {
         post: vi.fn().mockResolvedValue({ data: { success: true, data: {} } }),
         put: vi.fn().mockResolvedValue({ data: { success: true, data: {} } }),
         delete: vi.fn().mockResolvedValue({ data: { success: true, data: {} } }),
-      };
+      } as unknown as AxiosInstance;
 
-      mockedAxios.create.mockReturnValue(mockAxiosInstance as any);
+      mockedAxios.create.mockReturnValue(mockAxiosInstance);
 
-      // Re-import to trigger constructor
+      // Dynamically import to ensure mock is used
       await import('./ApiClient');
 
       // Check that request interceptor was set up
@@ -67,14 +70,14 @@ describe('ApiClient', () => {
 
     it('should not add Authorization header when token does not exist', () => {
       localStorage.removeItem('token');
-      
+
       const shouldAddHeader = !!localStorage.getItem('token');
       expect(shouldAddHeader).toBe(false);
     });
 
     it('should handle empty token string', () => {
       localStorage.setItem('token', '');
-      
+
       const token = localStorage.getItem('token');
       const shouldAddHeader = !!token && token.length > 0;
       expect(shouldAddHeader).toBe(false);
@@ -87,28 +90,28 @@ describe('ApiClient', () => {
       // Actual implementation is tested via integration tests
       const loginUrl = '/auth/login';
       const isLoginEndpoint = loginUrl.includes('/auth/login');
-      
+
       expect(isLoginEndpoint).toBe(true);
     });
 
     it('should identify non-login endpoints', () => {
       const protectedUrl = '/admin/users';
       const isLoginEndpoint = protectedUrl.includes('/auth/login');
-      
+
       expect(isLoginEndpoint).toBe(false);
     });
 
     it('should identify login endpoint with query params', () => {
       const loginUrl = '/auth/login?redirect=/dashboard';
       const isLoginEndpoint = loginUrl.includes('/auth/login');
-      
+
       expect(isLoginEndpoint).toBe(true);
     });
 
     it('should identify login endpoint case-insensitively', () => {
       const loginUrl = '/AUTH/LOGIN';
       const isLoginEndpoint = loginUrl.toLowerCase().includes('/auth/login');
-      
+
       expect(isLoginEndpoint).toBe(true);
     });
 
@@ -116,7 +119,7 @@ describe('ApiClient', () => {
       const protectedUrl = '/admin/users';
       const isLoginEndpoint = protectedUrl.includes('/auth/login');
       const shouldRedirect = !isLoginEndpoint;
-      
+
       expect(shouldRedirect).toBe(true);
     });
   });

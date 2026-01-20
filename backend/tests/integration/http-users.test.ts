@@ -8,13 +8,24 @@ import jwt from 'jsonwebtoken';
 const app = createApp();
 
 describe('HTTP Integration Tests - User CRUD Endpoints', () => {
-  let adminUser: any;
-  let workerUser: any;
+  interface TestUser {
+    id: bigint;
+    name: string;
+    mail: string;
+    userType: 'admin' | 'worker';
+    active: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    password?: string;
+  }
+
+  let adminUser: TestUser;
+  let workerUser: TestUser;
   let createdUserIds: bigint[] = [];
   const originalSecret = process.env.JWT_SECRET;
 
   // Helper to create admin token
-  const createAdminToken = (user: any) => {
+  const createAdminToken = (user: TestUser) => {
     return jwt.sign(
       {
         userId: user.id.toString(),
@@ -35,7 +46,7 @@ describe('HTTP Integration Tests - User CRUD Endpoints', () => {
   };
 
   // Helper to create worker token
-  const createWorkerToken = (user: any) => {
+  const createWorkerToken = (user: TestUser) => {
     return jwt.sign(
       {
         userId: user.id.toString(),

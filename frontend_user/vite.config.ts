@@ -18,7 +18,11 @@ export default defineConfig({
   },
   server: {
     fs: {
-      allow: ['..'],
+      allow: [
+        path.resolve(__dirname, './src'),
+        path.resolve(__dirname, '../shared/src'),
+        path.resolve(__dirname, '../node_modules')
+      ],
     },
   },
   test: {
