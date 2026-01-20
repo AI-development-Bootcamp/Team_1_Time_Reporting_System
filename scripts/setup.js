@@ -60,6 +60,11 @@ function updateBackendEnv(port) {
   writeFileSync(envPath, content, 'utf8');
 }
 
+/**
+ * Orchestrates full local development environment setup: installs dependencies, verifies Docker, configures and starts services, waits for the database, generates the Prisma client, runs migrations, and seeds the database.
+ *
+ * Exits the process with a non-zero code on unrecoverable failures (dependency installation, Docker not running, no available port, Docker Compose startup failure, database readiness timeout, Prisma generation failure, or seeding failure). Migration errors that indicate a migration "already exists" or is "already applied" are treated as non-fatal and do not cause exit.
+ */
 async function main() {
   console.log('🚀 Starting full setup...\n');
 
