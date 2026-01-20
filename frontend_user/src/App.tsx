@@ -24,6 +24,11 @@ const AppRoutes = () => {
   );
 };
 
+/**
+ * Top-level React component that establishes routing and authentication context for the app.
+ *
+ * @returns The root React element that wraps the application with a router and authentication provider.
+ */
 function App() {
   return (
     <BrowserRouter>

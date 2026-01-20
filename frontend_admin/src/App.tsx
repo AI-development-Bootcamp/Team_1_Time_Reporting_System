@@ -24,6 +24,13 @@ const AppRoutes = () => {
   );
 };
 
+/**
+ * Root component that initializes application routing and authentication context.
+ *
+ * Wraps the app's route tree with a router and the authentication provider.
+ *
+ * @returns The root JSX element containing the BrowserRouter, AuthContextProvider, and AppRoutes
+ */
 function App() {
   return (
     <BrowserRouter>

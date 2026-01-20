@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+/**
+ * Populates the database with a deterministic set of seed data for users, clients, projects, tasks, task assignments, attendance, and time logs.
+ *
+ * Removes existing seed data (respecting foreign-key order) and inserts: one admin and three worker users (all created with a single hashed password), three clients, four projects, several tasks, task-worker assignments, sample daily attendance records, and project time logs; progress is emitted to the console.
+ */
 async function main() {
   console.log('🌱 Starting seed...');
 
