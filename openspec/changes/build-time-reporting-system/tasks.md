@@ -1393,10 +1393,10 @@ backend/src/
 - [x] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
 - [x] Services: `frontend_user/src/services/attendanceApi.ts`
 - [x] Services: `frontend_user/src/services/timeLogsApi.ts`
-- [ ] Services: `frontend_user/src/services/projectSelectorApi.ts`
-- [ ] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
+- [x] Services: `frontend_user/src/services/projectSelectorApi.ts` (SKIPPED - using embedded data from month history)
+- [x] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
 - [ ] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
-- [ ] Hooks: `frontend_user/src/hooks/useProjectSelector.ts` (cache taskId → name mapping)
+- [x] Hooks: `frontend_user/src/hooks/useProjectSelector.ts` (SKIPPED - using embedded data from month history)
 - [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.tsx` (main page)
 - [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.module.css`
 - [ ] Component: `frontend_user/src/components/MonthHistory/MonthHeader.tsx`
