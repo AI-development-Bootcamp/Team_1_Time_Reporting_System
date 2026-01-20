@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../shared/src'),
+      '@images': path.resolve(__dirname, '../shared/image_components'),
     },
   },
 });

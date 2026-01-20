@@ -1387,7 +1387,7 @@ backend/src/
 - `WorkDayIcon.png`, `CalendarNotWorkIcon.png` (calendar icons - decorative, not clickable)
 
 **Files to Create:**
-- [ ] Config: Update `vite.config.ts` with `@images` alias → `../shared/image_components`
+- [x] Config: Update `vite.config.ts` with `@images` alias → `../shared/image_components`
 - [ ] Types: `frontend_user/src/types/attendance.ts`, `timeLog.ts`, `projectSelector.ts`
 - [ ] Utils: `frontend_user/src/utils/dateUtils.ts` (Day.js helpers, Hebrew day names)
 - [ ] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
