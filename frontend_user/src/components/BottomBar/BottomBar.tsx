@@ -25,6 +25,9 @@ export function BottomBar({ onManualReport }: BottomBarProps) {
         </Text>
       </UnstyledButton>
 
+      {/* Vertical Divider */}
+      <div className={classes.divider} />
+
       {/* Manual Report */}
       <UnstyledButton className={classes.manualReportButton} onClick={onManualReport}>
         <Text size="sm" fw={500} c="dark">
