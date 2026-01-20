@@ -1,0 +1,23 @@
+/**
+ * EmptyState styles
+ */
+
+.container {
+  flex: 1;
+  padding: 40px 20px;
+  min-height: 400px;
+}
+
+.image {
+  max-width: 280px;
+  max-height: 220px;
+}
+
+.title {
+  color: var(--mantine-color-dark-7);
+  margin-top: 16px;
+}
+
+.subtitle {
+  max-width: 280px;
+}

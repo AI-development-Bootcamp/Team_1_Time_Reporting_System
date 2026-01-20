@@ -1,0 +1,40 @@
+/**
+ * DayAccordionItem styles
+ */
+
+.item {
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+  background-color: var(--mantine-color-white);
+}
+
+.item:first-of-type {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.item:last-of-type {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom: none;
+}
+
+.control {
+  padding: 12px 16px;
+}
+
+.header {
+  width: 100%;
+}
+
+.calendarIcon {
+  opacity: 0.6;
+}
+
+.panel {
+  padding: 0 16px 16px;
+}
+
+.addButton {
+  align-self: center;
+  margin-top: 8px;
+}

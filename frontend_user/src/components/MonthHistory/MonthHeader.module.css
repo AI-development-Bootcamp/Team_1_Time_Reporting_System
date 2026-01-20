@@ -1,0 +1,44 @@
+/**
+ * MonthHeader styles
+ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--mantine-color-white);
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.title {
+  color: var(--mantine-color-dark-7);
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+
+.navButton:hover:not([data-disabled]) {
+  opacity: 0.7;
+}
+
+.navButton[data-disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.monthName {
+  min-width: 80px;
+  text-align: center;
+}

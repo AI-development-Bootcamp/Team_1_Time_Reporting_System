@@ -1397,18 +1397,18 @@ backend/src/
 - [x] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
 - [x] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
 - [x] Hooks: `frontend_user/src/hooks/useProjectSelector.ts` (SKIPPED - using embedded data from month history)
-- [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.tsx` (main page)
-- [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.module.css`
-- [ ] Component: `frontend_user/src/components/MonthHistory/MonthHeader.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/MonthAccordion.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/DayAccordionItem.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/DailyAttendanceCard.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/TimeLogRow.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/StatusBadge.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/StatusBadge.module.css`
-- [ ] Component: `frontend_user/src/components/MonthHistory/EmptyState.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/ErrorState.tsx`
-- [ ] Component: `frontend_user/src/components/MonthHistory/index.ts`
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.tsx` (main page)
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.module.css`
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHeader.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthAccordion.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/DayAccordionItem.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/DailyAttendanceCard.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/TimeLogRow.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/StatusBadge.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/StatusBadge.module.css`
+- [x] Component: `frontend_user/src/components/MonthHistory/EmptyState.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/ErrorState.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/index.ts`
 - [ ] Component: `frontend_user/src/components/BottomBar/BottomBar.tsx`
 - [ ] Component: `frontend_user/src/components/BottomBar/BottomBar.module.css`
 - [ ] Component: `frontend_user/src/components/ComingSoonModal/ComingSoonModal.tsx`

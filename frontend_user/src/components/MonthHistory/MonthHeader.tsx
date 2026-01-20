@@ -1,0 +1,71 @@
+/**
+ * MonthHeader Component
+ * Displays page title and month navigation
+ */
+
+import { Group, Title, Text, UnstyledButton, Image } from '@mantine/core';
+import { HEBREW_STRINGS } from '../../utils/constants';
+import { getHebrewMonthName } from '../../utils/dateUtils';
+import leftArrowIcon from '@images/LeftArrowIcon.png';
+import rightArrowIcon from '@images/RightArrowIcon.png';
+import classes from './MonthHeader.module.css';
+
+interface MonthHeaderProps {
+  /** Current month (1-12) */
+  month: number;
+  /** Current year */
+  year: number;
+  /** Callback when previous month button is clicked */
+  onPreviousMonth: () => void;
+  /** Callback when next month button is clicked */
+  onNextMonth: () => void;
+  /** Whether previous month button is disabled */
+  isPreviousDisabled?: boolean;
+  /** Whether next month button is disabled */
+  isNextDisabled?: boolean;
+}
+
+export function MonthHeader({
+  month,
+  year: _year, // Reserved for future use (e.g., display year in header)
+  onPreviousMonth,
+  onNextMonth,
+  isPreviousDisabled = false,
+  isNextDisabled = false,
+}: MonthHeaderProps) {
+  const monthName = getHebrewMonthName(month);
+
+  return (
+    <div className={classes.header}>
+      {/* Page title */}
+      <Title order={3} className={classes.title}>
+        {HEBREW_STRINGS.pageTitle}
+      </Title>
+
+      {/* Month navigation */}
+      <Group gap="xs" className={classes.navigation}>
+        <UnstyledButton
+          onClick={onPreviousMonth}
+          disabled={isPreviousDisabled}
+          className={classes.navButton}
+          data-disabled={isPreviousDisabled || undefined}
+        >
+          <Image src={leftArrowIcon} alt="Previous month" w={24} h={24} />
+        </UnstyledButton>
+
+        <Text size="md" fw={500} className={classes.monthName}>
+          {monthName}
+        </Text>
+
+        <UnstyledButton
+          onClick={onNextMonth}
+          disabled={isNextDisabled}
+          className={classes.navButton}
+          data-disabled={isNextDisabled || undefined}
+        >
+          <Image src={rightArrowIcon} alt="Next month" w={24} h={24} />
+        </UnstyledButton>
+      </Group>
+    </div>
+  );
+}
