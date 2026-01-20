@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ReportingType } from '@prisma/client';
+import { ReportingType, TaskStatus } from '@prisma/client';
 
 // Use vi.hoisted() to create mocks before module imports
 const { mockPrisma } = vi.hoisted(() => {
@@ -14,6 +14,9 @@ const { mockPrisma } = vi.hoisted(() => {
       findUnique: vi.fn(),
     },
     user: {
+      findUnique: vi.fn(),
+    },
+    task: {
       findUnique: vi.fn(),
     },
   };
@@ -656,6 +659,125 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('VALIDATION_ERROR');
       expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /api/admin/projects/by-task/:taskId', () => {
+    it('should return project successfully by taskId', async () => {
+      const mockTask = {
+        id: BigInt(1),
+        name: 'Task 1',
+        projectId: BigInt(1),
+        startDate: new Date('2026-01-01'),
+        endDate: null,
+        description: 'Task description',
+        status: 'open' as TaskStatus,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        project: {
+          id: BigInt(1),
+          name: 'Project 1',
+          clientId: BigInt(1),
+          projectManagerId: BigInt(1),
+          startDate: new Date('2026-01-01'),
+          endDate: null,
+          description: 'Project description',
+          reportingType: 'startEnd' as ReportingType,
+          active: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      };
+
+      mockPrisma.task.findUnique.mockResolvedValue(mockTask);
+
+      const response = await request(app)
+        .get('/api/admin/projects/by-task/1')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.id).toBe(1);
+      expect(response.body.data.name).toBe('Project 1');
+      expect(response.body.data.clientId).toBe(1);
+      expect(response.body.data.projectManagerId).toBe(1);
+      expect(response.body.data.reportingType).toBe('startEnd');
+      expect(response.body.data.active).toBe(true);
+      
+      expect(mockPrisma.task.findUnique).toHaveBeenCalledWith({
+        where: { id: BigInt(1) },
+        include: { project: true },
+      });
+    });
+
+    it('should return 404 if task does not exist', async () => {
+      mockPrisma.task.findUnique.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/admin/projects/by-task/999')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('NOT_FOUND');
+      expect(response.body.error.message).toBe('Task not found');
+      
+      expect(mockPrisma.task.findUnique).toHaveBeenCalledWith({
+        where: { id: BigInt(999) },
+        include: { project: true },
+      });
+    });
+
+    it('should return 400 for invalid taskId format (non-numeric)', async () => {
+      const response = await request(app)
+        .get('/api/admin/projects/by-task/abc')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.task.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should return project with all fields correctly formatted', async () => {
+      const mockTask = {
+        id: BigInt(2),
+        name: 'Task 2',
+        projectId: BigInt(2),
+        startDate: null,
+        endDate: null,
+        description: null,
+        status: 'closed' as TaskStatus,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-02T00:00:00Z'),
+        project: {
+          id: BigInt(2),
+          name: 'Project 2',
+          clientId: BigInt(2),
+          projectManagerId: BigInt(2),
+          startDate: new Date('2026-01-01'),
+          endDate: new Date('2026-12-31'),
+          description: 'Project with end date',
+          reportingType: 'duration' as ReportingType,
+          active: false,
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          updatedAt: new Date('2026-01-02T00:00:00Z'),
+        },
+      };
+
+      mockPrisma.task.findUnique.mockResolvedValue(mockTask);
+
+      const response = await request(app)
+        .get('/api/admin/projects/by-task/2')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.id).toBe(2);
+      expect(response.body.data.name).toBe('Project 2');
+      expect(response.body.data.startDate).toBe('2026-01-01');
+      expect(response.body.data.endDate).toBe('2026-12-31');
+      expect(response.body.data.description).toBe('Project with end date');
+      expect(response.body.data.reportingType).toBe('duration');
+      expect(response.body.data.active).toBe(false);
+      expect(response.body.data.createdAt).toBeDefined();
+      expect(response.body.data.updatedAt).toBeDefined();
     });
   });
 });
