@@ -313,38 +313,38 @@ Current `backend/prisma/schema.prisma` issues:
 **Feature Owner**: Clients, Projects, Tasks, Assignments CRUD (full-stack)
 
 #### TASK-M3-010: Clients Backend (Per `doc/api/API.md` Section 3)
-- [ ] Create `backend/src/routes/admin/Clients.ts`
-- [ ] Implement `GET /api/admin/clients`:
-  - [ ] Return all clients (filter active by default)
-- [ ] Implement `POST /api/admin/clients`:
-  - [ ] Zod schema: `{ name, description? }`
-  - [ ] Return: `{ success: true, data: { id } }`
-- [ ] Implement `PUT /api/admin/clients/:id`:
-  - [ ] Zod schema: `{ name?, description?, active? }`
-- [ ] Implement `DELETE /api/admin/clients/:id`:
-  - [ ] Soft delete: set `active = false`
+- [x] Create `backend/src/routes/admin/Clients.ts`
+- [x] Implement `GET /api/admin/clients`:
+  - [x] Return all clients (filter active by default)
+- [x] Implement `POST /api/admin/clients`:
+  - [x] Zod schema: `{ name, description? }`
+  - [x] Return: `{ success: true, data: { id } }`
+- [x] Implement `PUT /api/admin/clients/:id`:
+  - [x] Zod schema: `{ name?, description?, active? }`
+- [x] Implement `DELETE /api/admin/clients/:id`:
+  - [x] Soft delete: set `active = false`
 - **Validation**: Clients CRUD works
 
 #### TASK-M3-011: Projects Backend (Per `doc/api/API.md` Section 4)
-- [ ] Create `backend/src/routes/admin/Projects.ts`
-- [ ] Implement `GET /api/admin/projects`:
-  - [ ] Query param: `clientId` (optional filter)
-- [ ] Implement `POST /api/admin/projects`:
-  - [ ] Zod schema: `{ name, clientId, projectManagerId, startDate, endDate?, description? }`
-- [ ] Implement `PUT /api/admin/projects/:id`
-- [ ] Implement `DELETE /api/admin/projects/:id`:
-  - [ ] Soft delete
+- [x] Create `backend/src/routes/admin/Projects.ts`
+- [x] Implement `GET /api/admin/projects`:
+  - [x] Query param: `clientId` (optional filter)
+- [x] Implement `POST /api/admin/projects`:
+  - [x] Zod schema: `{ name, clientId, projectManagerId, startDate, endDate?, description? }`
+- [x] Implement `PUT /api/admin/projects/:id`
+- [x] Implement `DELETE /api/admin/projects/:id`:
+  - [x] Soft delete
 - **Validation**: Projects CRUD works, filtering by client works
 
 #### TASK-M3-012: Tasks Backend (Per `doc/api/API.md` Section 5)
-- [ ] Create `backend/src/routes/admin/Tasks.ts`
-- [ ] Implement `GET /api/admin/tasks`:
-  - [ ] Query param: `projectId` (optional filter)
-- [ ] Implement `POST /api/admin/tasks`:
-  - [ ] Zod schema: `{ name, projectId, startDate?, endDate?, description?, status }`
-- [ ] Implement `PUT /api/admin/tasks/:id`
-- [ ] Implement `DELETE /api/admin/tasks/:id`:
-  - [ ] Soft delete (hide inactive by default)
+- [x] Create `backend/src/routes/admin/Tasks.ts`
+- [x] Implement `GET /api/admin/tasks`:
+  - [x] Query param: `projectId` (optional filter)
+- [x] Implement `POST /api/admin/tasks`:
+  - [x] Zod schema: `{ name, projectId, startDate?, endDate?, description?, status }`
+- [x] Implement `PUT /api/admin/tasks/:id`
+- [x] Implement `DELETE /api/admin/tasks/:id`:
+  - [x] Soft delete (hide inactive by default)
 - **Validation**: Tasks CRUD works, filtering by project works
 
 #### TASK-M3-013: Assignments Backend (Per `doc/api/API.md` Section 6)
