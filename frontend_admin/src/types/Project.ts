@@ -1,10 +1,10 @@
 export type ReportingType = 'duration' | 'startEnd';
 
 export interface Project {
-  id: number;
+  id: number | string; // Backend returns string IDs via toString()
   name: string;
-  clientId: number;
-  projectManagerId: number;
+  clientId: number | string; // Backend returns string IDs via toString()
+  projectManagerId: number | string; // Backend returns string IDs via toString()
   startDate: string;
   endDate?: string | null;
   description?: string | null;

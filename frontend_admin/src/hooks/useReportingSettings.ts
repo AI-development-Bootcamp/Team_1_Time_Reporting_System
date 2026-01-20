@@ -13,7 +13,7 @@ const isDev = (): boolean => {
  */
 export interface ProjectWithClient extends Project {
   client: {
-    id: number;
+    id: number | string;
     name: string;
   };
 }
@@ -47,17 +47,24 @@ export function useReportingSettings() {
       ]);
 
       // Create a map of clients for quick lookup
-      const clientMap = new Map(clients.map(c => [c.id, c]));
+      // Both backend services return string IDs (serializeData and toString()),
+      // so we use string keys for the map
+      const clientMap = new Map(clients.map(c => [String(c.id), c]));
 
       // Join projects with client data
       // Note: Backend is responsible for returning only active projects
-      const projectsWithClients = projects.map(project => ({
-        ...project,
-        client: {
-          id: project.clientId,
-          name: clientMap.get(project.clientId)?.name || 'Unknown Client'
-        }
-      }));
+      const projectsWithClients: ProjectWithClient[] = projects.map(project => {
+        const clientIdStr = String(project.clientId);
+        const client = clientMap.get(clientIdStr);
+        
+        return {
+          ...project,
+          client: {
+            id: project.clientId,
+            name: client?.name || 'Unknown Client'
+          }
+        } as ProjectWithClient;
+      });
 
       return projectsWithClients;
     },
