@@ -1390,7 +1390,7 @@ backend/src/
 - [x] Config: Update `vite.config.ts` with `@images` alias → `../shared/image_components`
 - [x] Types: `frontend_user/src/types/attendance.ts`, `timeLog.ts`, `projectSelector.ts`
 - [x] Utils: `frontend_user/src/utils/dateUtils.ts` (Day.js helpers, Hebrew day names)
-- [ ] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
+- [x] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
 - [ ] Services: `frontend_user/src/services/attendanceApi.ts`
 - [ ] Services: `frontend_user/src/services/timeLogsApi.ts`
 - [ ] Services: `frontend_user/src/services/projectSelectorApi.ts`

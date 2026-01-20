@@ -5,53 +5,14 @@
 
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import {
+  HEBREW_DAY_NAMES,
+  HEBREW_DAY_NAMES_SHORT,
+  HEBREW_MONTH_NAMES,
+} from './constants';
 
 // Enable UTC plugin
 dayjs.extend(utc);
-
-// ============================================================================
-// Hebrew Day Names (Sunday = 0, Saturday = 6)
-// ============================================================================
-
-const HEBREW_DAY_NAMES: Record<number, string> = {
-  0: "יום א'",
-  1: "יום ב'",
-  2: "יום ג'",
-  3: "יום ד'",
-  4: "יום ה'",
-  5: "יום ו'",
-  6: "יום ש'",
-};
-
-// Short version for badges
-const HEBREW_DAY_NAMES_SHORT: Record<number, string> = {
-  0: "א'",
-  1: "ב'",
-  2: "ג'",
-  3: "ד'",
-  4: "ה'",
-  5: "ו'",
-  6: "ש'",
-};
-
-// ============================================================================
-// Hebrew Month Names (0-indexed: January = 0)
-// ============================================================================
-
-const HEBREW_MONTH_NAMES: Record<number, string> = {
-  0: 'ינואר',
-  1: 'פברואר',
-  2: 'מרץ',
-  3: 'אפריל',
-  4: 'מאי',
-  5: 'יוני',
-  6: 'יולי',
-  7: 'אוגוסט',
-  8: 'ספטמבר',
-  9: 'אוקטובר',
-  10: 'נובמבר',
-  11: 'דצמבר',
-};
 
 // ============================================================================
 // Date Formatting
@@ -259,4 +220,3 @@ export function parseDate(date: string): Dayjs {
 // ============================================================================
 
 export { dayjs };
-export { HEBREW_DAY_NAMES, HEBREW_DAY_NAMES_SHORT, HEBREW_MONTH_NAMES };
