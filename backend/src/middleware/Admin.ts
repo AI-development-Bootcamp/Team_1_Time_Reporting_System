@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AppError } from './ErrorHandler';
-import { AuthRequest } from '../routes/Auth';
+import { AuthRequest } from './AuthMiddleware';
 
 /**
  * Admin role check middleware

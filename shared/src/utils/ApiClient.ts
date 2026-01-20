@@ -18,15 +18,11 @@ export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 class ApiClient {
   private client: AxiosInstance;
-  private baseURL: string;
 
   constructor() {
     const primaryURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
     const fallbackURL = 'http://localhost:10000/api';
-    
-    // Initialize with primary URL, will be updated if needed
-    this.baseURL = primaryURL;
-    
+
     this.client = axios.create({
       baseURL: primaryURL,
       headers: {
@@ -59,7 +55,7 @@ class ApiClient {
           // Skip auto-redirect for login and /auth/me endpoints
           const requestUrl = error.config?.url || '';
           const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/me');
-          
+
           if (!isAuthEndpoint) {
             // Unauthorized on protected routes - clear token and redirect to login
             localStorage.removeItem('token');
@@ -75,7 +71,7 @@ class ApiClient {
   private async initializeBaseURL(primaryURL: string, fallbackURL: string): Promise<void> {
     // Extract base URL without /api for health check
     const getBaseUrl = (url: string) => url.replace('/api', '');
-    
+
     // Test primary URL with a health check
     try {
       const testClient = axios.create({
@@ -83,8 +79,7 @@ class ApiClient {
         timeout: 2000, // 2 second timeout
       });
       await testClient.get('/health');
-      // Primary URL works, keep it
-      this.baseURL = primaryURL;
+      // Primary URL works, keep it (already set in client)
     } catch (error) {
       // Primary URL failed, try fallback
       try {
@@ -93,8 +88,7 @@ class ApiClient {
           timeout: 2000,
         });
         await testClient.get('/health');
-        // Fallback works, update baseURL
-        this.baseURL = fallbackURL;
+        // Fallback works, update client baseURL
         this.client.defaults.baseURL = fallbackURL;
         console.log(`API client: Primary URL (${primaryURL}) unavailable, using fallback (${fallbackURL})`);
       } catch (fallbackError) {

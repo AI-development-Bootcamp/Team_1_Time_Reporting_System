@@ -124,7 +124,6 @@ const mutation = useMutation({
 });
 ```
 
-### Form Pattern (Mantine Form)
 ```typescript
 import { useForm } from '@mantine/form';
 import { TextInput, Button } from '@mantine/core';
@@ -140,3 +139,98 @@ const form = useForm({
 <TextInput {...form.getInputProps('email')} />
 <TextInput {...form.getInputProps('name')} />
 ```
+
+---
+
+## Architecture Compliance (CRITICAL)
+
+### Backend Three-Layer Architecture
+**ALWAYS** follow this pattern for new features:
+```
+Routes (HTTP) → Controllers (Validation) → Services (Business Logic)
+```
+
+- **Routes**: Thin route definitions only (`routes/` and `routes/admin/`)
+  - Only define endpoints and apply middleware
+  - Immediately delegate to controllers
+  - No business logic, no database queries
+  
+- **Controllers**: HTTP request handling (`controllers/`)
+  - Parse request parameters
+  - Validate with Zod schemas from `validators/`
+  - Call service methods
+  - Return responses using `ApiResponse` utility
+  - Use try/catch with `next(error)` for error handling
+  
+- **Services**: Business logic and database access (`services/`)
+  - All Prisma queries go here
+  - All business logic and validation
+  - Throw `AppError` for error conditions
+  - NO HTTP concerns (req, res, next)
+
+**Example Pattern**:
+```typescript
+// routes/admin/users.ts
+router.post('/users', UserController.createUser);
+
+// controllers/UserController.ts
+static async createUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const validatedData = createUserSchema.parse(req.body);
+    const result = await UserService.createUser(validatedData);
+    ApiResponse.success(res, result, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// services/UserService.ts
+static async createUser(data: CreateUserInput) {
+  // Check business rules, query database, etc.
+  const user = await prisma.user.create({ data });
+  return { id: Number(user.id) };
+}
+```
+
+### Frontend Path Aliases
+**ALWAYS** use path aliases for imports:
+```typescript
+// ✅ CORRECT
+import { UserTable } from '@components/Users/UserTable';
+import { useUsers } from '@hooks/useUsers';
+import { apiClient } from '@shared/utils/ApiClient';
+
+// ❌ WRONG
+import { UserTable } from '../../components/Users/UserTable';
+import { useUsers } from '../hooks/useUsers';
+```
+
+Available aliases: `@/`, `@components/`, `@hooks/`, `@pages/`, `@services/`, `@types/`, `@utils/`, `@shared/`
+
+### Validation
+- **ALWAYS** create Zod schemas in `validators/` directory
+- **NEVER** put validation logic in controllers or services
+- Reuse schemas across endpoints when possible
+
+### Authentication & JWT
+- Use existing `ApiClient` interceptor for auth headers (already configured)
+- JWT flow: Backend generates → Frontend stores in localStorage → Auto-attached to requests → Backend verifies
+- **DO NOT** create new auth logic - use `AuthContext` and `authMiddleware`
+- Token is stored as `localStorage.getItem('token')`
+- Password requirements: 8 chars min, 1 uppercase, 1 lowercase, 1 special char
+
+### Critical Rules
+- **NO inline business logic in routes/controllers** - always use services
+- **NO direct Prisma queries in controllers** - always use services  
+- **NO duplicate code** - create reusable services/utilities
+- **ALWAYS** follow the existing pattern when adding new features
+
+### Password Validation
+All password fields must meet these requirements:
+- Minimum 8 characters
+- At least 1 uppercase letter (A-Z)
+- At least 1 lowercase letter (a-z)
+- At least 1 special character (@$!%*?&)
+
+Regex pattern: `/^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/`
+

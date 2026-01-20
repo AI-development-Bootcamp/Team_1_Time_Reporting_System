@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { errorHandler } from './middleware/ErrorHandler';
-import authRoutes from './routes/Auth';
+import authRoutes from './routes/auth.routes';
 import adminUsersRoutes from './routes/admin/Users';
 import assignmentsRoutes from './routes/admin/Assignments';
 

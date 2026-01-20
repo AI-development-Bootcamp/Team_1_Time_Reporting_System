@@ -3,7 +3,7 @@ import { AuthContextProvider } from '@shared/context/AuthContext';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute/ProtectedRoute';
 import { LoginPage } from '@shared/components/Login/LoginPage';
 import { useAuth } from '@shared/hooks/useAuth';
-import { ClientManagement } from './pages/ClientManagement';
+import { ClientManagement } from '@pages/ClientManagement';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
