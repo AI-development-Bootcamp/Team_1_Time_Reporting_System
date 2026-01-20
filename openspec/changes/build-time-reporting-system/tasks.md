@@ -1395,7 +1395,7 @@ backend/src/
 - [x] Services: `frontend_user/src/services/timeLogsApi.ts`
 - [x] Services: `frontend_user/src/services/projectSelectorApi.ts` (SKIPPED - using embedded data from month history)
 - [x] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
-- [ ] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
+- [x] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
 - [x] Hooks: `frontend_user/src/hooks/useProjectSelector.ts` (SKIPPED - using embedded data from month history)
 - [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.tsx` (main page)
 - [ ] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.module.css`
