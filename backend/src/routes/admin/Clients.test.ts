@@ -10,6 +10,16 @@ const { mockPrisma } = vi.hoisted(() => {
       create: vi.fn(),
       update: vi.fn(),
     },
+    project: {
+      updateMany: vi.fn(),
+    },
+    task: {
+      updateMany: vi.fn(),
+    },
+    taskWorker: {
+      deleteMany: vi.fn(),
+    },
+    $transaction: vi.fn((cb: any) => cb(mockPrismaInstance)),
   };
   return { mockPrisma: mockPrismaInstance };
 });
@@ -196,6 +206,7 @@ describe('Clients Router', () => {
       expect(mockPrisma.client.findFirst).toHaveBeenCalledWith({
         where: {
           name: 'New Client',
+          active: true,
         },
       });
       expect(mockPrisma.client.create).toHaveBeenCalledWith({
@@ -259,7 +270,7 @@ describe('Clients Router', () => {
 
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('CONFLICT');
-      expect(response.body.error.message).toBe('Client with this name already exists');
+      expect(response.body.error.message).toBe('Active client with this name already exists');
       expect(mockPrisma.client.create).not.toHaveBeenCalled();
     });
 

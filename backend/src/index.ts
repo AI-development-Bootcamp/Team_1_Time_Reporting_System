@@ -5,6 +5,7 @@ import { errorHandler } from './middleware/ErrorHandler';
 import projectsRouter from './routes/admin/Projects';
 import clientsRouter from './routes/admin/Clients';
 import tasksRouter from './routes/admin/Tasks'; 
+import assignmentsRouter from './routes/admin/Assignments';
 
 dotenv.config();
 
@@ -24,6 +25,8 @@ app.use('/api/admin/projects', projectsRouter);
 app.use('/api/admin/clients', clientsRouter);
 
 app.use('/api/admin/tasks', tasksRouter); 
+
+app.use('/api/admin/assignments', assignmentsRouter);
 
 app.use(errorHandler);
 app.listen(port, () => {

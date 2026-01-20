@@ -103,7 +103,23 @@ export class TaskService {
       updateData.status = data.status as TaskStatus;
     }
 
-    // Update task
+    // If status is being set to 'closed', close task and delete assignments in a transaction
+    if (updateData.status === 'closed') {
+      await prisma.$transaction(async (tx) => {
+        await tx.task.update({
+          where: { id },
+          data: updateData,
+        });
+
+        await tx.taskWorker.deleteMany({
+          where: { taskId: id },
+        });
+      });
+
+      return serializeData({ updated: true });
+    }
+
+    // Regular update when status is not being changed to 'closed'
     await prisma.task.update({
       where: { id },
       data: updateData,
@@ -122,10 +138,18 @@ export class TaskService {
       throw new AppError('NOT_FOUND', 'Task not found', 404);
     }
 
-    // Soft delete: set status to 'closed'
-    await prisma.task.update({
-      where: { id },
-      data: { status: 'closed' as TaskStatus },
+    // Use a transaction: close task and delete assignments together
+    await prisma.$transaction(async (tx) => {
+      // 1) Soft delete: set status to 'closed'
+      await tx.task.update({
+        where: { id },
+        data: { status: 'closed' as TaskStatus },
+      });
+
+      // 2) Delete all task-worker assignments for this task
+      await tx.taskWorker.deleteMany({
+        where: { taskId: id },
+      });
     });
 
     return serializeData({ deleted: true });
