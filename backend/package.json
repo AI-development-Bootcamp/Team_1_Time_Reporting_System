@@ -11,9 +11,6 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "test": "vitest run"
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^5.8.1",
     "@types/bcrypt": "^6.0.0",

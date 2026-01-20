@@ -44,26 +44,26 @@ function updateDockerComposePort(port) {
 function updateBackendEnv(port) {
   const envPath = path.join(__dirname, '..', 'backend', '.env');
   const databaseUrl = `postgresql://postgres:postgres@localhost:${port}/timereporting?schema=public`;
-  
+
   let content = '';
   if (existsSync(envPath)) {
     content = readFileSync(envPath, 'utf8');
   }
-  
+
   // Update or add DATABASE_URL
   if (content.includes('DATABASE_URL=')) {
     content = content.replace(/DATABASE_URL=.*/g, `DATABASE_URL="${databaseUrl}"`);
   } else {
     content += `\nDATABASE_URL="${databaseUrl}"\n`;
   }
-  
+
   writeFileSync(envPath, content, 'utf8');
 }
 
 /**
- * Orchestrates full local development environment setup: installs dependencies, verifies Docker, configures and starts services, waits for the database, generates the Prisma client, runs migrations, and seeds the database.
+ * Orchestrates full local development environment setup: installs dependencies, verifies Docker, configures and starts services, waits for the database, generates the Prisma client, runs migrations (which auto-seeds via Prisma's seed config).
  *
- * Exits the process with a non-zero code on unrecoverable failures (dependency installation, Docker not running, no available port, Docker Compose startup failure, database readiness timeout, Prisma generation failure, or seeding failure). Migration errors that indicate a migration "already exists" or is "already applied" are treated as non-fatal and do not cause exit.
+ * Exits the process with a non-zero code on unrecoverable failures (dependency installation, Docker not running, no available port, Docker Compose startup failure, database readiness timeout, Prisma generation failure). Migration errors that indicate a migration "already exists" or is "already applied" are treated as non-fatal and do not cause exit.
  */
 async function main() {
   console.log('🚀 Starting full setup...\n');
@@ -105,7 +105,7 @@ async function main() {
   // Step 4: Find available port for PostgreSQL
   console.log('🔍 Step 4: Finding available PostgreSQL port (starting from 5432)...');
   const selectedPort = await findAvailablePort(5432, 10);
-  
+
   if (!selectedPort) {
     console.error('❌ Could not find an available port (tried 5432-5441)');
     process.exit(1);
@@ -116,7 +116,7 @@ async function main() {
   } else {
     console.log('✅ Port 5432 is available');
   }
-  
+
   // Always update docker-compose.yml and .env with the selected port
   updateDockerComposePort(selectedPort);
   updateBackendEnv(selectedPort);
@@ -140,9 +140,9 @@ async function main() {
 
   while (attempts < maxAttempts && !dbReady) {
     try {
-      execSync('docker exec timereporting-postgres pg_isready -U postgres', { 
+      execSync('docker exec timereporting-postgres pg_isready -U postgres', {
         stdio: 'ignore',
-        cwd: __dirname + '/..' 
+        cwd: __dirname + '/..'
       });
       dbReady = true;
       console.log('✅ Database is ready\n');
@@ -170,8 +170,8 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 6: Run migrations
-  console.log('🗄️  Step 6: Running database migrations...');
+  // Step 8: Run migrations
+  console.log('🗄️  Step 8: Running database migrations...');
   try {
     execSync('npm run prisma:migrate -w backend -- --name init', { stdio: 'inherit', cwd: __dirname + '/..' });
     console.log('✅ Migrations completed\n');
@@ -186,7 +186,7 @@ async function main() {
     }
   }
 
-  // Step 9: Seed database
+  // Step 9: Seed database (explicit to ensure it runs even if migration was skipped)
   console.log('🌱 Step 9: Seeding database...');
   try {
     execSync('npm run prisma:seed -w backend', { stdio: 'inherit', cwd: __dirname + '/..' });
