@@ -107,7 +107,7 @@ describe('Attendance API Integration Tests', () => {
   // ============================================================================
 
   describe('POST /api/attendance', () => {
-    it('should create attendance with valid work status and times', async () => {
+    it('should reject work status and require combined endpoint', async () => {
       const response = await request(app)
         .post('/api/attendance')
         .send({
@@ -118,9 +118,9 @@ describe('Attendance API Integration Tests', () => {
           status: 'work',
         });
 
-      expect(response.status).toBe(201);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.id).toBeDefined();
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('/api/attendance/combined');
     });
 
     it('should create attendance with sickness status (no times required)', async () => {
@@ -149,7 +149,7 @@ describe('Attendance API Integration Tests', () => {
       expect(response.body.success).toBe(true);
     });
 
-    it('should reject work status without start/end times', async () => {
+    it('should reject work status without start/end times (requires combined endpoint)', async () => {
       const response = await request(app)
         .post('/api/attendance')
         .send({
@@ -160,10 +160,11 @@ describe('Attendance API Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.message).toContain('Start time and end time are required');
+      expect(response.body.error.message).toContain('/api/attendance/combined');
     });
 
-    it('should reject when endTime <= startTime', async () => {
+    it('should reject work status with endTime <= startTime (requires combined endpoint)', async () => {
+      // Work status is blocked at controller level first
       const response = await request(app)
         .post('/api/attendance')
         .send({
@@ -176,10 +177,11 @@ describe('Attendance API Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.message).toContain('End time must be after start time');
+      expect(response.body.error.message).toContain('/api/attendance/combined');
     });
 
-    it('should reject when endTime equals startTime', async () => {
+    it('should reject work status when endTime equals startTime (requires combined endpoint)', async () => {
+      // Work status is blocked at controller level first
       const response = await request(app)
         .post('/api/attendance')
         .send({
@@ -192,7 +194,7 @@ describe('Attendance API Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error.message).toContain('End time must be after start time');
+      expect(response.body.error.message).toContain('/api/attendance/combined');
     });
 
     it('should reject invalid time format', async () => {
@@ -230,7 +232,7 @@ describe('Attendance API Integration Tests', () => {
   // Overlap Rejection Tests
   // ============================================================================
 
-  describe('Overlap rejection on same date', () => {
+  describe('Overlap rejection on same date (via combined endpoint)', () => {
     beforeEach(async () => {
       // Create an existing attendance record
       await prisma.dailyAttendance.create({
@@ -246,13 +248,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should reject overlapping attendance (new starts during existing)', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
           startTime: '12:00',
           endTime: '16:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 240, location: 'office' }],
         });
 
       expect(response.status).toBe(400);
@@ -262,13 +265,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should reject overlapping attendance (new contains existing)', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
           startTime: '08:00',
           endTime: '16:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 480, location: 'office' }],
         });
 
       expect(response.status).toBe(400);
@@ -278,13 +282,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should reject overlapping attendance (new inside existing)', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
           startTime: '10:00',
           endTime: '12:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 120, location: 'office' }],
         });
 
       expect(response.status).toBe(400);
@@ -294,13 +299,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should allow non-overlapping attendance (after existing)', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
           startTime: '16:00',
           endTime: '18:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 120, location: 'office' }],
         });
 
       expect(response.status).toBe(201);
@@ -309,13 +315,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should allow adjacent attendance (starts when existing ends)', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
           startTime: '14:00',
           endTime: '18:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 240, location: 'office' }],
         });
 
       expect(response.status).toBe(201);
@@ -324,13 +331,14 @@ describe('Attendance API Integration Tests', () => {
 
     it('should allow attendance on different date', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-01-26', // Different date
           startTime: '09:00',
           endTime: '14:00',
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 300, location: 'office' }],
         });
 
       expect(response.status).toBe(201);
@@ -1141,7 +1149,7 @@ describe('Attendance API Integration Tests', () => {
         expect(response.body.error.message).toContain('other attendance already exists');
       });
 
-      it('should reject work when dayOff exists', async () => {
+      it('should reject work when dayOff exists (via combined endpoint)', async () => {
         // Create dayOff first
         await prisma.dailyAttendance.create({
           data: {
@@ -1152,13 +1160,14 @@ describe('Attendance API Integration Tests', () => {
         });
 
         const response = await request(app)
-          .post('/api/attendance')
+          .post('/api/attendance/combined')
           .send({
             userId: testUserId.toString(),
             date: '2026-02-04',
             startTime: '09:00',
             endTime: '17:00',
             status: 'work',
+            timeLogs: [{ taskId: testTaskId.toString(), duration: 480, location: 'office' }],
           });
 
         expect(response.status).toBe(400);
@@ -1213,7 +1222,7 @@ describe('Attendance API Integration Tests', () => {
         expect(response.body.success).toBe(true);
       });
 
-      it('should allow work alongside halfDayOff', async () => {
+      it('should allow work alongside halfDayOff (via combined endpoint)', async () => {
         // Create halfDayOff first
         await prisma.dailyAttendance.create({
           data: {
@@ -1224,13 +1233,14 @@ describe('Attendance API Integration Tests', () => {
         });
 
         const response = await request(app)
-          .post('/api/attendance')
+          .post('/api/attendance/combined')
           .send({
             userId: testUserId.toString(),
             date: '2026-02-11',
             startTime: '14:00',
             endTime: '18:00',
             status: 'work',
+            timeLogs: [{ taskId: testTaskId.toString(), duration: 240, location: 'office' }],
           });
 
         expect(response.status).toBe(201);
@@ -1470,15 +1480,16 @@ describe('Attendance API Integration Tests', () => {
       expect(response.status).toBe(400);
     });
 
-    it('should accept attendance with max valid time (23:59)', async () => {
+    it('should accept attendance with max valid time (23:59) via combined endpoint', async () => {
       const response = await request(app)
-        .post('/api/attendance')
+        .post('/api/attendance/combined')
         .send({
           userId: testUserId.toString(),
           date: '2026-02-27',
           startTime: '22:00',
           endTime: '23:59', // Valid - max allowed
           status: 'work',
+          timeLogs: [{ taskId: testTaskId.toString(), duration: 119, location: 'office' }],
         });
 
       expect(response.status).toBe(201);

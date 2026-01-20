@@ -647,7 +647,7 @@ model ProjectTimeLogs {
 **Required Changes**:
 - [x] For `work` status: Redirect user to use combined endpoint OR block with error
 - [x] For `halfDayOff`: Check no exclusive status exists, allow creation with NULL times
-- [ ] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
+- [x] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
   - [x] Check NO other attendance exists on this date
   - [x] Create with startTime=NULL, endTime=NULL
 - [x] Add new validation helpers:
@@ -1184,8 +1184,8 @@ backend/src/
 ##### Step 7: Update Tests
 
 - [x] Update test imports to use new paths
-- [ ] Keep existing test logic (no behavior changes)
-- [ ] Add unit tests for services in `backend/src/services/*.test.ts`
+- [x] Keep existing test logic (no behavior changes)
+- [x] Add unit tests for services in `backend/src/services/*.test.ts`
 
 ---
 
