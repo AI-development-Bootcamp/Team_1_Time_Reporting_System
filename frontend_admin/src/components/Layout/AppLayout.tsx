@@ -90,10 +90,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                 '&:hover': {
                   backgroundColor: '#4a6fa5 !important',
                 },
-                '&[data-active]': {
-                  backgroundColor: '#1f2d52 !important',
-                  color: 'white',
-                },
               },
               label: {
                 color: 'white',
@@ -131,10 +127,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                 backgroundColor: 'transparent',
                 '&:hover': {
                   backgroundColor: '#4a6fa5 !important',
-                },
-                '&[data-active]': {
-                  backgroundColor: '#1f2d52 !important',
-                  color: 'white',
                 },
               },
               label: {

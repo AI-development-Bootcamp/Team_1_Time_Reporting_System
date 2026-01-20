@@ -5,13 +5,17 @@ import { useReportingSettings } from '../hooks/useReportingSettings';
 import { ReportingSettingsTable } from '../components/ReportingSettings/ReportingSettingsTable';
 import { ReportingSettingsSearch } from '../components/ReportingSettings/ReportingSettingsSearch';
 import { ReportingSettingsPagination } from '../components/ReportingSettings/ReportingSettingsPagination';
+import { PAGINATION } from '../utils/constants';
+
+// Helper to check if we're in development mode (type-safe)
+const isDev = (): boolean => {
+  return (import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? false;
+};
 
 function ReportingSettingsPage() {
   const { projects, isLoading, isError, updateReportingType, isUpdating, refetch } = useReportingSettings();
   const [searchValue, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  
-  const ITEMS_PER_PAGE = 10;
 
   // Filter projects by client name OR project name (case-insensitive)
   const filteredProjects = useMemo(() => {
@@ -28,12 +32,12 @@ function ReportingSettingsPage() {
   }, [projects, searchValue]);
 
   // Calculate total pages from filtered results
-  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProjects.length / PAGINATION.ITEMS_PER_PAGE);
 
   // Slice data for current page
   const paginatedProjects = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const startIndex = (currentPage - 1) * PAGINATION.ITEMS_PER_PAGE;
+    const endIndex = startIndex + PAGINATION.ITEMS_PER_PAGE;
     return filteredProjects.slice(startIndex, endIndex);
   }, [filteredProjects, currentPage]);
 
@@ -44,7 +48,9 @@ function ReportingSettingsPage() {
 
   // Wrap mutation to match expected signature with notifications
   const handleReportingTypeChange = (projectId: number, reportingType: 'duration' | 'startEnd') => {
-    console.log('Changing reporting type:', { projectId, reportingType });
+    if (isDev()) {
+      console.log('Changing reporting type:', { projectId, reportingType });
+    }
     
     updateReportingType(
       { projectId, reportingType },
@@ -62,7 +68,9 @@ function ReportingSettingsPage() {
             message: 'אירעה שגיאה בעדכון סוג הדיווח',
             color: 'red',
           });
-          console.error('Error updating reporting type:', error);
+          if (isDev()) {
+            console.error('Error updating reporting type:', error);
+          }
         },
       }
     );

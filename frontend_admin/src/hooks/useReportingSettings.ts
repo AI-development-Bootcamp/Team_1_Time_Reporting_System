@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectService } from '@services/ProjectService';
 import { clientService } from '@services/ClientService';
-import type { Project, ReportingType } from '@types/Project';
+import type { Project, ReportingType } from '../types/Project';
+
+// Helper to check if we're in development mode (type-safe)
+const isDev = (): boolean => {
+  return (import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? false;
+};
 
 /**
  * Project with Client data joined
@@ -103,10 +108,13 @@ export function useReportingSettings() {
       if (context?.previousProjects) {
         queryClient.setQueryData(queryKey, context.previousProjects);
       }
-      console.error('Failed to update reporting type:', err);
+      if (isDev()) {
+        console.error('Failed to update reporting type:', err);
+      }
     },
 
     // Invalidate and refetch on success
+    // Note: We already optimistically updated, but invalidating ensures we get the latest data from the server
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
     },
