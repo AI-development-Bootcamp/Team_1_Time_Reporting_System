@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -35,7 +36,7 @@ export default defineConfig({
     ],
     exclude: ['node_modules', 'dist', '.git'],
     globals: true,
-    environment: 'node',
+    environment: 'jsdom',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json'],

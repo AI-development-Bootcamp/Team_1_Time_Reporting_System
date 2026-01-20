@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { createApp } from '@/app';
-import { prisma } from '@/utils/prismaClient';
-import { Bcrypt } from '@/utils/Bcrypt';
+import { createApp } from '../../src/app';
+import { prisma } from '../../src/utils/prismaClient';
+import { Bcrypt } from '../../src/utils/Bcrypt';
 import jwt from 'jsonwebtoken';
 
 const app = createApp();
@@ -101,7 +101,7 @@ describe('HTTP Integration Tests - User CRUD Endpoints', () => {
     }
     if (adminUser) await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => { });
     if (workerUser) await prisma.user.delete({ where: { id: workerUser.id } }).catch(() => { });
-    await prisma.$disconnect();
+    // prisma.$disconnect() removed to prevent closing shared connection during parallel tests
     process.env.JWT_SECRET = originalSecret;
   });
 

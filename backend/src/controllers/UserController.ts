@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { UserService } from '../services/UserService';
 import { ApiResponse } from '../utils/Response';
 import {
@@ -69,7 +70,9 @@ export class UserController {
      */
     static async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = BigInt(req.params.id);
+            // Validate ID first
+            const idSchema = z.string().regex(/^\d+$/).transform((s) => BigInt(s));
+            const userId = idSchema.parse(req.params.id);
 
             // Validate request body (password is NOT allowed)
             const validatedData = updateUserSchema.parse(req.body);
@@ -89,7 +92,9 @@ export class UserController {
      */
     static async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = BigInt(req.params.id);
+            // Validate ID first
+            const idSchema = z.string().regex(/^\d+$/).transform((s) => BigInt(s));
+            const userId = idSchema.parse(req.params.id);
 
             // Delete user
             const result = await UserService.deleteUser(userId);
@@ -106,7 +111,9 @@ export class UserController {
      */
     static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = BigInt(req.params.id);
+            // Validate ID first
+            const idSchema = z.string().regex(/^\d+$/).transform((s) => BigInt(s));
+            const userId = idSchema.parse(req.params.id);
 
             // Validate request body
             const validatedData = resetPasswordSchema.parse(req.body);

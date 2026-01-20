@@ -1,9 +1,5 @@
 import dotenv from 'dotenv';
 import { initializeDatabaseConfig } from './utils/DatabaseConfig';
-import { createApp } from './app';
-
-dotenv.config();
-
 // Initialize database config with port fallback BEFORE importing routes (which use PrismaClient)
 const startServer = async () => {
   try {
@@ -14,6 +10,8 @@ const startServer = async () => {
     process.exit(1);
   }
 
+  // Import app after DB config is initialized
+  const { createApp } = await import('./app');
   const app = createApp();
   const port = process.env.PORT || 10000;
 

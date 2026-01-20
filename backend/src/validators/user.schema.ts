@@ -51,6 +51,9 @@ export const getUsersQuerySchema = z.object({
     active: z
         .string()
         .optional()
+        .refine((val) => val === undefined || val === 'true' || val === 'false', {
+            message: "Active must be 'true' or 'false'",
+        })
         .transform((val) => {
             if (val === 'true') return true;
             if (val === 'false') return false;
@@ -59,6 +62,9 @@ export const getUsersQuerySchema = z.object({
     id: z
         .string()
         .optional()
+        .refine((val) => val === undefined || /^\d+$/.test(val), {
+            message: 'ID must be a numeric string',
+        })
         .transform((val) => (val ? BigInt(val) : undefined)),
 });
 

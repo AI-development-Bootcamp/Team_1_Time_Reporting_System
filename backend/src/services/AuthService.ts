@@ -4,6 +4,16 @@ import { Bcrypt } from '../utils/Bcrypt';
 import { AppError } from '../middleware/ErrorHandler';
 import { LoginInput } from '../validators/auth.schema';
 
+export interface TokenUser {
+    id: bigint;
+    name: string;
+    mail: string;
+    userType: string;
+    active: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 /**
  * AuthService - Handles authentication business logic
  */
@@ -46,7 +56,7 @@ export class AuthService {
     /**
      * Generate JWT token with user payload
      */
-    static generateToken(user: any): string {
+    static generateToken(user: TokenUser): string {
         const secret = process.env.JWT_SECRET;
         if (!secret) {
             throw new AppError('INTERNAL_ERROR', 'JWT secret not configured', 500);

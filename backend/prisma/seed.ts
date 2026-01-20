@@ -304,10 +304,10 @@ async function main() {
 
   console.log('🎉 Seed completed successfully!');
   console.log('\n📝 Login credentials:');
-  console.log('   Admin: admin@timereporting.com / Password123!');
-  console.log('   Worker: john.doe@timereporting.com / Password123!');
-  console.log('   Worker: jane.smith@timereporting.com / Password123!');
-  console.log('   Worker: david.cohen@timereporting.com / Password123!');
+  console.log('   Admin: admin@timereporting.com / (password set during seeding)');
+  console.log('   Worker: john.doe@timereporting.com / (password set during seeding)');
+  console.log('   Worker: jane.smith@timereporting.com / (password set during seeding)');
+  console.log('   Worker: david.cohen@timereporting.com / (password set during seeding)');
 }
 
 main()

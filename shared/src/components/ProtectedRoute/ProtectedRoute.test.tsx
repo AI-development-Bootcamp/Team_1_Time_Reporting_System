@@ -11,14 +11,14 @@ describe('ProtectedRoute Logic', () => {
       // Logic: if (!isAuthenticated) return <Navigate to="/login" />
       const isAuthenticated = false;
       const shouldRedirect = !isAuthenticated;
-      
+
       expect(shouldRedirect).toBe(true);
     });
 
     it('should allow access when authenticated', () => {
       const isAuthenticated = true;
       const shouldRedirect = !isAuthenticated;
-      
+
       expect(shouldRedirect).toBe(false);
     });
 
@@ -27,7 +27,7 @@ describe('ProtectedRoute Logic', () => {
       const user = null;
       const isAuthenticated = !!token && !!user;
       const shouldRedirect = !isAuthenticated;
-      
+
       expect(shouldRedirect).toBe(true);
     });
 
@@ -36,7 +36,7 @@ describe('ProtectedRoute Logic', () => {
       const user = { id: 1 };
       const isAuthenticated = !!token && !!user;
       const shouldRedirect = !isAuthenticated;
-      
+
       expect(shouldRedirect).toBe(true);
     });
   });
@@ -46,23 +46,23 @@ describe('ProtectedRoute Logic', () => {
       const userType = 'admin';
       const requireAdmin = true;
       const hasAccess = userType === 'admin';
-      
+
       expect(hasAccess).toBe(true);
     });
 
     it('should deny access when user is worker but requireAdmin is true', () => {
       const userType = 'worker';
       const requireAdmin = true;
-      const hasAccess = userType === 'admin';
-      
+      const hasAccess = (userType as any) === 'admin';
+
       expect(hasAccess).toBe(false);
     });
 
     it('should allow worker access when requireAdmin is false', () => {
       const userType = 'worker';
       const requireAdmin = false;
-      const hasAccess = !requireAdmin || userType === 'admin';
-      
+      const hasAccess = !requireAdmin || (userType as any) === 'admin';
+
       expect(hasAccess).toBe(true);
     });
 
@@ -70,7 +70,7 @@ describe('ProtectedRoute Logic', () => {
       const userType = 'admin';
       const requireAdmin = false;
       const hasAccess = !requireAdmin || userType === 'admin';
-      
+
       expect(hasAccess).toBe(true);
     });
 
@@ -78,7 +78,7 @@ describe('ProtectedRoute Logic', () => {
       const userType = undefined;
       const requireAdmin = true;
       const hasAccess = userType === 'admin';
-      
+
       expect(hasAccess).toBe(false);
     });
 
@@ -86,7 +86,7 @@ describe('ProtectedRoute Logic', () => {
       const userType = 'worker';
       const requireAdmin = undefined;
       const hasAccess = !requireAdmin || userType === 'admin';
-      
+
       expect(hasAccess).toBe(true);
     });
   });
@@ -95,18 +95,16 @@ describe('ProtectedRoute Logic', () => {
     it('should handle null userType', () => {
       const userType = null;
       const requireAdmin = true;
-      // @ts-expect-error - testing invalid input
       const hasAccess = userType === 'admin';
-      
+
       expect(hasAccess).toBe(false);
     });
 
     it('should handle empty string userType', () => {
       const userType = '';
       const requireAdmin = true;
-      // @ts-expect-error - testing invalid input
       const hasAccess = userType === 'admin';
-      
+
       expect(hasAccess).toBe(false);
     });
   });
