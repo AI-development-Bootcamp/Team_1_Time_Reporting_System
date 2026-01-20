@@ -501,20 +501,20 @@ Current `backend/prisma/schema.prisma` issues:
   function calculateDurationMinutes(startTime: string, endTime: string): number;
   ```
 - [x] Apply validations consistently across (will be used in subsequent tasks):
-  - [ ] `POST /api/attendance/combined` - entrance/exit times (TASK-M2-011A)
-  - [ ] `PUT /api/attendance/:id` - when updating times (TASK-M2-011E)
-  - [ ] `POST /api/time-logs` - when project is startEnd type (TASK-M2-011B)
-  - [ ] `PUT /api/time-logs/:id` - when project is startEnd type (TASK-M2-011B)
-- [ ] Update overlap validation to only check against (TASK-M2-011C):
-  - [ ] Other `work` attendances on same date
-  - [ ] Other `halfDayOff` attendances (if they had times, but they don't)
-  - [ ] Skip overlap check for exclusive statuses (they have no times)
+  - [x] `POST /api/attendance/combined` - entrance/exit times (TASK-M2-011A)
+  - [x] `PUT /api/attendance/:id` - when updating times (TASK-M2-011E)
+  - [x] `POST /api/time-logs` - when project is startEnd type (TASK-M2-011B)
+  - [x] `PUT /api/time-logs/:id` - when project is startEnd type (TASK-M2-011B)
+- [x] Update overlap validation to only check against (TASK-M2-011C):
+  - [x] Other `work` attendances on same date
+  - [x] Other `halfDayOff` attendances (if they had times, but they don't)
+  - [x] Skip overlap check for exclusive statuses (they have no times)
 - [x] Tests (backend):
   - [x] Unit: validateTimeRange rejects end <= start
   - [x] Unit: validateNoMidnightCrossing rejects endTime > 23:59 (via TIME_REGEX)
   - [x] Unit: timeRangesOverlap correctly detects overlaps
-  - [ ] Integration: attendance with endTime "24:00" rejected (TASK-M2-011E)
-  - [ ] Integration: time log with endTime "00:30" (next day) rejected (TASK-M2-011B)
+  - [x] Integration: attendance with endTime "24:00" rejected (TASK-M2-011E)
+  - [x] Integration: time log with endTime "00:30" (next day) rejected (TASK-M2-011B)
 - **Coverage Target**: ≥60% for time validation utilities ✅ (38 tests)
 - **Validation**: No times past 23:59 allowed anywhere ✅
 

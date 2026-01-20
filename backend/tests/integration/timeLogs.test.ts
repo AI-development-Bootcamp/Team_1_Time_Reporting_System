@@ -667,6 +667,22 @@ describe('Time Logs API Integration Tests', () => {
       expect(response.body.error.message).toContain('End time must be after start time');
     });
 
+    it('should reject endTime that crosses midnight (00:30 next day)', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '23:30',
+          endTime: '00:30', // Next day - not allowed
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('End time must be after start time');
+    });
+
     it('should reject invalid time format (24:00)', async () => {
       const response = await request(app)
         .post('/api/time-logs')
