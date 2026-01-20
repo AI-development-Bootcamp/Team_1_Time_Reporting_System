@@ -164,6 +164,16 @@ The `backend/.env` file is automatically created/updated by the setup script wit
 - `JWT_SECRET` - Secret key for JWT token signing (default: `dev_secret_key_123` in seed data)
 - `PORT` - Backend server port (default: `3000`, falls back to `10000` if occupied)
 
+**Optional CORS variables (security):**
+- `LOCAL_CORS_ORIGINS` - Comma-separated list of allowed origins for local development (e.g., `http://localhost:5173,http://localhost:5174`)
+- `DEPLOY_CORS_ORIGINS` - Comma-separated list of allowed origins for production (e.g., `https://yourdomain.com,https://admin.yourdomain.com`)
+- If not set, CORS will allow all origins (development fallback - **not secure for production**)
+
+**Optional rate limiting variables (security):**
+- `AUTH_RATE_LIMIT_WINDOW_MS` - Time window for rate limiting in milliseconds (default: `900000` = 15 minutes)
+- `AUTH_RATE_LIMIT_MAX_REQUESTS` - Maximum login attempts per window (default: `5`)
+- Rate limiting prevents brute force attacks on authentication endpoints
+
 **Note:** The setup script automatically handles port conflicts and updates the `DATABASE_URL` accordingly. If you manually change the PostgreSQL port, make sure to update `DATABASE_URL` in `backend/.env`.
 
 ### Frontend Environment Variables
