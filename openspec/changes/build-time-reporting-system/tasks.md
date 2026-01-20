@@ -1392,7 +1392,7 @@ backend/src/
 - [x] Utils: `frontend_user/src/utils/dateUtils.ts` (Day.js helpers, Hebrew day names)
 - [x] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
 - [x] Services: `frontend_user/src/services/attendanceApi.ts`
-- [ ] Services: `frontend_user/src/services/timeLogsApi.ts`
+- [x] Services: `frontend_user/src/services/timeLogsApi.ts`
 - [ ] Services: `frontend_user/src/services/projectSelectorApi.ts`
 - [ ] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
 - [ ] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
