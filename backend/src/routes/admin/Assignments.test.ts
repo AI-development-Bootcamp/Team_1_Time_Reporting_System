@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import express from 'express';
+import request from 'supertest';
+import { errorHandler } from '../../middleware/ErrorHandler';
+import assignmentsRouter from './Assignments';
 
 // Use vi.hoisted() to create mocks before module imports
 const { mockPrisma } = vi.hoisted(() => {
@@ -26,12 +30,6 @@ vi.mock('@prisma/client', async () => {
     PrismaClient: vi.fn(() => mockPrisma),
   };
 });
-
-// Import the module to get access to handlers
-import express from 'express';
-import request from 'supertest';
-import { errorHandler } from '../../middleware/ErrorHandler';
-import assignmentsRouter from './Assignments';
 
 // Create a test app
 const createTestApp = () => {
