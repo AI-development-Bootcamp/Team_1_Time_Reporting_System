@@ -13,6 +13,10 @@ const { mockPrisma } = vi.hoisted(() => {
     project: {
       findUnique: vi.fn(),
     },
+    taskWorker: {
+      deleteMany: vi.fn(),
+    },
+    $transaction: vi.fn((cb: any) => cb(mockPrismaInstance)),
   };
   return { mockPrisma: mockPrismaInstance };
 });

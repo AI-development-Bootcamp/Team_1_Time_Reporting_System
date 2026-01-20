@@ -348,16 +348,16 @@ Current `backend/prisma/schema.prisma` issues:
 - **Validation**: Tasks CRUD works, filtering by project works
 
 #### TASK-M3-013: Assignments Backend (Per `doc/api/API.md` Section 6)
-- [ ] Create `backend/src/routes/admin/Assignments.ts`
-- [ ] Implement `POST /api/admin/assignments`:
-  - [ ] Zod schema: `{ userId, taskId }`
-  - [ ] Create TaskWorker record
-  - [ ] Return: `{ success: true, data: { id, taskId, userId } }`
-  - [ ] Trigger cache refresh for project selector
-- [ ] Implement `GET /api/admin/assignments`:
-  - [ ] Return all assignments
-- [ ] Implement `DELETE /api/admin/assignments/:id`:
-  - [ ] Delete TaskWorker record
+- [x] Create `backend/src/routes/admin/Assignments.ts`
+- [x] Implement `POST /api/admin/assignments`:
+  - [x] Zod schema: `{ userId, taskId }`
+  - [x] Create TaskWorker record
+  - [x] Return: `{ success: true, data: { id, taskId, userId } }`
+  - [x] Trigger cache refresh for project selector
+- [x] Implement `GET /api/admin/assignments`:
+  - [x] Return all assignments
+- [x] Implement `DELETE /api/admin/assignments/:id`:
+  - [x] Delete TaskWorker record
 - **Validation**: Assignments CRUD works
 
 #### TASK-M3-020: Clients UI (Admin App)

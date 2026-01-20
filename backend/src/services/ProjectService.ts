@@ -11,10 +11,11 @@ type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 // Helper to convert a Project entity into a JSON-safe response object
 function mapProjectToResponse(project: Project) {
   return {
-    id: Number(project.id),
+    // Keep IDs as strings (BigInt serialized) to match client ID representation
+    id: project.id.toString(),
     name: project.name,
-    clientId: Number(project.clientId),
-    projectManagerId: Number(project.projectManagerId),
+    clientId: project.clientId.toString(),
+    projectManagerId: project.projectManagerId.toString(),
     startDate: project.startDate.toISOString().slice(0, 10), // YYYY-MM-DD
     endDate: project.endDate ? project.endDate.toISOString().slice(0, 10) : null,
     description: project.description,
@@ -77,7 +78,8 @@ export class ProjectService {
       },
     });
 
-    return { id: Number(project.id) };
+    // Return ID as string to be consistent with client ID serialization
+    return { id: project.id.toString() };
   }
 
   static async updateProject(id: bigint, data: UpdateProjectInput) {
@@ -186,10 +188,28 @@ export class ProjectService {
       throw new AppError('NOT_FOUND', 'Project not found', 404);
     }
 
-    // Soft delete: set active = false
-    await prisma.project.update({
-      where: { id },
-      data: { active: false },
+    // Use a transaction to apply all cascading changes consistently
+    await prisma.$transaction(async (tx) => {
+      // 1) Soft delete the project (set active = false)
+      await tx.project.update({
+        where: { id },
+        data: { active: false },
+      });
+
+      // 2) Close all tasks that belong to this project (set status = 'closed')
+      await tx.task.updateMany({
+        where: { projectId: id },
+        data: { status: 'closed' },
+      });
+
+      // 3) Delete all task-worker assignments for tasks under this project
+      await tx.taskWorker.deleteMany({
+        where: {
+          task: {
+            projectId: id,
+          },
+        },
+      });
     });
 
     return { deleted: true };
