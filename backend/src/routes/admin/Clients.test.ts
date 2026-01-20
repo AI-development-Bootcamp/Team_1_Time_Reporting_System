@@ -461,6 +461,19 @@ describe('Clients Router', () => {
       expect(mockPrisma.client.update).not.toHaveBeenCalled();
     });
 
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .put('/api/admin/clients/abc')
+        .send({
+          name: 'Updated Client',
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.client.findUnique).not.toHaveBeenCalled();
+    });
+
     it('should return 400 for empty name', async () => {
       const existingClient = {
         id: BigInt(1),
@@ -526,6 +539,16 @@ describe('Clients Router', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Client not found');
       expect(mockPrisma.client.update).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .delete('/api/admin/clients/xyz')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.client.findUnique).not.toHaveBeenCalled();
     });
   });
 });

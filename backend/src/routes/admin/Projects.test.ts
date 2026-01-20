@@ -86,7 +86,9 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(true);
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
-        where: {},
+        where: {
+          active: true,
+        },
         orderBy: {
           createdAt: 'desc',
         },
@@ -120,6 +122,7 @@ describe('Projects Router', () => {
       expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
         where: {
           clientId: BigInt(1),
+          active: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -129,6 +132,84 @@ describe('Projects Router', () => {
       // Verify all returned projects belong to the filtered client
       const allMatch = response.body.data.every((p: any) => p.clientId === 1);
       expect(allMatch).toBe(true);
+    });
+
+    it('should filter by active=true when query param is provided', async () => {
+      const mockProjects = [
+        {
+          id: BigInt(1),
+          name: 'Active Project',
+          clientId: BigInt(1),
+          projectManagerId: BigInt(1),
+          startDate: new Date('2026-01-01'),
+          endDate: null,
+          description: null,
+          reportingType: 'startEnd' as ReportingType,
+          active: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.project.findMany.mockResolvedValue(mockProjects);
+
+      const response = await request(app)
+        .get('/api/admin/projects?active=true')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+        where: {
+          active: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should filter by active=false when query param is provided', async () => {
+      const mockProjects = [
+        {
+          id: BigInt(1),
+          name: 'Inactive Project',
+          clientId: BigInt(1),
+          projectManagerId: BigInt(1),
+          startDate: new Date('2026-01-01'),
+          endDate: null,
+          description: null,
+          reportingType: 'startEnd' as ReportingType,
+          active: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPrisma.project.findMany.mockResolvedValue(mockProjects);
+
+      const response = await request(app)
+        .get('/api/admin/projects?active=false')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+        where: {
+          active: false,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    });
+
+    it('should return 400 for invalid clientId query parameter (non-numeric)', async () => {
+      const response = await request(app)
+        .get('/api/admin/projects?clientId=abc')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findMany).not.toHaveBeenCalled();
     });
   });
 
@@ -288,6 +369,17 @@ describe('Projects Router', () => {
       expect(response.body.error.message).toBe('Project not found');
     });
 
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .put('/api/admin/projects/abc')
+        .send({ name: 'Updated Project' })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
+    });
+
     it('should validate client exists when updating clientId', async () => {
       const existingProject = {
         id: BigInt(1),
@@ -399,6 +491,17 @@ describe('Projects Router', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Project not found');
     });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .patch('/api/admin/projects/xyz')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
+    });
   });
 
   describe('DELETE /api/admin/projects/:id', () => {
@@ -446,6 +549,16 @@ describe('Projects Router', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Project not found');
     });
+
+    it('should return 400 for invalid ID format (non-numeric)', async () => {
+      const response = await request(app)
+        .delete('/api/admin/projects/invalid')
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.findUnique).not.toHaveBeenCalled();
+    });
   });
 
   describe('Validation', () => {
@@ -477,6 +590,72 @@ describe('Projects Router', () => {
 
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return 400 for invalid date - February 30', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-02-30', // Invalid date (February doesn't have 30 days)
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid date - month 13', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-13-01', // Invalid month
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 for invalid date - day 45', async () => {
+      const mockClient = { id: BigInt(1), name: 'Client 1' };
+      const mockUser = { id: BigInt(1), name: 'Manager 1' };
+
+      mockPrisma.client.findUnique.mockResolvedValue(mockClient);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const response = await request(app)
+        .post('/api/admin/projects')
+        .send({
+          name: 'Test Project',
+          clientId: 1,
+          projectManagerId: 1,
+          startDate: '2026-01-45', // Invalid day
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(mockPrisma.project.create).not.toHaveBeenCalled();
     });
   });
 });
