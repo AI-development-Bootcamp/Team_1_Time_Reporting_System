@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import {
-  validateDuration,
-  validateLocation,
-  calculateAttendanceDuration,
-} from './TimeLogs';
+import { validateDuration, validateLocation } from '../services/TimeLogsService';
+import { calculateDurationFromDates } from '../utils/TimeValidation';
+
+// Alias for backward compatibility with existing tests
+const calculateAttendanceDuration = calculateDurationFromDates;
 
 // ============================================================================
 // Unit Tests: Duration Validation

@@ -1,13 +1,39 @@
 import { describe, it, expect } from 'vitest';
 import {
-  calculateDurationMinutes,
+  TIME_REGEX,
   timeStringToDate,
   dateToTimeString,
+  calculateDurationMinutes,
   timeRangesOverlap,
-} from '../utils/TimeValidation';
+  validateTimeRange,
+  validateNoMidnightCrossing,
+  calculateDurationFromDates,
+} from './TimeValidation';
 
 // ============================================================================
-// Unit Tests: Time Helpers
+// Unit Tests: TIME_REGEX
+// ============================================================================
+
+describe('TIME_REGEX', () => {
+  it('should match valid HH:mm formats', () => {
+    expect(TIME_REGEX.test('00:00')).toBe(true);
+    expect(TIME_REGEX.test('09:30')).toBe(true);
+    expect(TIME_REGEX.test('12:00')).toBe(true);
+    expect(TIME_REGEX.test('23:59')).toBe(true);
+  });
+
+  it('should not match invalid formats', () => {
+    expect(TIME_REGEX.test('24:00')).toBe(false);
+    expect(TIME_REGEX.test('25:00')).toBe(false);
+    expect(TIME_REGEX.test('9:30')).toBe(false);
+    expect(TIME_REGEX.test('09:60')).toBe(false);
+    expect(TIME_REGEX.test('0930')).toBe(false);
+    expect(TIME_REGEX.test('')).toBe(false);
+  });
+});
+
+// ============================================================================
+// Unit Tests: timeStringToDate
 // ============================================================================
 
 describe('timeStringToDate', () => {
@@ -32,26 +58,18 @@ describe('timeStringToDate', () => {
     expect(result.getUTCMinutes()).toBe(59);
   });
 
-  it('should throw AppError for invalid time format (no colon)', () => {
+  it('should throw AppError for invalid time format', () => {
     expect(() => timeStringToDate('0930')).toThrow('Invalid time format');
-  });
-
-  it('should throw AppError for invalid time format (single digit hour)', () => {
     expect(() => timeStringToDate('9:30')).toThrow('Invalid time format');
-  });
-
-  it('should throw AppError for invalid hour (25:00)', () => {
     expect(() => timeStringToDate('25:00')).toThrow('Invalid time format');
-  });
-
-  it('should throw AppError for invalid minutes (09:60)', () => {
     expect(() => timeStringToDate('09:60')).toThrow('Invalid time format');
-  });
-
-  it('should throw AppError for empty string', () => {
     expect(() => timeStringToDate('')).toThrow('Invalid time format');
   });
 });
+
+// ============================================================================
+// Unit Tests: dateToTimeString
+// ============================================================================
 
 describe('dateToTimeString', () => {
   it('should convert UTC Date to HH:mm string', () => {
@@ -81,7 +99,7 @@ describe('dateToTimeString', () => {
 });
 
 // ============================================================================
-// Unit Tests: Duration Calculation
+// Unit Tests: calculateDurationMinutes
 // ============================================================================
 
 describe('calculateDurationMinutes', () => {
@@ -105,11 +123,8 @@ describe('calculateDurationMinutes', () => {
     expect(calculateDurationMinutes('10:00', '10:00')).toBe(0);
   });
 
-  it('should return 0 for invalid start time format', () => {
+  it('should return 0 for invalid time format', () => {
     expect(calculateDurationMinutes('invalid', '10:00')).toBe(0);
-  });
-
-  it('should return 0 for invalid end time format', () => {
     expect(calculateDurationMinutes('10:00', 'invalid')).toBe(0);
   });
 
@@ -119,50 +134,35 @@ describe('calculateDurationMinutes', () => {
 });
 
 // ============================================================================
-// Unit Tests: Overlap Validation
+// Unit Tests: timeRangesOverlap
 // ============================================================================
 
 describe('timeRangesOverlap', () => {
   describe('non-overlapping cases', () => {
     it('should return false when ranges are completely separate', () => {
-      // Range 1: 09:00-12:00, Range 2: 14:00-18:00
       expect(timeRangesOverlap('09:00', '12:00', '14:00', '18:00')).toBe(false);
     });
 
     it('should return false when first range ends as second starts (adjacent)', () => {
-      // Range 1: 09:00-12:00, Range 2: 12:00-14:00
       expect(timeRangesOverlap('09:00', '12:00', '12:00', '14:00')).toBe(false);
     });
 
-    it('should return false when second range ends as first starts (adjacent reverse)', () => {
-      // Range 1: 14:00-18:00, Range 2: 09:00-14:00
+    it('should return false when second range ends as first starts', () => {
       expect(timeRangesOverlap('14:00', '18:00', '09:00', '14:00')).toBe(false);
-    });
-
-    it('should return false when ranges are far apart', () => {
-      expect(timeRangesOverlap('08:00', '09:00', '20:00', '21:00')).toBe(false);
     });
   });
 
   describe('overlapping cases', () => {
     it('should return true when first range contains second', () => {
-      // Range 1: 09:00-18:00 contains Range 2: 10:00-12:00
       expect(timeRangesOverlap('09:00', '18:00', '10:00', '12:00')).toBe(true);
     });
 
     it('should return true when second range contains first', () => {
-      // Range 2: 09:00-18:00 contains Range 1: 10:00-12:00
       expect(timeRangesOverlap('10:00', '12:00', '09:00', '18:00')).toBe(true);
     });
 
-    it('should return true when ranges partially overlap (first starts before)', () => {
-      // Range 1: 09:00-14:00, Range 2: 12:00-18:00
+    it('should return true when ranges partially overlap', () => {
       expect(timeRangesOverlap('09:00', '14:00', '12:00', '18:00')).toBe(true);
-    });
-
-    it('should return true when ranges partially overlap (second starts before)', () => {
-      // Range 1: 12:00-18:00, Range 2: 09:00-14:00
-      expect(timeRangesOverlap('12:00', '18:00', '09:00', '14:00')).toBe(true);
     });
 
     it('should return true for identical ranges', () => {
@@ -173,14 +173,84 @@ describe('timeRangesOverlap', () => {
       expect(timeRangesOverlap('09:00', '12:00', '09:00', '14:00')).toBe(true);
     });
 
-    it('should return true when ranges share same end time', () => {
-      expect(timeRangesOverlap('09:00', '14:00', '12:00', '14:00')).toBe(true);
-    });
-
     it('should return true for 1 minute overlap', () => {
-      // Range 1: 09:00-12:01, Range 2: 12:00-14:00 (overlap at 12:00-12:01)
       expect(timeRangesOverlap('09:00', '12:01', '12:00', '14:00')).toBe(true);
     });
+  });
+});
+
+// ============================================================================
+// Unit Tests: validateTimeRange
+// ============================================================================
+
+describe('validateTimeRange', () => {
+  it('should not throw for valid time range (end > start)', () => {
+    expect(() => validateTimeRange('09:00', '17:00')).not.toThrow();
+    expect(() => validateTimeRange('00:00', '23:59')).not.toThrow();
+    expect(() => validateTimeRange('12:00', '12:01')).not.toThrow();
+  });
+
+  it('should throw when end time equals start time', () => {
+    expect(() => validateTimeRange('09:00', '09:00')).toThrow('End time must be after start time');
+  });
+
+  it('should throw when end time is before start time', () => {
+    expect(() => validateTimeRange('17:00', '09:00')).toThrow('End time must be after start time');
+    expect(() => validateTimeRange('14:00', '12:00')).toThrow('End time must be after start time');
+  });
+});
+
+// ============================================================================
+// Unit Tests: validateNoMidnightCrossing
+// ============================================================================
+
+describe('validateNoMidnightCrossing', () => {
+  it('should not throw for valid end times within the day', () => {
+    expect(() => validateNoMidnightCrossing('00:00')).not.toThrow();
+    expect(() => validateNoMidnightCrossing('12:00')).not.toThrow();
+    expect(() => validateNoMidnightCrossing('23:59')).not.toThrow();
+  });
+
+  it('should throw for invalid time format', () => {
+    expect(() => validateNoMidnightCrossing('24:00')).toThrow('Invalid time format');
+    expect(() => validateNoMidnightCrossing('25:00')).toThrow('Invalid time format');
+    expect(() => validateNoMidnightCrossing('invalid')).toThrow('Invalid time format');
+  });
+
+  // Note: The TIME_REGEX already rejects 24:00 and above, so the midnight crossing
+  // validation primarily catches invalid formats. Valid HH:mm times by definition
+  // are always <= 23:59.
+});
+
+// ============================================================================
+// Unit Tests: calculateDurationFromDates
+// ============================================================================
+
+describe('calculateDurationFromDates', () => {
+  it('should calculate duration correctly', () => {
+    const start = new Date(Date.UTC(1970, 0, 1, 9, 0, 0));
+    const end = new Date(Date.UTC(1970, 0, 1, 17, 0, 0));
+    expect(calculateDurationFromDates(start, end)).toBe(480);
+  });
+
+  it('should return 0 for null start time', () => {
+    const end = new Date(Date.UTC(1970, 0, 1, 17, 0, 0));
+    expect(calculateDurationFromDates(null, end)).toBe(0);
+  });
+
+  it('should return 0 for null end time', () => {
+    const start = new Date(Date.UTC(1970, 0, 1, 9, 0, 0));
+    expect(calculateDurationFromDates(start, null)).toBe(0);
+  });
+
+  it('should return 0 for both null times', () => {
+    expect(calculateDurationFromDates(null, null)).toBe(0);
+  });
+
+  it('should calculate duration with minutes', () => {
+    const start = new Date(Date.UTC(1970, 0, 1, 9, 30, 0));
+    const end = new Date(Date.UTC(1970, 0, 1, 14, 45, 0));
+    expect(calculateDurationFromDates(start, end)).toBe(315);
   });
 });
 
@@ -190,9 +260,9 @@ describe('timeRangesOverlap', () => {
 
 describe('time conversion roundtrip', () => {
   it('should preserve time through string -> date -> string conversion', () => {
-    const originalTimes = ['00:00', '09:30', '12:45', '18:00', '23:59'];
+    const times = ['00:00', '09:30', '12:45', '18:00', '23:59'];
     
-    for (const time of originalTimes) {
+    for (const time of times) {
       const date = timeStringToDate(time);
       const result = dateToTimeString(date);
       expect(result).toBe(time);

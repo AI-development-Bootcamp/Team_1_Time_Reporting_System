@@ -35,13 +35,14 @@ describe('Time Logs API Integration Tests', () => {
     });
     testClientId = client.id;
 
-    // Create test project
+    // Create test project with duration reporting type (for existing tests)
     const project = await prisma.project.create({
       data: {
         name: `Test Project ${Date.now()}`,
         clientId: testClientId,
         projectManagerId: testUserId,
         startDate: new Date('2026-01-01'),
+        reportingType: 'duration',  // Use duration type for backward compatibility
         active: true,
       },
     });
@@ -542,6 +543,338 @@ describe('Time Logs API Integration Tests', () => {
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
       expect(response.body.error.message).toContain('cannot be less than');
+    });
+  });
+
+  // ============================================================================
+  // Reporting Type Tests (startEnd vs duration)
+  // ============================================================================
+
+  describe('Reporting Type: startEnd project', () => {
+    let startEndProjectId: bigint;
+    let startEndTaskId: bigint;
+
+    beforeAll(async () => {
+      // Create a project with reportingType=startEnd
+      const startEndProject = await prisma.project.create({
+        data: {
+          name: `StartEnd Project ${Date.now()}`,
+          clientId: testClientId,
+          projectManagerId: testUserId,
+          startDate: new Date('2026-01-01'),
+          reportingType: 'startEnd',
+          active: true,
+        },
+      });
+      startEndProjectId = startEndProject.id;
+
+      // Create task for startEnd project
+      const startEndTask = await prisma.task.create({
+        data: {
+          name: `StartEnd Task ${Date.now()}`,
+          projectId: startEndProjectId,
+          status: 'open',
+        },
+      });
+      startEndTaskId = startEndTask.id;
+    });
+
+    afterAll(async () => {
+      // Clean up startEnd project test data
+      await prisma.projectTimeLogs.deleteMany({
+        where: { taskId: startEndTaskId },
+      });
+      await prisma.task.deleteMany({
+        where: { id: startEndTaskId },
+      });
+      await prisma.project.deleteMany({
+        where: { id: startEndProjectId },
+      });
+    });
+
+    it('should create time log with startTime and endTime', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '09:00',
+          endTime: '12:00',
+          location: 'office',
+          description: 'Morning meeting',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.id).toBeDefined();
+    });
+
+    it('should store all 3 fields (startTime, endTime, durationMin)', async () => {
+      // Create a time log via API
+      const createRes = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '10:00',
+          endTime: '14:30',
+          location: 'office',
+        });
+
+      expect(createRes.status).toBe(201);
+
+      // Check via GET
+      const getRes = await request(app)
+        .get('/api/time-logs')
+        .query({ dailyAttendanceId: testAttendanceId.toString() });
+
+      expect(getRes.status).toBe(200);
+      const log = getRes.body.data.find((l: { id: string }) => l.id === createRes.body.data.id);
+      expect(log).toBeDefined();
+      expect(log.startTime).toBe('10:00');
+      expect(log.endTime).toBe('14:30');
+      expect(log.duration).toBe(270); // 4.5 hours = 270 min
+    });
+
+    it('should reject if startTime/endTime missing for startEnd project', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          duration: 120, // Providing duration instead of startTime/endTime
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('startTime and endTime');
+    });
+
+    it('should reject if endTime <= startTime', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '14:00',
+          endTime: '12:00', // Before start
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('End time must be after start time');
+    });
+
+    it('should reject endTime that crosses midnight (00:30 next day)', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '23:30',
+          endTime: '00:30', // Next day - not allowed
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('End time must be after start time');
+    });
+
+    it('should reject invalid time format (24:00)', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: startEndTaskId.toString(),
+          startTime: '22:00',
+          endTime: '24:00', // Invalid - should be rejected by schema
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('Reporting Type: duration project', () => {
+    let durationProjectId: bigint;
+    let durationTaskId: bigint;
+
+    beforeAll(async () => {
+      // Create a project with reportingType=duration
+      const durationProject = await prisma.project.create({
+        data: {
+          name: `Duration Project ${Date.now()}`,
+          clientId: testClientId,
+          projectManagerId: testUserId,
+          startDate: new Date('2026-01-01'),
+          reportingType: 'duration',
+          active: true,
+        },
+      });
+      durationProjectId = durationProject.id;
+
+      // Create task for duration project
+      const durationTask = await prisma.task.create({
+        data: {
+          name: `Duration Task ${Date.now()}`,
+          projectId: durationProjectId,
+          status: 'open',
+        },
+      });
+      durationTaskId = durationTask.id;
+    });
+
+    afterAll(async () => {
+      // Clean up duration project test data
+      await prisma.projectTimeLogs.deleteMany({
+        where: { taskId: durationTaskId },
+      });
+      await prisma.task.deleteMany({
+        where: { id: durationTaskId },
+      });
+      await prisma.project.deleteMany({
+        where: { id: durationProjectId },
+      });
+    });
+
+    it('should create time log with duration only', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: durationTaskId.toString(),
+          duration: 120,
+          location: 'office',
+          description: 'Duration-based work',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should store durationMin with null startTime/endTime', async () => {
+      // Create a time log
+      const createRes = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: durationTaskId.toString(),
+          duration: 90,
+          location: 'home',
+        });
+
+      expect(createRes.status).toBe(201);
+
+      // Check via GET
+      const getRes = await request(app)
+        .get('/api/time-logs')
+        .query({ dailyAttendanceId: testAttendanceId.toString() });
+
+      expect(getRes.status).toBe(200);
+      const log = getRes.body.data.find((l: { id: string }) => l.id === createRes.body.data.id);
+      expect(log).toBeDefined();
+      expect(log.duration).toBe(90);
+      expect(log.startTime).toBeNull();
+      expect(log.endTime).toBeNull();
+    });
+
+    it('should reject if duration missing for duration project', async () => {
+      const response = await request(app)
+        .post('/api/time-logs')
+        .send({
+          dailyAttendanceId: testAttendanceId.toString(),
+          taskId: durationTaskId.toString(),
+          startTime: '09:00', // Providing startTime/endTime instead of duration
+          endTime: '12:00',
+          location: 'office',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('duration');
+    });
+
+    it('should update time log duration correctly', async () => {
+      // Create log
+      const log = await prisma.projectTimeLogs.create({
+        data: {
+          dailyAttendanceId: testAttendanceId,
+          taskId: durationTaskId,
+          durationMin: 480, // Cover full attendance
+          location: 'office',
+        },
+      });
+
+      // Update
+      const response = await request(app)
+        .put(`/api/time-logs/${log.id}`)
+        .send({
+          duration: 500,
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+  });
+
+  describe('Update time log when project reportingType changes', () => {
+    it('should require startTime/endTime when project changes to startEnd', async () => {
+      // Create a project that starts as duration-based
+      const project = await prisma.project.create({
+        data: {
+          name: `Changing Project ${Date.now()}`,
+          clientId: testClientId,
+          projectManagerId: testUserId,
+          startDate: new Date('2026-01-01'),
+          reportingType: 'duration', // Start as duration
+          active: true,
+        },
+      });
+
+      const task = await prisma.task.create({
+        data: {
+          name: `Changing Task ${Date.now()}`,
+          projectId: project.id,
+          status: 'open',
+        },
+      });
+
+      // Create a log with just duration
+      const log = await prisma.projectTimeLogs.create({
+        data: {
+          dailyAttendanceId: testAttendanceId,
+          taskId: task.id,
+          durationMin: 480,
+          location: 'office',
+          startTime: null,
+          endTime: null,
+        },
+      });
+
+      // Change project to startEnd
+      await prisma.project.update({
+        where: { id: project.id },
+        data: { reportingType: 'startEnd' },
+      });
+
+      // Try to update with just duration - should fail now
+      const response = await request(app)
+        .put(`/api/time-logs/${log.id}`)
+        .send({
+          duration: 500, // Only duration, no startTime/endTime
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.message).toContain('startTime and endTime');
+
+      // Clean up
+      await prisma.projectTimeLogs.delete({ where: { id: log.id } });
+      await prisma.task.delete({ where: { id: task.id } });
+      await prisma.project.delete({ where: { id: project.id } });
     });
   });
 });
