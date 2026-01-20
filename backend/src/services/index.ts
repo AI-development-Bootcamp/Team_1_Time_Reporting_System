@@ -2,3 +2,4 @@
 export * from './AttendanceService';
 export * from './TimeLogsService';
 export * from './CombinedAttendanceService';
+export * from './ProjectSelectorService';

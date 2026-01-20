@@ -3,6 +3,7 @@ import cors from 'cors';
 import { errorHandler } from './middleware/ErrorHandler';
 import attendanceRoutes from './routes/attendance.routes';
 import timeLogsRoutes from './routes/timeLogs.routes';
+import projectsRoutes from './routes/projects.routes';
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/time-logs', timeLogsRoutes);
+app.use('/api/projects', projectsRoutes);
 
 app.use(errorHandler);
 
