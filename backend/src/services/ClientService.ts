@@ -24,18 +24,19 @@ export class ClientService {
   }
 
   static async createClient(data: CreateClientInput) {
-    // Check if client with same name already exists
-    const existingClient = await prisma.client.findFirst({
+    // Check if an active client with the same name already exists
+    const existingActiveClient = await prisma.client.findFirst({
       where: {
         name: data.name,
+        active: true,
       },
     });
 
-    if (existingClient) {
-      throw new AppError('CONFLICT', 'Client with this name already exists', 409);
+    if (existingActiveClient) {
+      throw new AppError('CONFLICT', 'Active client with this name already exists', 409);
     }
 
-    // Create client
+    // Create client (name can be reused if previous client with this name is inactive)
     const client = await prisma.client.create({
       data: {
         name: data.name,
@@ -93,10 +94,40 @@ export class ClientService {
       throw new AppError('NOT_FOUND', 'Client not found', 404);
     }
 
-    // Soft delete: set active = false
-    await prisma.client.update({
-      where: { id },
-      data: { active: false },
+    // Use a transaction to apply all cascading changes consistently
+    await prisma.$transaction(async (tx) => {
+      // 1) Soft delete the client (set active = false)
+      await tx.client.update({
+        where: { id },
+        data: { active: false },
+      });
+
+      // 2) Soft delete all projects of this client (set active = false)
+      await tx.project.updateMany({
+        where: { clientId: id },
+        data: { active: false },
+      });
+
+      // 3) Close all tasks that belong to projects of this client (set status = 'closed')
+      await tx.task.updateMany({
+        where: {
+          project: {
+            clientId: id,
+          },
+        },
+        data: { status: 'closed' },
+      });
+
+      // 4) Delete all task-worker assignments for tasks under this client
+      await tx.taskWorker.deleteMany({
+        where: {
+          task: {
+            project: {
+              clientId: id,
+            },
+          },
+        },
+      });
     });
 
     return serializeData({ deleted: true });

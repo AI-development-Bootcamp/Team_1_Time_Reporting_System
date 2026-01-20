@@ -186,10 +186,28 @@ export class ProjectService {
       throw new AppError('NOT_FOUND', 'Project not found', 404);
     }
 
-    // Soft delete: set active = false
-    await prisma.project.update({
-      where: { id },
-      data: { active: false },
+    // Use a transaction to apply all cascading changes consistently
+    await prisma.$transaction(async (tx) => {
+      // 1) Soft delete the project (set active = false)
+      await tx.project.update({
+        where: { id },
+        data: { active: false },
+      });
+
+      // 2) Close all tasks that belong to this project (set status = 'closed')
+      await tx.task.updateMany({
+        where: { projectId: id },
+        data: { status: 'closed' },
+      });
+
+      // 3) Delete all task-worker assignments for tasks under this project
+      await tx.taskWorker.deleteMany({
+        where: {
+          task: {
+            projectId: id,
+          },
+        },
+      });
     });
 
     return { deleted: true };
