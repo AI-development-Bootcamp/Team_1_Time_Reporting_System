@@ -2,11 +2,29 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAuth } from './useAuth';
 
+// Mock JWT validation to always return true in tests
+// This allows tests to focus on localStorage logic without token validation
+vi.mock('@shared/utils/jwt', () => ({
+  validateToken: vi.fn(() => true),
+  isTokenExpired: vi.fn(() => false),
+  decodeJWT: vi.fn(() => ({ exp: Math.floor(Date.now() / 1000) + 3600 })),
+}));
+
 describe('useAuth', () => {
+  // Create a mock valid token (not expired for 1 hour)
+  const createMockToken = () => {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+    const signature = 'mock-signature';
+    return `${header}.${payload}.${signature}`;
+  };
+
   beforeEach(() => {
     // Clear localStorage before each test
     localStorage.clear();
     vi.clearAllMocks();
+    // Set a mock token so validateToken() passes
+    localStorage.setItem('token', createMockToken());
   });
 
   afterEach(() => {
@@ -86,6 +104,8 @@ describe('useAuth', () => {
     };
 
     localStorage.setItem('user', JSON.stringify(mockUser));
+    // Ensure token is set (already set in beforeEach, but being explicit)
+    localStorage.setItem('token', createMockToken());
 
     const { result } = renderHook(() => useAuth());
 
