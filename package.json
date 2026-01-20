@@ -14,7 +14,7 @@
     "dev:user": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\"",
     "dev:admin": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_admin\"",
     "build:all": "npm run build -w backend && npm run build -w frontend_user && npm run build -w frontend_admin",
-    "test:unit": "npm run test -w backend -- --dir src && npm run test -w frontend_user && npm run test -w frontend_admin",
+    "test:unit": "npm run test -w backend -- src && npm run test -w frontend_user && npm run test -w frontend_admin",
     "test:integration": "npm run test -w backend -- --dir tests/integration",
     "test:all": "npm run test:unit && npm run test:integration"
   },
