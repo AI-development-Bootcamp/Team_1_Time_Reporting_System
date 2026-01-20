@@ -645,12 +645,12 @@ model ProjectTimeLogs {
 **Current Behavior**: Creates any attendance with optional times
 
 **Required Changes**:
-- [ ] For `work` status: Redirect user to use combined endpoint OR block with error
-- [ ] For `halfDayOff`: Check no exclusive status exists, allow creation with NULL times
+- [x] For `work` status: Redirect user to use combined endpoint OR block with error
+- [x] For `halfDayOff`: Check no exclusive status exists, allow creation with NULL times
 - [ ] For exclusive statuses (`dayOff`, `sickness`, `reserves`):
-  - [ ] Check NO other attendance exists on this date
-  - [ ] Create with startTime=NULL, endTime=NULL
-- [ ] Add new validation helpers:
+  - [x] Check NO other attendance exists on this date
+  - [x] Create with startTime=NULL, endTime=NULL
+- [x] Add new validation helpers:
   ```typescript
   async function checkExclusiveStatusExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>
   async function checkAnyAttendanceExists(userId: bigint, date: Date, excludeId?: bigint): Promise<boolean>
@@ -663,7 +663,7 @@ model ProjectTimeLogs {
 **Current Behavior**: Updates attendance, checks overlap and duration-vs-logs
 
 **Required Changes**:
-- [ ] Add status change validation:
+- [x] Add status change validation:
   ```typescript
   // Block work → non-work if time logs exist
   if (existingStatus === 'work' && newStatus !== 'work') {
@@ -674,10 +674,10 @@ model ProjectTimeLogs {
     }
   }
   ```
-- [ ] Handle `non-work` → `work` (require times in request)
-- [ ] Check exclusive status rules when changing TO exclusive status
-- [ ] Set times to NULL when changing to non-work status
-- [ ] Add `validateNoMidnightCrossing()` check
+- [x] Handle `non-work` → `work` (require times in request)
+- [x] Check exclusive status rules when changing TO exclusive status
+- [x] Set times to NULL when changing to non-work status
+- [x] Add `validateNoMidnightCrossing()` check
 
 ---
 
@@ -694,10 +694,10 @@ export async function validateAttendance(
 ```
 
 **Required Additions**:
-- [ ] Add midnight crossing check: `if (endTime && endTime > '23:59') throw ...`
-- [ ] For `work`/`halfDayOff`: Check no exclusive status exists
-- [ ] For exclusive statuses: Check no other attendance exists
-- [ ] Skip overlap check for non-work statuses (they have no times)
+- [x] Add midnight crossing check: `if (endTime && endTime > '23:59') throw ...`
+- [x] For `work`/`halfDayOff`: Check no exclusive status exists
+- [x] For exclusive statuses: Check no other attendance exists
+- [x] Skip overlap check for non-work statuses (they have no times)
 
 ---
 
@@ -706,22 +706,22 @@ export async function validateAttendance(
 **Current Behavior**: Creates time log with duration only
 
 **Required Changes**:
-- [ ] Get task's project to check `reportingType`:
+- [x] Get task's project to check `reportingType`:
   ```typescript
   const task = await prisma.task.findUnique({
     where: { id: body.taskId },
     include: { project: { select: { reportingType: true } } }
   });
   ```
-- [ ] If `reportingType = startEnd`:
-  - [ ] Require startTime and endTime in request
-  - [ ] Validate `endTime > startTime`
-  - [ ] Validate no midnight crossing
-  - [ ] Calculate `durationMin = calculateDurationMinutes(startTime, endTime)`
-  - [ ] Store all three fields
-- [ ] If `reportingType = duration`:
-  - [ ] Require duration in request
-  - [ ] Store durationMin, set startTime/endTime to NULL
+- [x] If `reportingType = startEnd`:
+  - [x] Require startTime and endTime in request
+  - [x] Validate `endTime > startTime`
+  - [x] Validate no midnight crossing
+  - [x] Calculate `durationMin = calculateDurationMinutes(startTime, endTime)`
+  - [x] Store all three fields
+- [x] If `reportingType = duration`:
+  - [x] Require duration in request
+  - [x] Store durationMin, set startTime/endTime to NULL
 
 ---
 
@@ -730,10 +730,10 @@ export async function validateAttendance(
 **Current Behavior**: Updates duration only
 
 **Required Changes**:
-- [ ] Check project's current `reportingType` (may have changed)
-- [ ] Handle both reporting types appropriately
-- [ ] Update startTime/endTime or set to NULL based on type
-- [ ] Keep all existing duration-vs-logs validation
+- [x] Check project's current `reportingType` (may have changed)
+- [x] Handle both reporting types appropriately
+- [x] Update startTime/endTime or set to NULL based on type
+- [x] Keep all existing duration-vs-logs validation
 
 ---
 
@@ -984,10 +984,10 @@ backend/src/
     }
     ```
 
-- [ ] Create `backend/src/services/TimeLogsService.ts`:
-  - [ ] Move all Prisma operations from `TimeLogs.ts`
-  - [ ] Move validation helpers
-  - [ ] Export static methods:
+- [x] Create `backend/src/services/TimeLogsService.ts`:
+  - [x] Move all Prisma operations from `TimeLogs.ts`
+  - [x] Move validation helpers
+  - [x] Export static methods:
     ```typescript
     export class TimeLogsService {
       static async createTimeLog(data: CreateTimeLogInput): Promise<bigint>;
@@ -999,8 +999,8 @@ backend/src/
     }
     ```
 
-- [ ] Create `backend/src/services/CombinedAttendanceService.ts` (deferred to TASK-M2-011A):
-  - [ ] Export as class with static methods:
+- [x] Create `backend/src/services/CombinedAttendanceService.ts` (deferred to TASK-M2-011A):
+  - [x] Export as class with static methods:
     ```typescript
     export class CombinedAttendanceService {
       static async createCombinedAttendance(input: CombinedAttendanceInput): Promise<CombinedAttendanceResult>;
@@ -1009,7 +1009,7 @@ backend/src/
 
 ##### Step 3: Create Controllers (`controllers/`)
 
-- [ ] Create `backend/src/controllers/AttendanceController.ts`:
+- [x] Create `backend/src/controllers/AttendanceController.ts`:
   ```typescript
   import { Request, Response, NextFunction } from 'express';
   import { AttendanceService } from '../services/AttendanceService';
@@ -1119,7 +1119,7 @@ backend/src/
 
 ##### Step 4: Refactor Routes (`routes/`)
 
-- [ ] Rename `backend/src/routes/Attendance.ts` → `backend/src/routes/attendance.routes.ts`:
+- [x] Rename `backend/src/routes/Attendance.ts` → `backend/src/routes/attendance.routes.ts`:
   ```typescript
   import { Router } from 'express';
   import { AttendanceController } from '../controllers/AttendanceController';
@@ -1157,7 +1157,7 @@ backend/src/
 
 ##### Step 5: Update App Entry Point
 
-- [ ] Update `backend/src/app.ts` to use new route files:
+- [x] Update `backend/src/app.ts` to use new route files:
   ```typescript
   import attendanceRoutes from './routes/attendance.routes';
   import timeLogsRoutes from './routes/timeLogs.routes';
@@ -1183,7 +1183,7 @@ backend/src/
 
 ##### Step 7: Update Tests
 
-- [ ] Update test imports to use new paths
+- [x] Update test imports to use new paths
 - [ ] Keep existing test logic (no behavior changes)
 - [ ] Add unit tests for services in `backend/src/services/*.test.ts`
 

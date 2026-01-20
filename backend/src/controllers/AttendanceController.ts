@@ -21,6 +21,14 @@ export class AttendanceController {
     try {
       const body = createAttendanceSchema.parse(req.body);
 
+      if (body.status === 'work') {
+        throw new AppError(
+          'VALIDATION_ERROR',
+          'Work attendance must be submitted via /api/attendance/combined',
+          400
+        );
+      }
+
       // TODO: Get userId from authenticated user (req.user.id) when auth is ready
       const userId = body.userId;
 
