@@ -99,7 +99,7 @@ export class UserController {
             // Delete user
             const result = await UserService.deleteUser(userId);
 
-            ApiResponse.success(res, result);
+            ApiResponse.success(res, result, 204);
         } catch (error) {
             next(error);
         }

@@ -563,9 +563,8 @@ describe('HTTP Integration Tests - User CRUD Endpoints', () => {
         .delete(`/api/admin/users/${userToDelete.id}`)
         .set('Authorization', `Bearer ${token}`);
 
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('deleted', true);
+      expect(response.status).toBe(204);
+      // 204 No Content should have empty body, so don't check response.body
 
       // Verify user still exists but is inactive
       const user = await prisma.user.findUnique({

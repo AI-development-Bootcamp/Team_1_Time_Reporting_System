@@ -17,6 +17,12 @@ export interface ErrorResponse {
 
 export class ApiResponse {
   static success<T>(res: Response, data: T, statusCode: number = 200): void {
+    // For 204 No Content, send empty response body (REST convention)
+    if (statusCode === 204) {
+      res.status(204).send();
+      return;
+    }
+
     const response: SuccessResponse<T> = {
       success: true,
       data,
