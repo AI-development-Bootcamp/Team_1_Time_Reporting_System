@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { createApp } from '../../src/app';
-import { prisma } from '../../src/utils/prismaClient';
-import { Bcrypt } from '../../src/utils/Bcrypt';
+import { createApp } from '@/app';
+import { prisma } from '@/utils/prismaClient';
+import { Bcrypt } from '@/utils/Bcrypt';
 import jwt from 'jsonwebtoken';
 
 const app = createApp();
@@ -53,9 +53,9 @@ describe('HTTP Integration Tests - Auth Endpoints', () => {
 
   afterAll(async () => {
     // Clean up
-    if (testUser) await prisma.user.delete({ where: { id: testUser.id } }).catch(() => {});
-    if (adminUser) await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => {});
-    if (inactiveUser) await prisma.user.delete({ where: { id: inactiveUser.id } }).catch(() => {});
+    if (testUser) await prisma.user.delete({ where: { id: testUser.id } }).catch(() => { });
+    if (adminUser) await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => { });
+    if (inactiveUser) await prisma.user.delete({ where: { id: inactiveUser.id } }).catch(() => { });
     await prisma.$disconnect();
     process.env.JWT_SECRET = originalSecret;
   });

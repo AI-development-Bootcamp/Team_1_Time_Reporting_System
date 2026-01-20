@@ -213,9 +213,9 @@ Available aliases: `@/`, `@components/`, `@hooks/`, `@pages/`, `@services/`, `@t
 - Reuse schemas across endpoints when possible
 
 ### Authentication & JWT
-- Use existing `ApiClient` interceptor for auth headers (already configured)
-- JWT flow: Backend generates → Frontend stores in localStorage → Auto-attached to requests → Backend verifies
-- **DO NOT** create new auth logic - use `AuthContext` and `authMiddleware`
+- **AUTOMATIC TOKEN HANDLING**: The `ApiClient` (Axios) automatically attaches the `Authorization: Bearer <token>` header to every request if the token exists in `localStorage`.
+- **DO NOT** manually add auth headers to requests.
+- **DO NOT** create new auth logic - use `AuthContext` and `authMiddleware`.
 - Token is stored as `localStorage.getItem('token')`
 - Password requirements: 8 chars min, 1 uppercase, 1 lowercase, 1 special char
 

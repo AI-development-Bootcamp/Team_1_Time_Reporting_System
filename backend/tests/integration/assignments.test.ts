@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { prisma } from '../../src/utils/prismaClient';
-import { Bcrypt } from '../../src/utils/Bcrypt';
+import { prisma } from '@/utils/prismaClient';
+import { Bcrypt } from '@/utils/Bcrypt';
 
 describe('GET /api/admin/assignments/:taskId/users - Database Integration', () => {
     let adminUserId: bigint;

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { Bcrypt } from '../../src/utils/Bcrypt';
-import { loginSchema } from '../../src/utils/validationSchemas';
+import { Bcrypt } from '@/utils/Bcrypt';
+import { loginSchema } from '@/validators/auth.schema';
 
 // Setup test database connection
 const prisma = new PrismaClient();

@@ -32,7 +32,10 @@ export const updateUserSchema = z.object({
         errorMap: () => ({ message: 'User type must be either admin or worker' }),
     }).optional(),
     active: z.boolean().optional(),
-});
+}).refine(
+    (data) => Object.keys(data).length > 0,
+    { message: 'At least one field must be provided for update' }
+);
 
 /**
  * Reset password validation schema

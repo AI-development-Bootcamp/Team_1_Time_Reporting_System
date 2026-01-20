@@ -7,6 +7,7 @@ node_modules/
 .env.local
 .env.production
 backend/.env
+
 frontend_user/.env
 frontend_admin/.env
 
@@ -19,7 +20,7 @@ build/
 # Logs
 *.log
 npm-debug.log*
-
+backend/coverage/
 # OS
 .DS_Store
 Thumbs.db
@@ -29,8 +30,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-mcp-trello-config.json
-real_tasks.md
-tasks_trello.md
-test-trello-connection.js
-sync-tasks-to-trello.js
