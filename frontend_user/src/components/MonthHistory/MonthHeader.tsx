@@ -37,12 +37,7 @@ export function MonthHeader({
 
   return (
     <div className={classes.header}>
-      {/* Page title */}
-      <Title order={3} className={classes.title}>
-        {HEBREW_STRINGS.pageTitle}
-      </Title>
-
-      {/* Month navigation */}
+      {/* Month navigation - on the left in RTL */}
       <Group gap="xs" className={classes.navigation}>
         <UnstyledButton
           onClick={onPreviousMonth}
@@ -66,6 +61,11 @@ export function MonthHeader({
           <Image src={rightArrowIcon} alt="Next month" w={24} h={24} />
         </UnstyledButton>
       </Group>
+
+      {/* Page title - on the right in RTL */}
+      <Title order={3} className={classes.title}>
+        {HEBREW_STRINGS.pageTitle}
+      </Title>
     </div>
   );
 }

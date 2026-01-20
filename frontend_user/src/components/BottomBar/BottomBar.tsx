@@ -27,10 +27,10 @@ export function BottomBar({ onManualReport }: BottomBarProps) {
 
       {/* Manual Report */}
       <UnstyledButton className={classes.manualReportButton} onClick={onManualReport}>
-        <Image src={newReportIcon} alt="" className={classes.manualReportIcon} />
-        <Text size="sm" fw={500} c="white">
+        <Text size="sm" fw={500} c="dark">
           {HEBREW_STRINGS.manualReport}
         </Text>
+        <Image src={newReportIcon} alt="" className={classes.manualReportIcon} />
       </UnstyledButton>
     </div>
   );

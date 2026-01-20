@@ -4,20 +4,12 @@
 
 .container {
   flex: 1;
-  padding: 40px 20px;
   min-height: 400px;
+  width: 100%;
 }
 
 .image {
-  max-width: 280px;
-  max-height: 220px;
-}
-
-.title {
-  color: var(--mantine-color-dark-7);
-  margin-top: 16px;
-}
-
-.subtitle {
-  max-width: 280px;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
 }
