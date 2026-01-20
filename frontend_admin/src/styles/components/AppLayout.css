@@ -1,0 +1,36 @@
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.app-layout-content {
+  flex: 1;
+  padding: 48px;
+  overflow: auto;
+  margin-right: 320px; /* Space for fixed sidebar */
+  max-width: calc(100vw - 320px);
+}
+
+.app-layout-content-inner {
+  max-width: 1504px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.app-layout-sidebar {
+  width: 320px;
+  height: 100vh;
+  background-color: #141E3E;
+  flex-shrink: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 100;
+}
+

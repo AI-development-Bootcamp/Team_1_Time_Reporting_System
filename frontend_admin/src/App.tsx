@@ -1,8 +1,11 @@
+import { AppLayout } from './components/Layout/AppLayout';
+import { ClientsPage } from './pages/ClientsPage';
+
 function App() {
   return (
-    <div>
-      <h1>Time Reporting System - Admin</h1>
-    </div>
+    <AppLayout>
+      <ClientsPage />
+    </AppLayout>
   );
 }
 

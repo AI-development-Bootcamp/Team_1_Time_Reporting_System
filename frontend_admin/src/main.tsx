@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@mantine/core/styles.css';
+import './styles/global.css';
 import App from './App';
 
 const queryClient = new QueryClient({
