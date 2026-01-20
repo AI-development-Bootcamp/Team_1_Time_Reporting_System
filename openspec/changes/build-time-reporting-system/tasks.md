@@ -1388,7 +1388,7 @@ backend/src/
 
 **Files to Create:**
 - [x] Config: Update `vite.config.ts` with `@images` alias → `../shared/image_components`
-- [ ] Types: `frontend_user/src/types/attendance.ts`, `timeLog.ts`, `projectSelector.ts`
+- [x] Types: `frontend_user/src/types/attendance.ts`, `timeLog.ts`, `projectSelector.ts`
 - [ ] Utils: `frontend_user/src/utils/dateUtils.ts` (Day.js helpers, Hebrew day names)
 - [ ] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
 - [ ] Services: `frontend_user/src/services/attendanceApi.ts`
