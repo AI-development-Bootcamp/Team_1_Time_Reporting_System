@@ -9,7 +9,7 @@ import { StatusBadge } from './StatusBadge';
 import { DailyAttendanceCard } from './DailyAttendanceCard';
 import { formatDateWithDay, isWeekend, isWorkday, calculateDurationMinutes } from '../../utils/dateUtils';
 import { HEBREW_STRINGS } from '../../utils/constants';
-import workDayIcon from '@images/WorkDayIcon.png';
+import workDayIcon from '@images/WorkDayLogo.png';
 import notWorkIcon from '@images/CalendarNotWorkIcon.png';
 import classes from './DayAccordionItem.module.css';
 

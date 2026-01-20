@@ -1409,19 +1409,19 @@ backend/src/
 - [x] Component: `frontend_user/src/components/MonthHistory/EmptyState.tsx`
 - [x] Component: `frontend_user/src/components/MonthHistory/ErrorState.tsx`
 - [x] Component: `frontend_user/src/components/MonthHistory/index.ts`
-- [ ] Component: `frontend_user/src/components/BottomBar/BottomBar.tsx`
-- [ ] Component: `frontend_user/src/components/BottomBar/BottomBar.module.css`
-- [ ] Component: `frontend_user/src/components/ComingSoonModal/ComingSoonModal.tsx`
-- [ ] Update: `frontend_user/src/App.tsx` to render MonthHistoryPage
+- [x] Component: `frontend_user/src/components/BottomBar/BottomBar.tsx`
+- [x] Component: `frontend_user/src/components/BottomBar/BottomBar.module.css`
+- [x] Component: `frontend_user/src/components/ComingSoonModal/ComingSoonModal.tsx`
+- [x] Update: `frontend_user/src/App.tsx` to render MonthHistoryPage
 
 **Tests (frontend):**
-- [ ] Component: renders multiple attendances per date
-- [ ] Component: status badges by total hours/status
-- [ ] Component: expand/collapse and edit/add actions
-- [ ] Component: loading/error/empty states
-- [ ] Hook: useMonthHistory fetches correct data
-- [ ] Hook: useTimeLogs lazy loads on expand
-- [ ] Utils: dateUtils Hebrew day names and formatting
+- [x] Component: renders multiple attendances per date
+- [x] Component: status badges by total hours/status
+- [x] Component: expand/collapse and edit/add actions
+- [x] Component: loading/error/empty states
+- [x] Hook: useMonthHistory fetches correct data
+- [x] Hook: useTimeLogs lazy loads on expand
+- [x] Utils: dateUtils Hebrew day names and formatting
 
 - **Coverage Target**: ≥60% for MonthHistory components + hooks
 - **Validation**: Month history matches Figma mobile layout and expanded card behavior
