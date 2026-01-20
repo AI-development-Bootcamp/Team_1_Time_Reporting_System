@@ -5,6 +5,7 @@ import { CombinedAttendanceService } from '../services/CombinedAttendanceService
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
 import { logAudit } from '../utils/AuditLog';
+import { parseBigIntParam } from '../utils/paramValidation';
 import {
   createAttendanceSchema,
   updateAttendanceSchema,
@@ -79,7 +80,7 @@ export class AttendanceController {
    */
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = BigInt(req.params.id);
+      const id = parseBigIntParam(req.params.id, 'id');
 
       // Business rule: date cannot be changed on an existing attendance
       if (req.body.date !== undefined) {
