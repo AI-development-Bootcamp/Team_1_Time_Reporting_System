@@ -19,13 +19,7 @@ export default defineConfig({
   },
   server: {
     fs: {
-      allow: [
-        path.resolve(__dirname, './src'),
-        path.resolve(__dirname, '../shared/src'),
-        path.resolve(__dirname, 'node_modules'), // Explicitly allow node_modules if needed, or assume Vite default
-        // Actually, just allowing shared and current is enough if node_modules are handled standardly
-        path.resolve(__dirname, '../node_modules')
-      ],
+      allow: ['..']
     },
   },
   test: {
