@@ -1239,8 +1239,9 @@ backend/src/
   - [ ] Join projects + clients
   - [ ] Group by Client → Project → Task
 - [ ] Implement usage frequency:
-  - [ ] Query ProjectTimeLogs for last 7 days per user
-  - [ ] Count by project, sort highest first
+  - [ ] Query all-time ProjectTimeLogs per user
+  - [ ] Count by task (number of reports), roll up to project/client
+  - [ ] Sort Client → Project → Task by count desc; tie-breaker A→Z
 - [ ] Create `backend/src/services/Cache.ts` (TTL 5 minutes)
 - [ ] Create `backend/src/routes/Projects.ts` for selector endpoint
 - [ ] Wire Projects routes in `backend/src/index.ts`
@@ -1257,7 +1258,7 @@ backend/src/
   - [ ] Update tests to include auth (token or mocked user context)
 - [ ] Tests (backend):
   - [ ] Unit: grouping by client/project/task
-  - [ ] Unit: frequency ordering from last 7 days
+  - [ ] Unit: frequency ordering from all-time counts
   - [ ] Integration: selector response shape and ordering
 - **Coverage Target**: ≥60% for ProjectSelector + cache
 - **Validation**: Grouped, sorted projects return quickly (<300ms)
