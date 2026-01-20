@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { LocationStatus } from '@prisma/client';
 import { TimeLogsService } from '../services/TimeLogsService';
 import { ApiResponse } from '../utils/Response';
+import { parseBigIntParam } from '../utils/paramValidation';
 import {
   createTimeLogSchema,
   updateTimeLogSchema,
@@ -57,7 +58,7 @@ export class TimeLogsController {
    */
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = BigInt(req.params.id);
+      const id = parseBigIntParam(req.params.id, 'id');
       const body = updateTimeLogSchema.parse(req.body);
 
       await TimeLogsService.updateTimeLog(id, {
@@ -81,7 +82,7 @@ export class TimeLogsController {
    */
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = BigInt(req.params.id);
+      const id = parseBigIntParam(req.params.id, 'id');
 
       await TimeLogsService.deleteTimeLog(id);
 

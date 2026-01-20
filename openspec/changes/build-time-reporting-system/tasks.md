@@ -1232,36 +1232,40 @@ backend/src/
 ---
 
 #### TASK-M2-012: Project Selector Backend
-- [ ] Create `backend/src/services/ProjectSelector.ts`
-- [ ] Define grouped response shape (Client → Project → Task) with ids/names
-- [ ] Implement `getProjectsForUser(userId)`:
-  - [ ] Get assigned tasks via TaskWorker
-  - [ ] Join projects + clients
-  - [ ] Group by Client → Project → Task
-- [ ] Implement usage frequency:
-  - [ ] Query all-time ProjectTimeLogs per user
-  - [ ] Count by task (number of reports), roll up to project/client
-  - [ ] Sort Client → Project → Task by count desc; tie-breaker A→Z
-- [ ] Create `backend/src/services/Cache.ts` (TTL 5 minutes)
-- [ ] Create `backend/src/routes/Projects.ts` for selector endpoint
-- [ ] Wire Projects routes in `backend/src/index.ts`
-- [ ] Implement `GET /api/projects/selector`:
-  - [ ] Read cache → compute on miss → cache response
-- [ ] Implement cache refresh triggers:
-  - [ ] On POST /api/admin/assignments
-  - [ ] On POST /api/attendance
+- [x] Create `backend/src/services/ProjectSelectorService.ts`
+- [x] Define grouped response shape (Client → Project → Task) with ids/names
+- [x] Implement `getProjectsForUser(userId)`:
+  - [x] Get assigned tasks via TaskWorker table
+  - [x] Join projects + clients
+  - [x] **Filter by active status**:
+    - [x] Only include tasks with `status = 'open'`
+    - [x] Only include projects with `active = true`
+    - [x] Only include clients with `active = true`
+  - [x] Group by Client → Project → Task
+- [x] Implement usage frequency:
+  - [x] Query all-time ProjectTimeLogs per user
+  - [x] Count by task (number of reports), roll up to project/client
+  - [x] Sort Client → Project → Task by count desc; tie-breaker A→Z (alphabetical)
+- [x] Create `backend/src/routes/projects.routes.ts` for selector endpoint
+- [x] Wire Projects routes in `backend/src/app.ts`
+- [x] Implement `GET /api/projects/selector`:
+  - [x] Always fetch latest data from TaskWorker (no cache)
+  - [x] Build client/project/task grouping from assigned tasks
+  - [x] Count task report frequency and sort by usage
 - [ ] **Auth integration (after TASK-M1-010):**
   - [ ] Apply auth middleware to Project Selector routes
   - [ ] Use `req.user.id` to get assignments for authenticated user only
   - [ ] Validate user exists in database
   - [ ] Return only projects/tasks the authenticated user is assigned to
   - [ ] Update tests to include auth (token or mocked user context)
-- [ ] Tests (backend):
-  - [ ] Unit: grouping by client/project/task
-  - [ ] Unit: frequency ordering from all-time counts
-  - [ ] Integration: selector response shape and ordering
-- **Coverage Target**: ≥60% for ProjectSelector + cache
+- [x] Tests (backend):
+  - [x] Unit: grouping by client/project/task
+  - [x] Unit: frequency ordering from all-time counts
+  - [x] Unit: filtering excludes inactive tasks/projects/clients
+  - [x] Integration: selector response shape and ordering
+- **Coverage Target**: ≥60% for ProjectSelectorService
 - **Validation**: Grouped, sorted projects return quickly (<300ms)
+- **Status**: ✅ Core implementation COMPLETED - 242 tests passing. Auth integration pending TASK-M1-010. Cache removed to always return newest data.
 
 #### TASK-M2-020: Daily Report Entry UI (User App)
 - [ ] Create `frontend_user/src/components/DailyReport/DailyReportEntry.tsx`

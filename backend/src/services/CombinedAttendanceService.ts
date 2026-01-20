@@ -1,4 +1,4 @@
-import { PrismaClient, LocationStatus, ReportingType } from '@prisma/client';
+import { LocationStatus, ReportingType } from '@prisma/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { AppError } from '../middleware/ErrorHandler';
@@ -10,11 +10,10 @@ import {
   validateTimeRange,
   validateNoMidnightCrossing,
 } from '../utils/TimeValidation';
+import { prisma } from '../utils/prisma';
 
 // Enable UTC plugin for consistent timezone handling
 dayjs.extend(utc);
-
-const prisma = new PrismaClient();
 
 // ============================================================================
 // Types

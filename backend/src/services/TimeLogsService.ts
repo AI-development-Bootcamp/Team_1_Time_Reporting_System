@@ -1,4 +1,4 @@
-import { PrismaClient, LocationStatus, ReportingType } from '@prisma/client';
+import { LocationStatus, ReportingType } from '@prisma/client';
 import { AppError } from '../middleware/ErrorHandler';
 import {
   calculateDurationFromDates,
@@ -8,8 +8,7 @@ import {
   validateTimeRange,
   validateNoMidnightCrossing,
 } from '../utils/TimeValidation';
-
-const prisma = new PrismaClient();
+import { prisma } from '../utils/prisma';
 
 // ============================================================================
 // Types
