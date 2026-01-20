@@ -18,6 +18,9 @@
     "test:integration": "npm run test -w backend -- tests/integration",
     "test:all": "npm run test:unit && npm run test:integration"
   },
+  "prisma": {
+    "seed": "ts-node backend/prisma/seed.ts"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "typescript": "^5.3.3"
