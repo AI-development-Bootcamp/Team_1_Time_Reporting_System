@@ -5,3 +5,4 @@
 export * from './useMonthHistory';
 export * from './useTimeLogs';
 export * from './useProjectSelector';
+export * from './useCreateDailyReport';

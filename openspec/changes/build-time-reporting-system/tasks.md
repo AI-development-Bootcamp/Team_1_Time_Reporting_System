@@ -1336,14 +1336,14 @@ backend/src/
     - [x] Return: `{ data, clients, taskLookup, isLoading, error }`
   - [x] Add tests (≥70% coverage)
 
-- [ ] TASK-M2-020-FE-007: Create useCreateDailyReport hook
-  - [ ] Create `hooks/useCreateDailyReport.ts`:
-    - [ ] Use `useMutation` for combined attendance creation
-    - [ ] Invalidate `monthHistory` query on success
-    - [ ] Show green success toast: "דיווח שעות הושלם"
-    - [ ] Show red error toast on failure
-    - [ ] Return: `{ mutate, mutateAsync, isLoading, error }`
-  - [ ] Add tests (≥70% coverage)
+- [x] TASK-M2-020-FE-007: Create useCreateDailyReport hook
+  - [x] Create `hooks/useCreateDailyReport.ts`:
+    - [x] Use `useMutation` for combined attendance creation
+    - [x] Invalidate `monthHistory` query on success
+    - [x] Show green success toast: "דיווח שעות הושלם"
+    - [x] Show red error toast on failure
+    - [x] Return: `{ mutate, mutateAsync, isLoading, error }`
+  - [x] Add tests (≥70% coverage)
 
 - [ ] TASK-M2-020-FE-008: Create useUpdateDailyReport hook
   - [ ] Create `hooks/useUpdateDailyReport.ts`:
