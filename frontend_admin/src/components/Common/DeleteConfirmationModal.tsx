@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { Modal, Text, Button, Group, ActionIcon, Box } from '@mantine/core';
 import { IconTrash, IconX } from '@tabler/icons-react';
 import '../../styles/components/DeleteConfirmationModal.css';
+import styles from './DeleteConfirmationModal.module.css';
 
 interface DeleteConfirmationModalProps {
   opened: boolean;
@@ -28,20 +29,10 @@ export const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
       centered
       size="md"
       withCloseButton={false}
-      styles={{
-        content: {
-          borderRadius: '12px',
-          width: 'calc((100vw - 320px) / 3)',
-          maxWidth: '500px',
-          minWidth: '400px',
-        },
-        inner: {
-          paddingRight: '320px',
-        },
-        overlay: {
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 200,
-        },
+      classNames={{
+        modal: styles.modal,
+        inner: styles.inner,
+        overlay: styles.overlay,
       }}
     >
       <Box className="delete-confirmation-modal">

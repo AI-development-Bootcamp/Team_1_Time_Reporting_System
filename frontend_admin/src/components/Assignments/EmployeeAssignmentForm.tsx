@@ -14,6 +14,7 @@ import {
 import { IconX, IconPlus } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { notifications } from '@mantine/notifications';
 import { useAssignments, ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
 import { useTasks, Task } from '../../hooks/useTasks';
 import '../../styles/components/EmployeeAssignmentForm.css';
@@ -105,7 +106,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
         taskAssignments.map((a) => a.userId)
       );
     }
-  }, [taskId, opened, assignmentsQuery.data]);
+  }, [taskId, opened, assignmentsQuery.data, form]);
 
   const assignments = assignmentsQuery.data ?? [];
 
@@ -123,30 +124,41 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
     // Find users to remove
     const usersToRemove = currentUserIds.filter((id) => !selectedUserIds.includes(id));
 
-    // Add new assignments
-    await Promise.all(
-      usersToAdd.map((userId) =>
-        addAssignmentMutation.mutateAsync({
-          taskId,
-          userId,
-        })
-      )
-    );
+    try {
+      // Add new assignments
+      await Promise.all(
+        usersToAdd.map((userId) =>
+          addAssignmentMutation.mutateAsync({
+            taskId,
+            userId,
+          })
+        )
+      );
 
-    // Remove old assignments
-    await Promise.all(
-      usersToRemove.map((userId) =>
-        removeAssignmentMutation.mutateAsync({
-          taskId,
-          userId,
-        })
-      )
-    );
+      // Remove old assignments
+      await Promise.all(
+        usersToRemove.map((userId) =>
+          removeAssignmentMutation.mutateAsync({
+            taskId,
+            userId,
+          })
+        )
+      );
 
-    // Ensure assignments are refreshed after all mutations complete
-    await assignmentsQuery.refetch();
-
-    onSubmit();
+      // Only call onSubmit on success
+      onSubmit();
+    } catch (error) {
+      // Surface error feedback to user
+      notifications.show({
+        title: 'שגיאה',
+        message: 'אירעה שגיאה בעדכון שיוך העובדים. אנא נסה שוב.',
+        color: 'red',
+      });
+      // Do NOT call onSubmit on failure
+    } finally {
+      // Always refresh assignments state
+      await assignmentsQuery.refetch();
+    }
   };
 
   if (assignmentsQuery.isLoading) {

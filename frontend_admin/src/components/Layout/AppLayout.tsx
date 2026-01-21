@@ -1,6 +1,7 @@
 import { AppShell, NavLink, Group, Box, Image, Text } from '@mantine/core';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
+import { IconUsers, IconClock } from '@tabler/icons-react';
 import abraLogo from '../../../../shared/image_components/abraLogo_inverted.png';
 import bottomLogo from '../../../../shared/image_components/bottom_logo.png';
 import { useAuth } from '../../hooks/useAuth';
@@ -61,11 +62,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             label="ניהול לקוחות/פרויקטים"
             rightSection={
               <Box className={styles.iconBox}>
-                📋
+                <IconUsers size={20} stroke={1.5} />
               </Box>
             }
             onClick={() => navigate('/client-management')}
             active={isClientManagement && !isReportingSettings}
+            className={isClientManagement && !isReportingSettings ? styles.activeNavItem : ''}
             styles={{
               root: {
                 borderRadius: 8,
@@ -73,6 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 color: 'white',
                 fontFamily: 'SimplerPro, sans-serif',
                 backgroundColor: 'transparent',
+                position: 'relative',
                 '&:hover': {
                   backgroundColor: '#4a6fa5 !important',
                 },
@@ -90,11 +93,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             label="הגדרת דיווחי שעות"
             rightSection={
               <Box className={styles.iconBox}>
-                ⏰
+                <IconClock size={20} stroke={1.5} />
               </Box>
             }
             onClick={() => navigate('/client-management/reporting-setting')}
             active={isReportingSettings}
+            className={isReportingSettings ? styles.activeNavItem : ''}
             styles={{
               root: {
                 borderRadius: 8,
@@ -102,6 +106,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 color: 'white',
                 fontFamily: 'SimplerPro, sans-serif',
                 backgroundColor: 'transparent',
+                position: 'relative',
                 '&:hover': {
                   backgroundColor: '#4a6fa5 !important',
                 },

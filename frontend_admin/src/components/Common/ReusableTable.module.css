@@ -66,6 +66,10 @@
   border-inline-start: 1px solid #e9ecef;
 }
 
+.tableCellCentered {
+  text-align: center;
+}
+
 .tableContentBox {
   flex: 1;
   overflow: auto;

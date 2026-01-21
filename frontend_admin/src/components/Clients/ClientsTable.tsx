@@ -93,7 +93,7 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
           </Group>
         )}
       </Table.Td>
-      <Table.Td className={tableStyles.tableCellWithBorder} style={{ textAlign: 'center' }}>
+      <Table.Td className={`${tableStyles.tableCellWithBorder} ${tableStyles.tableCellCentered}`}>
         <Group gap="xs" justify="center">
           <Menu shadow="md" width={200} position="bottom-end">
             <Menu.Target>

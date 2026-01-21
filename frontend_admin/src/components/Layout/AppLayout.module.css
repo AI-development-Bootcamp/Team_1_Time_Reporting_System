@@ -22,6 +22,22 @@
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  color: white;
+}
+
+.activeNavItem {
+  position: relative;
+}
+
+.activeNavItem::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #ff6b35;
+  border-radius: 0 4px 4px 0;
 }
 
 .profileBox {
