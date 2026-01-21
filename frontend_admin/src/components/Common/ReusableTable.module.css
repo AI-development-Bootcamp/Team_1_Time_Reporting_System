@@ -1,0 +1,79 @@
+.paper {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  border-radius: 8px;
+  border-width: 1px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.table {
+  table-layout: fixed;
+}
+
+.table thead {
+  background-color: #141e3e;
+}
+
+.tableRow {
+  height: 36px;
+}
+
+.tableHeader {
+  text-align: right;
+  height: 36px;
+  padding: 6px 12px;
+}
+
+.tableHeaderWithBorder {
+  text-align: right;
+  height: 36px;
+  padding: 6px 12px;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.tableText {
+  font-family: 'SimplerPro', sans-serif;
+}
+
+.emptyStateCenter {
+  flex: 1;
+  padding: 24px;
+}
+
+.emptyStateText {
+  font-family: 'SimplerPro', sans-serif;
+  font-size: 18px;
+}
+
+.tableBodyRow {
+  height: 48px;
+}
+
+.tableCell {
+  text-align: right;
+  height: 48px;
+  padding: 6px 12px;
+}
+
+.tableCellWithBorder {
+  text-align: right;
+  height: 48px;
+  padding: 6px 12px;
+  border-inline-start: 1px solid #e9ecef;
+}
+
+.tableCellCentered {
+  text-align: center;
+}
+
+.tableContentBox {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+

@@ -9,3 +9,14 @@ export interface Client {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateClientInput {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateClientInput {
+  name?: string;
+  description?: string;
+  active?: boolean;
+}

@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from '@components/ErrorBoundary';
 import { AppLayout } from '@components/Layout/AppLayout';
 import ReportingSettingsPage from '@pages/ReportingSettingsPage';
+import { ClientsPage } from '@pages/ClientsPage';
 
 function App() {
   return (
@@ -9,8 +10,15 @@ function App() {
       <BrowserRouter>
         <AppLayout>
           <Routes>
-            <Route path="/" element={<div><h1>מערכת דיווח שעות - ניהול</h1></div>} />
-            <Route path="/client-management/reporting-setting" element={<ReportingSettingsPage />} />
+            {/* Redirect root to client management */}
+            <Route path="/" element={<Navigate to="/client-management" replace />} />
+            {/* Client / Project / Task management table */}
+            <Route path="/client-management" element={<ClientsPage />} />
+            {/* Reporting settings */}
+            <Route
+              path="/client-management/reporting-setting"
+              element={<ReportingSettingsPage />}
+            />
           </Routes>
         </AppLayout>
       </BrowserRouter>
