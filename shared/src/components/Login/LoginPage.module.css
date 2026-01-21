@@ -1,0 +1,72 @@
+/* LoginPage CSS Module
+ * Color palette from Abra branding
+ */
+
+/* CSS Variables for reusable colors */
+.root {
+    --color-primary: #141e3e;
+    --color-primary-hover: #1a2b53;
+    --color-bg-white: white;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Main container */
+.pageContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Card container */
+.card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.cardAdmin {
+    background-color: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+/* Image styling */
+.loginImage {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.logo {
+    max-width: 120px;
+    margin-bottom: 10px;
+}
+
+/* Welcome text */
+.welcomeText {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Form container */
+.form {
+    width: 100%;
+}
+
+/* Primary button */
+.primaryButton {
+    margin-top: 20px;
+    background-color: #141e3e;
+}
+
+.primaryButton:hover {
+    background-color: #1a2b53;
+}

@@ -22,7 +22,7 @@ The architecture is a **Monorepo** consisting of three main services:
 * **Smart Time Tracking:** Manual entry + Live Timer (auto-stops at 23:59 via cron jobs).
 * **Absence Management:** Upload sickness/vacation documents (stored as secure binary `Bytes` in DB).
 * **Hierarchy Logic:** Complex management of Clients → Projects → Tasks.
-* **Month Locking:** Admins can lock past months to prevent retroactive editing.
+* **Location Tracking:** Track where work was done (office, client, home).
 * **RTL Support:** Fully localized Hebrew interface.
 
 ## Built With
@@ -48,7 +48,9 @@ To get a local copy up and running, follow these steps.
 
 ### Prerequisites
 * **Node.js** (v18 or higher)
-* **Docker** (for running the PostgreSQL database)
+* **Docker Desktop** (for running the PostgreSQL database)
+  - **Important:** Docker Desktop must be running before executing the setup script
+  - The setup script will check if Docker is running and provide instructions if it's not
 
 ### Installation
 
@@ -58,28 +60,48 @@ To get a local copy up and running, follow these steps.
     cd Team_1_Time_Reporting_System
     ```
 
-2.  **Install NPM packages**
+2.  **Quick Setup (Recommended)**
+    
+    Run the automated setup script that handles everything:
     ```sh
+    npm run setup
+    ```
+    
+    This single command will:
+    - Install all dependencies for root, backend, frontend_user, and frontend_admin
+    - Check if Docker Desktop is running (will exit with instructions if not)
+    - Check for available PostgreSQL port (starts with 5432, uses alternative if occupied)
+    - Update `docker-compose.yml` and `backend/.env` with the selected port
+    - Start Docker Compose (PostgreSQL database)
+    - Wait for database to be ready
+    - Generate Prisma Client
+    - Run database migrations
+    - Seed the database with sample data
+    
+    **Important:** Make sure Docker Desktop is running before executing `npm run setup`. The script will check and provide clear instructions if Docker is not running.
+    
+    **Note:** If port 5432 is already in use, the setup script will automatically find and use an alternative port (5433, 5434, etc.) and update all necessary configuration files.
+    
+    **Alternative: Manual Setup**
+    
+    If you prefer to run steps manually:
+    ```sh
+    # Install dependencies
     npm install
-    ```
-
-3.  **Setup Database (Docker)**
-    ```sh
+    
+    # Start Docker Compose
     docker-compose up -d
-    ```
-
-4.  **Prisma Setup**
-    ```sh
+    
+    # Setup Prisma (from backend directory)
     cd backend
-    # Run migrations to create tables
-    npx prisma migrate dev --name init
-    # Generate the Prisma Client
     npx prisma generate
+    npx prisma migrate dev --name init
+    npx prisma db seed
     ```
 
 ### Running the Project
 
-The root `package.json` includes scripts to run different service combinations:
+After running `npm run setup`, start the development servers:
 
 ```sh
 # Run EVERYTHING (Backend + User App + Admin App)
@@ -92,29 +114,95 @@ npm run dev:user
 npm run dev:admin
 ```
 
+**Note:** Make sure you've run `npm run setup` first to initialize the database and seed data.
+
+## Restarting Setup
+
+To restart the setup process (useful if you need to reset the database or reinstall dependencies):
+
+```sh
+npm run setup
+```
+
+The setup script will:
+- Reinstall all dependencies
+- Check for port availability and update configuration if needed
+- Clear existing seed data and reseed the database
+- Handle existing migrations gracefully
+
+**Note:** The seed script automatically clears existing seed data before creating new records, so running setup multiple times is safe.
+
+## Shutting Down
+
+When you're done working:
+
+1. **Stop the development servers**
+   - Press `Ctrl+C` in the terminal where `npm run dev:all` (or `dev:user`/`dev:admin`) is running
+   - This will stop all frontend and backend services
+
+2. **Stop Docker Compose (optional)**
+   ```sh
+   docker-compose down
+   ```
+   
+   **Note:** You can leave Docker running if you'll be working again soon. The database will persist data between sessions. Only run `docker-compose down` if you want to completely stop the database container.
+
+   To remove all data (including volumes):
+   ```sh
+   docker-compose down -v
+   ```
+   ⚠️ **Warning:** This will delete all database data!
+
 ## Environment Variables
 
-Create a `.env` file in the `/backend` folder:
+### Backend Environment Variables
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/time_db"
-JWT_SECRET="super_secret_key_change_this"
-PORT=3000
-```
+The `backend/.env` file is automatically created/updated by the setup script with the correct `DATABASE_URL` based on the selected PostgreSQL port.
+
+**Required variables:**
+- `DATABASE_URL` - Automatically set by setup script (format: `postgresql://postgres:postgres@localhost:PORT/timereporting?schema=public`)
+- `JWT_SECRET` - Secret key for JWT token signing (default: `dev_secret_key_123` in seed data)
+- `PORT` - Backend server port (default: `3000`, falls back to `10000` if occupied)
+
+**Optional CORS variables (security):**
+- `LOCAL_CORS_ORIGINS` - Comma-separated list of allowed origins for local development (e.g., `http://localhost:5173,http://localhost:5174`)
+- `DEPLOY_CORS_ORIGINS` - Comma-separated list of allowed origins for production (e.g., `https://yourdomain.com,https://admin.yourdomain.com`)
+- If not set, CORS will allow all origins (development fallback - **not secure for production**)
+
+**Optional rate limiting variables (security):**
+- `AUTH_RATE_LIMIT_WINDOW_MS` - Time window for rate limiting in milliseconds (default: `900000` = 15 minutes)
+- `AUTH_RATE_LIMIT_MAX_REQUESTS` - Maximum login attempts per window (default: `5`)
+- Rate limiting prevents brute force attacks on authentication endpoints
+
+**Note:** The setup script automatically handles port conflicts and updates the `DATABASE_URL` accordingly. If you manually change the PostgreSQL port, make sure to update `DATABASE_URL` in `backend/.env`.
+
+### Frontend Environment Variables
+
+Each frontend has its own `.env` file:
+- `frontend_user/.env`
+- `frontend_admin/.env`
+
+**Required variables:**
+- `VITE_API_URL` - Backend API URL (default: `http://localhost:3000/api`, falls back to `http://localhost:10000/api` if backend port is 10000)
+- `BACKEND_PORT` - Reference variable for the backend port (default: `3000`)
 
 ## Seed Database
 
-After running migrations, seed the database with initial data:
+The database is automatically seeded when you run `npm run setup`. If you need to reseed manually:
 
 ```sh
 cd backend
 npx prisma db seed
 ```
 
+**Note:** The seed script automatically clears existing seed data before creating new records, so it's safe to run multiple times.
+
 This will create:
-- Initial admin user
+- Initial admin user (admin@timereporting.com / Password123!)
+- Worker users (john.doe@timereporting.com, jane.smith@timereporting.com, david.cohen@timereporting.com / Password123!)
 - Sample clients, projects, and tasks
 - User-task assignments
+- Sample daily attendance and time log records
 
 ## Project Structure
 
@@ -126,8 +214,27 @@ This will create:
 │   └── tsconfig.json    # TypeScript configuration
 ├── frontend_user/       # React App: Reporting (TypeScript + Vite)
 ├── frontend_admin/      # React App: Management (TypeScript + Vite)
+├── shared/              # Shared code between frontends
+│   └── src/
+│       └── utils/       # Shared utilities (e.g., ApiClient)
 └── package.json         # Root config
 ```
+
+### Shared Code
+
+The `shared/` folder contains code that is used by both `frontend_user` and `frontend_admin` to avoid duplication. 
+
+**When you need to import shared utilities**, use the `@shared` alias:
+
+```typescript
+// Example: Importing the shared ApiClient
+import { apiClient, ApiResponse } from '@shared/utils/ApiClient';
+```
+
+**Important Notes:**
+- Each frontend uses its own `.env` file, so environment variables (like `VITE_API_URL`) are resolved per frontend
+- The `@shared` alias is configured in both `vite.config.ts` and `tsconfig.json` files
+- If you need to add new shared utilities, place them in `shared/src/` and import using `@shared/...`
 
 ## Key Features
 
@@ -141,7 +248,6 @@ This will create:
 ### Should Have (Important)
 - ⏱️ **Timer Functionality**: Timer with auto-stop at 23:59
 - 📎 **Absence Management**: Vacation/Sickness/Reserve reporting with file upload
-- 🔒 **Month Locking**: Admin capability to lock reporting for specific months
 - 📊 **Visual Dashboard**: Progress bar for daily 9-hour standard
 
 ## API Endpoints Overview
@@ -184,19 +290,15 @@ Auth: JWT Bearer token (`Authorization: Bearer <token>`)
 
 ### Daily Attendance (Reporting)
 - `POST /api/attendance` - Create DailyAttendance record (manual/timer)
-- `GET /api/attendance/month-history?month=1&userId=2` - Get month history (returns array of DailyAttendance objects, uses current year)
+- `GET /api/attendance/month-history?month=1&userId=2` - Get month history (uses current year)
 - `PUT /api/attendance/:id` - Update DailyAttendance
-- `DELETE /api/attendance/:id` - Delete DailyAttendance
+- Note: No DELETE endpoint - records are edited, not deleted
 
 ### Project Time Logs
-- `POST /api/time-logs` - Create time log entry (duration in minutes)
+- `POST /api/time-logs` - Create time log entry (duration in minutes, location required)
 - `GET /api/time-logs?dailyAttendanceId=701` - List time logs for a day
 - `PUT /api/time-logs/:id` - Update time log
 - `DELETE /api/time-logs/:id` - Delete time log
-
-
-### Month Locking (Admin)
-- `PUT /api/admin/month-lock` - Lock/unlock a month
 
 ### Response Format
 All responses follow this structure:
@@ -205,7 +307,7 @@ All responses follow this structure:
 
 ### Role Permissions
 - **`worker`**: Can login, create/update own attendance & time logs, view own month history
-- **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, lock/unlock months, view other workers' data
+- **`admin`**: All worker permissions + Admin CRUD operations, manage assignments, view other workers' data
 
 For complete documentation, see the [doc](./doc/) folder:
 - **Specification**: [doc/specs/specification.md](./doc/specs/specification.md) - Complete project specification
@@ -217,9 +319,11 @@ For complete documentation, see the [doc](./doc/) folder:
 
 ### Key Rules
 - **RTL Support**: All layouts support Hebrew (RTL)
-- **Soft Deletes**: Always filter for `isActive: true` in standard queries
+- **Soft Deletes**: Always filter for `active: true` in standard queries
 - **Validation**: Use Zod for all request validation
-- **File Uploads**: Only `.pdf`, `.jpg`, `.png` formats, max 5MB
+- **File Uploads**: Only `.pdf`, `.jpg`, `.png` formats, max 5MB, stored as Bytes in DB
+- **Location Required**: All time logs must specify location (office/client/home)
+- **No Deletion for DailyAttendance**: DailyAttendance records are edited, not deleted (ProjectTimeLogs can be deleted)
 
 ## Testing
 

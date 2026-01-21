@@ -1,11 +1,20 @@
-name: CI & CD
+name: CI & CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'feature/*'
+      - 'dev'
+      - 'main'
+  pull_request:
+    branches:
+      - 'dev'
+      - 'main'
 
 jobs:
-  test:
+  # 1. Unit Tests - Runs on feature branches, dev, and main
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,18 +23,79 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
       
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Run Tests
-        run: npm test
+      - name: Generate Prisma Client
+        run: npm run prisma:generate -w backend
 
-  deploy:
-    needs: test
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+  # 2. Integration Tests - Runs on PRs to dev and main
+  integration-tests:
+    name: Integration Tests
+    needs: unit-tests
+    if: github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: timereporting_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/timereporting_test?schema=public
+      JWT_SECRET: test_secret_for_ci
+    
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate -w backend
+
+      - name: Run Database Migrations
+        working-directory: ./backend
+        run: npx prisma migrate deploy
+
+      - name: Seed Test Database
+        working-directory: ./backend
+        run: npx prisma db seed
+
+      - name: Run Integration Tests
+        run: npm run test:integration
+
+  # 3. Deployment - Runs on merge/push to main after tests pass
+  deploy:
+    name: Deploy to Production
+    needs: [unit-tests, integration-tests]
+    # Only run on push to main (which happens after a PR is merged)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
       - name: Trigger Render Backend Deploy
         continue-on-error: true
         run: |

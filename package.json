@@ -9,11 +9,16 @@
     "frontend_admin"
   ],
   "scripts": {
+    "setup": "node scripts/setup.js",
     "dev:all": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\" \"npm run dev -w frontend_admin\"",
     "dev:user": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_user\"",
     "dev:admin": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend_admin\"",
     "build:all": "npm run build -w backend && npm run build -w frontend_user && npm run build -w frontend_admin",
-    "test": "echo 'Tests will be implemented later' && exit 0"
+    "test:backend": "npm run test -w backend",
+    "test:frontend": "npm run test -w frontend_admin && npm run test -w frontend_user",
+    "test:all": "npm run test:backend && npm run test:frontend",
+    "test:unit": "npm run test -w backend -- src && npm run test -w frontend_admin && npm run test -w frontend_user",
+    "test:integration": "npm run test -w backend -- tests/integration"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

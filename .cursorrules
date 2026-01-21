@@ -4,6 +4,13 @@
 - **Core Stack**: TypeScript, Prisma (PostgreSQL), Mantine UI, Vitest, Zod.
 - **Key Constraints**: Hebrew RTL interface, soft deletes for users, binary file storage (Bytes) in DB.
 
+## ⚠️ CRITICAL: Do NOT Make Changes Without Permission
+- **DO NOT** add fields to data models/interfaces without explicit permission
+- **DO NOT** add API versioning (e.g., `/api/v1/`) without explicit permission
+- **DO NOT** add new features, patterns, or architectural changes without asking first
+- **ALWAYS** ask before making structural changes that weren't explicitly requested
+- When in doubt, **ASK** - do not assume or "improve" without permission
+
 ## Role & Instructions
 You are an expert full-stack developer specializing in TypeScript. Follow these rules strictly:
 
@@ -27,11 +34,11 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 ### 3. Backend Development (Express + Prisma)
 - **Type Safety**: Use **Zod** for all request body and query parameter validation.
 - **Database**: Use Prisma Client for all DB interactions. 
-- **Soft Deletes**: When "deleting" a User, set `isActive = false` instead of removing the record. Always filter for `isActive: true` in standard queries.
+- **Soft Deletes**: When "deleting" a User, set `active = false` instead of removing the record. Always filter for `active: true` in standard queries.
 - **Files**: Store absence files as `Bytes` in PostgreSQL via Prisma. Use Multer for multipart handling.
 - **Logic**: 
   - Validation: Block entries where `EndTime < StartTime`.
-  - Timer: Ensure the auto-stop logic at `23:59` is handled (saves as "Incomplete").
+  - Timer: Ensure the auto-stop logic at `23:59` is handled (saves with `work` status).
 
 ### 4. Technical Standards
 - **TypeScript**: No `any` type. Define interfaces for all API responses and data models.
@@ -45,7 +52,6 @@ You are an expert full-stack developer specializing in TypeScript. Follow these 
 - Use functional components and React Hooks.
 - Prefer `const` over `let`.
 - **Variable Naming**: Use `camelCase` for all variables, functions, and instances (e.g., `userReport`, `fetchProjectData`).
-- Implement "Month Locking" logic by checking the lock status before any Create/Update/Delete operations on reports.
 - **Components**: PascalCase (e.g., `ExpenseForm`, `CategorySummary`)
 - **Files**: PascalCase for all files in folders (e.g., `ExpenseForm.tsx`, `ExpenseTypes.ts`, `FormatCurrency.ts`)
 - **Functions/Variables**: camelCase (e.g., `handleSubmit`, `totalAmount`)
@@ -85,15 +91,6 @@ import { Button, TextInput } from '@mantine/core';
 </MantineProvider>
 ```
 
-### Month Locking Check
-```typescript
-// Before any report mutation, check month lock status
-const isLocked = await checkMonthLock(reportDate);
-if (isLocked) {
-  throw new Error('Month is locked');
-}
-```
-
 ### Date Handling Pattern (Day.js)
 ```typescript
 import dayjs from 'dayjs';
@@ -127,7 +124,6 @@ const mutation = useMutation({
 });
 ```
 
-### Form Pattern (Mantine Form)
 ```typescript
 import { useForm } from '@mantine/form';
 import { TextInput, Button } from '@mantine/core';
@@ -143,3 +139,98 @@ const form = useForm({
 <TextInput {...form.getInputProps('email')} />
 <TextInput {...form.getInputProps('name')} />
 ```
+
+---
+
+## Architecture Compliance (CRITICAL)
+
+### Backend Three-Layer Architecture
+**ALWAYS** follow this pattern for new features:
+```
+Routes (HTTP) → Controllers (Validation) → Services (Business Logic)
+```
+
+- **Routes**: Thin route definitions only (`routes/` and `routes/admin/`)
+  - Only define endpoints and apply middleware
+  - Immediately delegate to controllers
+  - No business logic, no database queries
+  
+- **Controllers**: HTTP request handling (`controllers/`)
+  - Parse request parameters
+  - Validate with Zod schemas from `validators/`
+  - Call service methods
+  - Return responses using `ApiResponse` utility
+  - Use try/catch with `next(error)` for error handling
+  
+- **Services**: Business logic and database access (`services/`)
+  - All Prisma queries go here
+  - All business logic and validation
+  - Throw `AppError` for error conditions
+  - NO HTTP concerns (req, res, next)
+
+**Example Pattern**:
+```typescript
+// routes/admin/users.ts
+router.post('/users', UserController.createUser);
+
+// controllers/UserController.ts
+static async createUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const validatedData = createUserSchema.parse(req.body);
+    const result = await UserService.createUser(validatedData);
+    ApiResponse.success(res, result, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// services/UserService.ts
+static async createUser(data: CreateUserInput) {
+  // Check business rules, query database, etc.
+  const user = await prisma.user.create({ data });
+  return { id: Number(user.id) };
+}
+```
+
+### Frontend Path Aliases
+**ALWAYS** use path aliases for imports:
+```typescript
+// ✅ CORRECT
+import { UserTable } from '@components/Users/UserTable';
+import { useUsers } from '@hooks/useUsers';
+import { apiClient } from '@shared/utils/ApiClient';
+
+// ❌ WRONG
+import { UserTable } from '../../components/Users/UserTable';
+import { useUsers } from '../hooks/useUsers';
+```
+
+Available aliases: `@/`, `@components/`, `@hooks/`, `@pages/`, `@services/`, `@types/`, `@utils/`, `@shared/`
+
+### Validation
+- **ALWAYS** create Zod schemas in `validators/` directory
+- **NEVER** put validation logic in controllers or services
+- Reuse schemas across endpoints when possible
+
+### Authentication & JWT
+- **AUTOMATIC TOKEN HANDLING**: The `ApiClient` (Axios) automatically attaches the `Authorization: Bearer <token>` header to every request if the token exists in `localStorage`.
+- **DO NOT** manually add auth headers to requests.
+- **DO NOT** create new auth logic - use `AuthContext` and `authMiddleware`.
+- Token is stored as `localStorage.getItem('token')`
+- Password requirements: 8 chars min, 1 uppercase, 1 lowercase, 1 special char
+
+### Critical Rules
+- **NO inline business logic in routes/controllers** - always use services
+- **NO direct Prisma queries in controllers** - always use services  
+- **NO duplicate code** - create reusable services/utilities
+- **ALWAYS** follow the existing pattern when adding new features
+
+### Password Validation
+All password fields must meet these requirements:
+- Minimum 8 characters
+- At least 1 uppercase letter (A-Z)
+- At least 1 lowercase letter (a-z)
+- At least 1 special character (@$!%*?&)
+
+Regex pattern: `/^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/`
+

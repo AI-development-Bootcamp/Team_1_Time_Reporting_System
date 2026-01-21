@@ -1,11 +1,16 @@
 # Dependencies
 node_modules/
 */node_modules/
+package-lock.json
 
 # Environment variables
 .env
 .env.local
 .env.production
+backend/.env
+
+frontend_user/.env
+frontend_admin/.env
 
 # Build outputs
 dist/
@@ -16,7 +21,7 @@ build/
 # Logs
 *.log
 npm-debug.log*
-
+backend/coverage/
 # OS
 .DS_Store
 Thumbs.db
