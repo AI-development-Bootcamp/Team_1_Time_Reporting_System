@@ -15,9 +15,9 @@ import { AppError } from '../middleware/ErrorHandler';
  */
 export class UserController {
     /**
-     * GET /api/admin/users?active=true
+     * GET /api/admin/users?active=true&userType=worker
      * GET /api/admin/users?id=123
-     * List users with optional active filter, or get specific user by id
+     * List users with optional active and userType filters, or get specific user by id
      */
     static async getUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -28,7 +28,7 @@ export class UserController {
                 throw new AppError('VALIDATION_ERROR', 'Invalid query parameters', 400, queryParams.error.errors);
             }
 
-            const { active, id } = queryParams.data;
+            const { active, id, userType } = queryParams.data;
 
             // If id is provided, return single user
             if (id !== undefined && id !== null) {
@@ -38,7 +38,7 @@ export class UserController {
             }
 
             // Otherwise return list of users
-            const users = await UserService.getUsers({ active });
+            const users = await UserService.getUsers({ active, userType });
             ApiResponse.success(res, users);
         } catch (error) {
             next(error);

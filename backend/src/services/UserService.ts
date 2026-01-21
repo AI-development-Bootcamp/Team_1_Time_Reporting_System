@@ -10,10 +10,14 @@ export class UserService {
     /**
      * Get users with optional filters
      */
-    static async getUsers(filters: { active?: boolean }) {
+    static async getUsers(filters: { active?: boolean; userType?: string }) {
         const where: any = {
             active: filters.active !== undefined ? filters.active : true,
         };
+
+        if (filters.userType) {
+            where.userType = filters.userType;
+        }
 
         const users = await prisma.user.findMany({
             where,

@@ -10,9 +10,9 @@ router.use(authMiddleware);
 router.use(adminMiddleware);
 
 /**
- * GET /api/admin/users?active=true
+ * GET /api/admin/users?active=true&userType=worker
  * GET /api/admin/users?id=123
- * List users with optional active filter, or get specific user by id
+ * List users with optional active and userType filters, or get specific user by id
  */
 router.get('/users', UserController.getUsers);
 

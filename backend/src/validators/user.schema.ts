@@ -47,6 +47,12 @@ export const resetPasswordSchema = z.object({
 /**
  * Get users query parameters validation schema
  */
+/**
+ * Valid user types for filtering
+ */
+const validUserTypes = ['admin', 'worker'] as const;
+export type UserTypeFilter = typeof validUserTypes[number];
+
 export const getUsersQuerySchema = z.object({
     active: z
         .string()
@@ -66,6 +72,15 @@ export const getUsersQuerySchema = z.object({
             message: 'ID must be a numeric string',
         })
         .transform((val) => (val ? BigInt(val) : undefined)),
+    userType: z
+        .string()
+        .optional()
+        .refine(
+            (val) => val === undefined || validUserTypes.includes(val as UserTypeFilter),
+            {
+                message: `userType must be one of: ${validUserTypes.join(', ')}`,
+            }
+        ) as z.ZodType<UserTypeFilter | undefined>,
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

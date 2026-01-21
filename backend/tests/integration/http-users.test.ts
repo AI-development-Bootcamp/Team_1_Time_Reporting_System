@@ -184,6 +184,79 @@ describe('HTTP Integration Tests - User CRUD Endpoints', () => {
       expect(response.body.error.code).toBe('NOT_FOUND');
     });
 
+    it('should filter by userType=worker', async () => {
+      const token = createAdminToken(adminUser);
+      const response = await request(app)
+        .get('/api/admin/users?userType=worker')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      response.body.data.forEach((user: any) => {
+        expect(user.userType).toBe('worker');
+        expect(user.active).toBe(true); // Default active=true
+      });
+    });
+
+    it('should filter by userType=admin', async () => {
+      const token = createAdminToken(adminUser);
+      const response = await request(app)
+        .get('/api/admin/users?userType=admin')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      response.body.data.forEach((user: any) => {
+        expect(user.userType).toBe('admin');
+        expect(user.active).toBe(true); // Default active=true
+      });
+      // Ensure the admin user created in setup is included
+      const hasAdminUser = response.body.data.some((u: any) => u.id === Number(adminUser.id));
+      expect(hasAdminUser).toBe(true);
+    });
+
+    it('should combine userType and active filters', async () => {
+      // Create an inactive worker for this test
+      const inactiveWorkerPassword = await Bcrypt.hash('InactiveWorker123!');
+      const inactiveWorker = await prisma.user.create({
+        data: {
+          name: 'Inactive Worker',
+          mail: `inactive-worker-${Date.now()}@example.com`,
+          password: inactiveWorkerPassword,
+          userType: 'worker',
+          active: false,
+        },
+      });
+      createdUserIds.push(inactiveWorker.id);
+
+      const token = createAdminToken(adminUser);
+      const response = await request(app)
+        .get('/api/admin/users?userType=worker&active=false')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      response.body.data.forEach((user: any) => {
+        expect(user.userType).toBe('worker');
+        expect(user.active).toBe(false);
+      });
+      const hasInactiveWorker = response.body.data.some((u: any) => u.id === Number(inactiveWorker.id));
+      expect(hasInactiveWorker).toBe(true);
+    });
+
+    it('should return 400 for invalid userType', async () => {
+      const token = createAdminToken(adminUser);
+      const response = await request(app)
+        .get('/api/admin/users?userType=superuser')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
     it('should return 401 without token', async () => {
       const response = await request(app)
         .get('/api/admin/users');
