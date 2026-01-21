@@ -1365,14 +1365,14 @@ backend/src/
   - [x] Add tests (≥70% coverage)
 
 **Frontend - Modal Structure:**
-- [ ] TASK-M2-020-FE-010: Create DailyReportModal component
-  - [ ] Create `components/DailyReport/DailyReportModal.tsx`:
-    - [ ] Full-screen modal (mobile-first, RTL)
-    - [ ] Header: "דיווח ידני" + close button (X)
-    - [ ] Two tabs: "דיווח עבודה" (default) / "דיווח היעדרות"
-    - [ ] Tab content: render WorkReportTab or AbsenceReportTab
-    - [ ] Props: `isOpen`, `onClose`, `mode: 'create' | 'edit'`, `existingAttendanceId?`, `defaultDate?`
-  - [ ] Create `DailyReportModal.module.css` (mobile styling, RTL support)
+- [x] TASK-M2-020-FE-010: Create DailyReportModal component
+  - [x] Create `components/DailyReport/DailyReportModal.tsx`:
+    - [x] Full-screen modal (mobile-first, RTL)
+    - [x] Header: "דיווח ידני" + close button (X)
+    - [x] Two tabs: "דיווח עבודה" (default) / "דיווח היעדרות"
+    - [x] Tab content: render WorkReportTab or AbsenceReportTab
+    - [x] Props: `isOpen`, `onClose`, `mode: 'create' | 'edit'`, `existingAttendanceId?`, `defaultDate?`
+  - [x] Create `DailyReportModal.module.css` (mobile styling, RTL support)
 
 **Frontend - Work Report Tab:**
 - [ ] TASK-M2-020-FE-011: Create WorkReportTab component
