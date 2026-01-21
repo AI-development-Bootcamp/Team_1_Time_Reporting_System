@@ -14,6 +14,10 @@ import assignmentsRoutes from './routes/admin/Assignments';
 export const createApp = () => {
   const app = express();
 
+  // Trust proxy for Render and other hosting platforms
+  // This is required for rate limiting and IP detection to work correctly
+  app.set('trust proxy', true);
+
   // Parse CORS origins from environment variables
   const localOrigins = process.env.LOCAL_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
   const deployOrigins = process.env.DEPLOY_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
