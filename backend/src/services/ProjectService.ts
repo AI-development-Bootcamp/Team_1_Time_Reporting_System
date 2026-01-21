@@ -214,5 +214,19 @@ export class ProjectService {
 
     return { deleted: true };
   }
+
+  static async getProjectByTaskId(taskId: bigint) {
+    // Check if task exists and get its project
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: { project: true },
+    });
+
+    if (!task) {
+      throw new AppError('NOT_FOUND', 'Task not found', 404);
+    }
+
+    return mapProjectToResponse(task.project);
+  }
 }
 

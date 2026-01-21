@@ -38,6 +38,13 @@ router.patch('/:id', ProjectController.toggleReportingType);
  */
 router.delete('/:id', ProjectController.deleteProject);
 
+/**
+ * GET /api/admin/projects/by-task/:taskId
+ * Get project by task ID
+ * Auth: Required, Role: admin
+ */
+router.get('/by-task/:taskId', ProjectController.getProjectByTaskId);
+
 export default router;
 
 
