@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Box } from '@mantine/core';
-import '../../styles/components/AppLayout.css';
+import styles from '../../styles/components/AppLayout.module.css';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -8,16 +8,16 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <Box className="app-layout">
+    <Box className={styles.appLayout}>
       {/* Main Content Area */}
-      <Box className="app-layout-content">
-        <Box className="app-layout-content-inner">
+      <Box className={styles.appLayoutContent}>
+        <Box className={styles.appLayoutContentInner}>
           {children}
         </Box>
       </Box>
 
       {/* Sidebar on the right (RTL layout) - 320px fixed width, color #141E3E */}
-      <Box className="app-layout-sidebar" />
+      <Box className={styles.appLayoutSidebar} />
     </Box>
   );
 }

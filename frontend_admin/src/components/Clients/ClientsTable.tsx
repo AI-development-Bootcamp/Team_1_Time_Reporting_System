@@ -15,7 +15,7 @@ import {
 import { IconPencil, IconTrash, IconChevronDown, IconSearch } from '@tabler/icons-react';
 import { Client } from '../../types/Client';
 import { useClients } from '../../hooks/useClients';
-import { useProjects } from '../../hooks/useProjects';
+import { useProjects, Project } from '../../hooks/useProjects';
 import { useAssignments } from '../../hooks/useAssignments';
 import { ClientForm } from './ClientForm';
 import { ProjectForm, CreateProjectInput } from '../Projects/ProjectForm';
@@ -23,7 +23,7 @@ import { TaskForm, CreateTaskInput } from '../Tasks/TaskForm';
 import { EmployeeAssignmentForm } from '../Assignments/EmployeeAssignmentForm';
 import { DeleteConfirmationModal } from '../Common/DeleteConfirmationModal';
 import { DeleteAssignmentModal } from '../Assignments/DeleteAssignmentModal';
-import '../../styles/components/ClientsTable.css';
+import styles from '../../styles/components/ClientsTable.module.css';
 import { useQueries } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
 import { useTasks } from '../../hooks/useTasks';
@@ -56,23 +56,23 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
   const remainingCount = rowData.employeeNames.length - maxVisible;
 
   return (
-    <Table.Tr className="clients-table-row">
-      <Table.Td className="clients-table-cell">
+    <Table.Tr className={styles.clientsTableRow}>
+      <Table.Td className={styles.clientsTableCell}>
         {rowData.clientName}
       </Table.Td>
-      <Table.Td className="clients-table-cell">
+      <Table.Td className={styles.clientsTableCell}>
         {rowData.projectName}
       </Table.Td>
-      <Table.Td className="clients-table-cell">
+      <Table.Td className={styles.clientsTableCell}>
         {rowData.taskName}
       </Table.Td>
-      <Table.Td className="clients-table-cell">
+      <Table.Td className={styles.clientsTableCell}>
         {rowData.employeeNames.length === 0 ? (
           <></>
         ) : (
           <Group gap="xs" wrap="wrap">
             {visibleNames.map((name, index) => (
-              <div key={index} className="employee-name-badge">
+              <div key={index} className={styles.employeeNameBadge}>
                 {name}
               </div>
             ))}
@@ -84,7 +84,7 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
           </Group>
         )}
       </Table.Td>
-      <Table.Td className="clients-table-cell clients-table-cell-center">
+      <Table.Td className={`${styles.clientsTableCell} ${styles.clientsTableCellCenter}`}>
         <Group gap="xs" justify="center">
           <Menu shadow="md" width={200} position="bottom-end">
             <Menu.Target>
@@ -100,13 +100,22 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
               <Menu.Item onClick={() => onEditClient(rowData.clientId)}>
                 ערוך לקוח
               </Menu.Item>
-              <Menu.Item onClick={() => onEditProject(rowData.projectId)}>
+              <Menu.Item 
+                onClick={() => onEditProject(rowData.projectId)}
+                disabled={!rowData.projectId}
+              >
                 ערוך פרויקט
               </Menu.Item>
-              <Menu.Item onClick={() => onEditTask(rowData.taskId)}>
+              <Menu.Item 
+                onClick={() => onEditTask(rowData.taskId)}
+                disabled={!rowData.taskId}
+              >
                 ערוך משימה
               </Menu.Item>
-              <Menu.Item onClick={() => onEditAssignment(rowData.taskId)}>
+              <Menu.Item 
+                onClick={() => onEditAssignment(rowData.taskId)}
+                disabled={!rowData.taskId}
+              >
                 ערוך שיוך עובדים
               </Menu.Item>
             </Menu.Dropdown>
@@ -125,13 +134,22 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
               <Menu.Item onClick={() => onDeleteClient(rowData.clientId)}>
                 מחק לקוח
               </Menu.Item>
-              <Menu.Item onClick={() => onDeleteProject(rowData.projectId)}>
+              <Menu.Item 
+                onClick={() => onDeleteProject(rowData.projectId)}
+                disabled={!rowData.projectId}
+              >
                 מחק פרויקט
               </Menu.Item>
-              <Menu.Item onClick={() => onDeleteTask(rowData.taskId)}>
+              <Menu.Item 
+                onClick={() => onDeleteTask(rowData.taskId)}
+                disabled={!rowData.taskId}
+              >
                 מחק משימה
               </Menu.Item>
-              <Menu.Item onClick={() => onDeleteAssignment(rowData.taskId)}>
+              <Menu.Item 
+                onClick={() => onDeleteAssignment(rowData.taskId)}
+                disabled={!rowData.taskId}
+              >
                 מחק שיוך עובדים
               </Menu.Item>
             </Menu.Dropdown>
@@ -173,6 +191,7 @@ export function ClientsTable() {
 
   // Load all projects for all clients
   const clients = clientsQuery.data ?? [];
+
   const projectsQueries = useQueries({
     queries: clients.map((client) => ({
       queryKey: ['projects', client.id],
@@ -205,9 +224,31 @@ export function ClientsTable() {
     return tasksQueries.flatMap((query) => query.data ?? []);
   }, [tasksQueries]);
 
+  // Build a map of clientId -> projects from the query results directly
+  // This ensures we account for all clients, even those with no projects
+  const clientProjectsMap = useMemo(() => {
+    const map = new Map<string, Project[]>();
+    projectsQueries.forEach((query, index) => {
+      const client = clients[index];
+      if (client) {
+        // Initialize with empty array if client doesn't exist in map
+        if (!map.has(client.id)) {
+          map.set(client.id, []);
+        }
+        // Add projects from this client's query (could be empty array)
+        const projects = (query.data ?? []) as Project[];
+        projects.forEach((project: Project) => {
+          map.get(client.id)!.push(project);
+        });
+      }
+    });
+    return map;
+  }, [projectsQueries, clients]);
+
   // Build table rows: one row per client-project-task combination
+  // Show all clients, even if they don't have projects or tasks yet
   const tableRows = useMemo<TableRowData[]>(() => {
-    if (!clients.length || !allProjects.length) return [];
+    if (!clients.length) return [];
     const assignments = assignmentsQuery.data ?? [];
 
     // Create a map: taskId -> employee names
@@ -222,42 +263,70 @@ export function ClientsTable() {
       }
     });
 
-    // Create a map: projectId -> project
-    const projectMap = new Map<string, typeof allProjects[0]>();
-    allProjects.forEach((project) => {
-      projectMap.set(project.id, project);
-    });
-
-    // Create a map: clientId -> client
-    const clientMap = new Map<string, Client>();
-    clients.forEach((client) => {
-      clientMap.set(client.id, client);
-    });
-
-    // Build rows: for each task, create a row
-    const rows: TableRowData[] = [];
+    // Create maps: projectId -> tasks
+    const projectTasksMap = new Map<string, (typeof allTasks)[0][]>();
     allTasks.forEach((task) => {
-      const project = projectMap.get(task.projectId);
-      if (!project) return;
+      if (!projectTasksMap.has(task.projectId)) {
+        projectTasksMap.set(task.projectId, []);
+      }
+      projectTasksMap.get(task.projectId)!.push(task);
+    });
 
-      const client = clientMap.get(project.clientId);
-      if (!client) return;
+    // Build rows: iterate through all clients
+    const rows: TableRowData[] = [];
+    clients.forEach((client) => {
+      const clientProjects = clientProjectsMap.get(client.id) ?? [];
+      
+      // If client has no projects, show one row with empty project/task
+      if (clientProjects.length === 0) {
+        rows.push({
+          clientId: client.id,
+          clientName: client.name,
+          projectId: '',
+          projectName: '',
+          taskId: '',
+          taskName: '',
+          employeeNames: [],
+        });
+        return;
+      }
 
-      const employeeNames = taskEmployeesMap.get(task.id) ?? [];
+      // For each project of the client
+      clientProjects.forEach((project) => {
+        const projectTasks = projectTasksMap.get(project.id) ?? [];
+        
+        // If project has no tasks, show one row with project name but empty task
+        if (projectTasks.length === 0) {
+          rows.push({
+            clientId: client.id,
+            clientName: client.name,
+            projectId: project.id,
+            projectName: project.name,
+            taskId: '',
+            taskName: '',
+            employeeNames: [],
+          });
+          return;
+        }
 
-      rows.push({
-        clientId: client.id,
-        clientName: client.name,
-        projectId: project.id,
-        projectName: project.name,
-        taskId: task.id,
-        taskName: task.name,
-        employeeNames,
+        // For each task in the project, create a row
+        projectTasks.forEach((task) => {
+          const employeeNames = taskEmployeesMap.get(task.id) ?? [];
+          rows.push({
+            clientId: client.id,
+            clientName: client.name,
+            projectId: project.id,
+            projectName: project.name,
+            taskId: task.id,
+            taskName: task.name,
+            employeeNames,
+          });
+        });
       });
     });
 
     return rows;
-  }, [clients, allProjects, allTasks, assignmentsQuery.data]);
+  }, [clients, clientProjectsMap, allTasks, assignmentsQuery.data]);
 
   const openCreateClient = () => {
     setSelectedClient(null);
@@ -275,8 +344,8 @@ export function ClientsTable() {
   };
 
   const openCreateTask = () => {
-    // TODO: Open task creation form
-    console.log('Open task creation');
+    setSelectedTaskId(null);
+    setTaskFormOpened(true);
   };
 
   const openEditClient = (clientId: string) => {
@@ -289,16 +358,19 @@ export function ClientsTable() {
   };
 
   const openEditProject = (projectId: string) => {
+    if (!projectId) return;
     setSelectedProjectId(projectId);
     setProjectFormOpened(true);
   };
 
   const openEditTask = (taskId: string) => {
+    if (!taskId) return;
     setSelectedTaskId(taskId);
     setTaskFormOpened(true);
   };
 
   const openEditAssignment = (taskId: string) => {
+    if (!taskId) return;
     setSelectedTaskId(taskId);
     setAssignmentFormOpened(true);
   };
@@ -367,16 +439,19 @@ export function ClientsTable() {
   };
 
   const openDeleteProject = (projectId: string) => {
+    if (!projectId) return;
     setPendingDeleteProjectId(projectId);
     setDeleteProjectModalOpened(true);
   };
 
   const openDeleteTask = (taskId: string) => {
+    if (!taskId) return;
     setPendingDeleteTaskId(taskId);
     setDeleteTaskModalOpened(true);
   };
 
   const openDeleteAssignment = (taskId: string) => {
+    if (!taskId) return;
     setPendingDeleteAssignmentTaskId(taskId);
     setDeleteAssignmentModalOpened(true);
   };
@@ -422,11 +497,12 @@ export function ClientsTable() {
     setActivePage(1);
   }, [searchQuery]);
 
-  // Check loading states
+  // Check loading states - only wait for clients query, projects queries, and assignments
+  // Tasks queries can be empty if there are no projects, which is fine
   const isLoading =
     clientsQuery.isLoading ||
     projectsQueries.some((q) => q.isLoading) ||
-    tasksQueries.some((q) => q.isLoading) ||
+    (tasksQueries.length > 0 && tasksQueries.some((q) => q.isLoading)) ||
     assignmentsQuery.isLoading;
 
   if (isLoading) {
@@ -457,20 +533,20 @@ export function ClientsTable() {
   const paginatedRows = filteredRows.slice(startIndex, endIndex);
 
   return (
-    <Stack gap={0} className="clients-table-container">
+    <Stack gap={0} className={styles.clientsTableContainer}>
       <Group justify="flex-end" gap="md" mb="md">
         <TextInput
           placeholder="חיפוש לפי שם לקוח"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.currentTarget.value)}
           leftSection={<IconSearch size={16} />}
-          className="search-input"
+          className={styles.searchInput}
         />
         <Menu shadow="md" width={200} position="bottom-end">
           <Menu.Target>
             <Button
               leftSection={<IconChevronDown size={16} />}
-              className="create-button"
+              className={styles.createButton}
             >
               יצירה
             </Button>
@@ -490,22 +566,24 @@ export function ClientsTable() {
         </Menu>
       </Group>
 
-      <Table withTableBorder className="clients-table">
+      <Table withTableBorder className={styles.clientsTable}>
         <Table.Thead>
-          <Table.Tr className="clients-table-header">
-            <Table.Th className="clients-table-header-cell">
+          <Table.Tr className={styles.clientsTableHeader}>
+            <Table.Th className={styles.clientsTableHeaderCell}>
               שם לקוח
             </Table.Th>
-            <Table.Th className="clients-table-header-cell">
+            <Table.Th className={styles.clientsTableHeaderCell}>
               שם פרויקט
             </Table.Th>
-            <Table.Th className="clients-table-header-cell">
+            <Table.Th className={styles.clientsTableHeaderCell}>
               שם משימה
             </Table.Th>
-            <Table.Th className="clients-table-header-cell">
+            <Table.Th className={styles.clientsTableHeaderCell}>
               שמות העובדים המשוייכים
             </Table.Th>
-            <Table.Th className="clients-table-header-cell clients-table-header-cell-center">
+            <Table.Th
+              className={`${styles.clientsTableHeaderCell} ${styles.clientsTableHeaderCellCenter}`}
+            >
               פעולות
             </Table.Th>
           </Table.Tr>
@@ -528,7 +606,7 @@ export function ClientsTable() {
 
           {filteredRows.length === 0 && (
             <Table.Tr>
-              <Table.Td colSpan={5} className="clients-table-cell">
+              <Table.Td colSpan={5} className={styles.clientsTableCell}>
                 <Text ta="center" c="dimmed" py="xl">
                   לא נמצאו נתונים
                 </Text>
@@ -539,7 +617,7 @@ export function ClientsTable() {
       </Table>
 
       {filteredRows.length > 0 && (
-        <Group justify="center" mt="md" className="pagination-container">
+        <Group justify="center" mt="md" className={styles.paginationContainer}>
           <Pagination
             value={activePage}
             onChange={setActivePage}
@@ -548,7 +626,7 @@ export function ClientsTable() {
             withEdges
             boundaries={1}
             classNames={{
-              control: 'pagination-control',
+              control: styles.paginationControl,
             }}
           />
         </Group>

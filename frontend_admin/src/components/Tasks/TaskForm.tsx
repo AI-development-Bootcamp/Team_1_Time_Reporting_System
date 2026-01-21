@@ -62,12 +62,19 @@ export const TaskForm: FC<TaskFormProps> = ({
   });
 
   useEffect(() => {
+    const formatDateForInput = (value?: string | null) => {
+      if (!value) return '';
+      // Backend returns ISO strings (e.g. "2026-01-21T00:00:00.000Z"),
+      // but the <input type="date"> and backend validators expect "YYYY-MM-DD"
+      return value.split('T')[0] ?? value;
+    };
+
     if (mode === 'edit' && initialTask) {
       form.setValues({
         name: initialTask.name ?? '',
         projectId: initialTask.projectId ?? '',
-        startDate: initialTask.startDate ?? '',
-        endDate: initialTask.endDate ?? '',
+        startDate: formatDateForInput(initialTask.startDate),
+        endDate: formatDateForInput(initialTask.endDate),
         description: initialTask.description ?? '',
       });
     } else if (mode === 'create' && initialProjectId) {
@@ -154,6 +161,31 @@ export const TaskForm: FC<TaskFormProps> = ({
                 input: 'task-form-field-input',
               }}
             />
+
+            <Group grow>
+              <TextInput
+                label="תאריך התחלה"
+                type="date"
+                value={form.values.startDate}
+                onChange={(e) => form.setFieldValue('startDate', e.currentTarget.value)}
+                className="task-form-field"
+                classNames={{
+                  label: 'task-form-field-label',
+                  input: 'task-form-field-input',
+                }}
+              />
+              <TextInput
+                label="תאריך סיום"
+                type="date"
+                value={form.values.endDate}
+                onChange={(e) => form.setFieldValue('endDate', e.currentTarget.value)}
+                className="task-form-field"
+                classNames={{
+                  label: 'task-form-field-label',
+                  input: 'task-form-field-input',
+                }}
+              />
+            </Group>
 
             <Select
               label="פרויקט"

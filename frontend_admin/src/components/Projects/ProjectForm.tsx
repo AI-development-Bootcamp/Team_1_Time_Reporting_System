@@ -16,7 +16,6 @@ import { useForm } from '@mantine/form';
 import { IconX, IconPlus } from '@tabler/icons-react';
 import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
-import dayjs from 'dayjs';
 import '../../styles/components/ProjectForm.css';
 import { apiClient } from '@shared/utils/ApiClient';
 
@@ -104,25 +103,6 @@ export const ProjectForm: FC<ProjectFormProps> = ({
 
   const clients = clientsQuery.data ?? [];
   const users: Array<{ id: string; name: string }> = []; // TODO: Replace with useUsers when endpoint is available
-
-  // Format date for display (DD/MM/YYYY) from YYYY-MM-DD
-  const formatDateForDisplay = (dateStr: string) => {
-    if (!dateStr) return '';
-    const date = dayjs(dateStr, 'YYYY-MM-DD');
-    return date.isValid() ? date.format('DD/MM/YYYY') : '';
-  };
-
-  // Parse date from display format (DD/MM/YYYY) to YYYY-MM-DD
-  const parseDateFromDisplay = (displayDate: string) => {
-    if (!displayDate || displayDate.trim() === '') return '';
-    const parts = displayDate.split('/').filter((p) => p.trim() !== '');
-    if (parts.length === 3) {
-      const [day, month, year] = parts.map((p) => p.trim());
-      const date = dayjs(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`, 'YYYY-MM-DD');
-      return date.isValid() ? date.format('YYYY-MM-DD') : '';
-    }
-    return '';
-  };
 
   return (
     <Modal
@@ -212,12 +192,9 @@ export const ProjectForm: FC<ProjectFormProps> = ({
               <Grid.Col span={6}>
                 <TextInput
                   label="תאריך התחלה"
-                  placeholder="DD/MM/YYYY"
-                  value={formatDateForDisplay(form.values.startDate)}
-                  onChange={(e) => {
-                    const parsed = parseDateFromDisplay(e.currentTarget.value);
-                    form.setFieldValue('startDate', parsed);
-                  }}
+                  type="date"
+                  value={form.values.startDate}
+                  onChange={(e) => form.setFieldValue('startDate', e.currentTarget.value)}
                   className="project-form-field"
                   classNames={{
                     label: 'project-form-field-label',
@@ -228,12 +205,9 @@ export const ProjectForm: FC<ProjectFormProps> = ({
               <Grid.Col span={6}>
                 <TextInput
                   label="תאריך סיום"
-                  placeholder="DD/MM/YYYY"
-                  value={formatDateForDisplay(form.values.endDate)}
-                  onChange={(e) => {
-                    const parsed = parseDateFromDisplay(e.currentTarget.value);
-                    form.setFieldValue('endDate', parsed);
-                  }}
+                  type="date"
+                  value={form.values.endDate}
+                  onChange={(e) => form.setFieldValue('endDate', e.currentTarget.value)}
                   className="project-form-field"
                   classNames={{
                     label: 'project-form-field-label',

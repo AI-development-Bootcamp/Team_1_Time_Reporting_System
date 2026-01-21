@@ -23,11 +23,6 @@
   color: white;
 }
 
-.task-form-icon-button:hover {
-  background-color: #0C69FF;
-  color: white;
-}
-
 .task-form-close-button {
   color: #666;
 }
@@ -57,4 +52,5 @@
   color: white;
   direction: rtl;
 }
+
 
