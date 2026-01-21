@@ -34,11 +34,13 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:unit
 
-  # 2. Integration Tests - Runs on PRs to dev and main
+  # 2. Integration Tests - Runs on PRs to dev/main AND push to main
   integration-tests:
     name: Integration Tests
     needs: unit-tests
-    if: github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')
+    if: |
+      (github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     
     services:
