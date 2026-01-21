@@ -90,7 +90,7 @@ jobs:
       - name: Run Integration Tests
         run: npm run test:integration
 
-  # 3. Deployment - Runs on merge/push to main after tests pass, or on fix branches for testing
+  # 3. Deployment - Runs on merge/push to main after tests pass, or on fix branches for testing (deploy)
   deploy:
     name: Deploy to Production
     needs: [unit-tests, integration-tests]
