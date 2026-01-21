@@ -1327,14 +1327,14 @@ backend/src/
   - [x] Export from `services/index.ts`
 
 **Frontend - Custom Hooks:**
-- [ ] TASK-M2-020-FE-006: Create useProjectSelector hook
-  - [ ] Create `hooks/useProjectSelector.ts`:
-    - [ ] Use TanStack Query `useQuery` for project selector data
-    - [ ] Cache key: QUERY_KEYS.projectSelector
-    - [ ] Stale time: 5 minutes
-    - [ ] Memoize task lookup map for performance
-    - [ ] Return: `{ data, clients, taskLookup, isLoading, error }`
-  - [ ] Add tests (≥70% coverage)
+- - [x] TASK-M2-020-FE-006: Create useProjectSelector hook
+  - [x] Create `hooks/useProjectSelector.ts`:
+    - [x] Use TanStack Query `useQuery` for project selector data
+    - [x] Cache key: QUERY_KEYS.projectSelector
+    - [x] Stale time: 5 minutes
+    - [x] Memoize task lookup map for performance
+    - [x] Return: `{ data, clients, taskLookup, isLoading, error }`
+  - [x] Add tests (≥70% coverage)
 
 - [ ] TASK-M2-020-FE-007: Create useCreateDailyReport hook
   - [ ] Create `hooks/useCreateDailyReport.ts`:
