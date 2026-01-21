@@ -1344,7 +1344,7 @@ backend/src/
 - Future months: empty state ("לא הגענו לחודש הזה 😊")
 
 **Badge Rules:**
-- Weekend (Fri/Sat auto-detected): `סוף"ש` (Blue)
+- Weekend (Fri/Sat auto-detected): `סופ"ש` (Blue)
 - No attendance (Sun-Thu workday): `חסר` (Red)
 - Sickness/Reserves without document: `חסר` (Red)
 - Sickness with document: `מחלה` (Blue)

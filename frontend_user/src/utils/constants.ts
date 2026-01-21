@@ -126,7 +126,7 @@ export const HEBREW_STRINGS = {
 export const BADGE_LABELS = {
   // Status badges
   missing: 'חסר',
-  weekend: 'סוף"ש',
+  weekend: 'סופ"ש',
   dayOff: 'יום חופש',
   halfDayOff: 'חצי יום חופש',
   sickness: 'מחלה',
