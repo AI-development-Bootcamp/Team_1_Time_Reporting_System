@@ -701,10 +701,10 @@ describe('Projects Router', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.id).toBe(1);
+      expect(response.body.data.id).toBe('1');
       expect(response.body.data.name).toBe('Project 1');
-      expect(response.body.data.clientId).toBe(1);
-      expect(response.body.data.projectManagerId).toBe(1);
+      expect(response.body.data.clientId).toBe('1');
+      expect(response.body.data.projectManagerId).toBe('1');
       expect(response.body.data.reportingType).toBe('startEnd');
       expect(response.body.data.active).toBe(true);
       
@@ -774,7 +774,7 @@ describe('Projects Router', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.id).toBe(2);
+      expect(response.body.data.id).toBe('2');
       expect(response.body.data.name).toBe('Project 2');
       expect(response.body.data.startDate).toBe('2026-01-01');
       expect(response.body.data.endDate).toBe('2026-12-31');
