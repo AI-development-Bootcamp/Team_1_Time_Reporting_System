@@ -1322,24 +1322,109 @@ backend/src/
 - **Validation**: Selector matches Figma flow and states
 
 #### TASK-M2-022: Month History UI (User App)
-- [ ] Create `frontend_user/src/components/MonthHistory/MonthHistoryReport.tsx`
-- [ ] Match mobile Figma layout for list and cards
-- [ ] Add month navigation header (left/right + month label)
-- [ ] Create `hooks/useMonthHistory.ts` with `useQuery`
-- [ ] Render accordion by date (descending)
-- [ ] Show multiple DailyAttendance cards per date
-- [ ] Render time logs under each DailyAttendance
-- [ ] Add status badge rules (missing/full/partial/sick-weekend)
-- [ ] Add "Add Report" per date
-- [ ] Add edit button per DailyAttendance (opens daily report entry)
-- [ ] Add empty state for no data
-- [ ] Add error state for fetch failure
-- [ ] Tests (frontend):
-  - [ ] Component: renders multiple attendances per date
-  - [ ] Component: status badges by total hours/status
-  - [ ] Component: expand/collapse and edit/add actions
+
+**General Settings:**
+- Mobile-only design, RTL (Hebrew)
+- Scroll starts at top (most recent dates first)
+- Images from `shared/image_components/` via `@images` Vite alias
+
+**Color Palette (Badge Colors):**
+- Green (work ≥9h): Dark `#106103`, Light `#E3F9CA`
+- Orange (work <9h): Dark `#945312`, Light `#FEF5CC`
+- Blue (absences): Dark `#0C3058`, Light `#F0F4FA`
+- Red (missing): Dark `#AC2632`, Light `#FCE3D6`
+
+**Month Navigation:**
+- Arrows navigate within current year only
+- Left arrow disabled on January, right arrow disabled on December
+
+**Date Range Logic:**
+- Current month: 1st → today (inclusive)
+- Previous months: full month
+- Future months: empty state ("לא הגענו לחודש הזה 😊")
+
+**Badge Rules:**
+- Weekend (Fri/Sat auto-detected): `סופ"ש` (Blue)
+- No attendance (Sun-Thu workday): `חסר` (Red)
+- Sickness/Reserves without document: `חסר` (Red)
+- Sickness with document: `מחלה` (Blue)
+- Reserves with document: `מילואים` (Blue)
+- Day off: `יום חופש` (Blue)
+- Half day off: `חצי יום חופש` (Blue)
+- Work ≥9h: `X ש'` (Green)
+- Work <9h: `X ש'` (Orange)
+- Half day + Work same date: `חצי חופש/X ש'` (combined)
+
+**Hours Calculation:**
+- Sum of `(endTime - startTime)` for all DailyAttendance records on date
+- Multiple DailyAttendance records per date supported
+
+**Date Format:** `DD/MM/YY, יום X'` (e.g., `25/10/15, יום ד'`)
+
+**Page States:**
+- Loading: centered spinner
+- Error: robot image (`Oops! 404 Error...png`) + "אופססס..." + retry button
+- Future month: `next_month_background.png` + "לא הגענו לחודש הזה 😊"
+- Current month empty: `empty_list.png` + "עוד לא דיווח כלום החודש 😅"
+- Has data: date accordion list
+
+**Time Logs:**
+- Lazy load on accordion expand
+- Show project name (grey) via taskId mapping from project selector
+
+**Bottom Bar (fixed):**
+- Left: `[▶ play.png] הפעלת שעון` (visible, non-functional for now)
+- Right: `דיווח ידני [+]` (opens "Coming soon" modal)
+
+**Modals:**
+- "Coming soon" modal (Hebrew): Title "בקרוב", Message "העמוד בבנייה", Button "סגור"
+- Edit button and "הוספת דיווח" also open this modal
+
+**Icons (from `shared/image_components/`):**
+- `LeftArrowIcon.png`, `RightArrowIcon.png` (month nav)
+- `UpArrowIcon.png`, `DownArrowIcon.png` (accordion)
+- `EditIcon.png` (edit button)
+- `WorkDayIcon.png`, `CalendarNotWorkIcon.png` (calendar icons - decorative, not clickable)
+
+**Files to Create:**
+- [x] Config: Update `vite.config.ts` with `@images` alias → `../shared/image_components`
+- [x] Types: `frontend_user/src/types/attendance.ts`, `timeLog.ts`, `projectSelector.ts`
+- [x] Utils: `frontend_user/src/utils/dateUtils.ts` (Day.js helpers, Hebrew day names)
+- [x] Utils: `frontend_user/src/utils/constants.ts` (colors, Hebrew strings)
+- [x] Services: `frontend_user/src/services/attendanceApi.ts`
+- [x] Services: `frontend_user/src/services/timeLogsApi.ts`
+- [x] Services: `frontend_user/src/services/projectSelectorApi.ts` (SKIPPED - using embedded data from month history)
+- [x] Hooks: `frontend_user/src/hooks/useMonthHistory.ts` (TanStack Query)
+- [x] Hooks: `frontend_user/src/hooks/useTimeLogs.ts` (lazy load on expand)
+- [x] Hooks: `frontend_user/src/hooks/useProjectSelector.ts` (SKIPPED - using embedded data from month history)
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.tsx` (main page)
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHistoryPage.module.css`
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthHeader.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/MonthAccordion.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/DayAccordionItem.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/DailyAttendanceCard.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/TimeLogRow.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/StatusBadge.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/StatusBadge.module.css`
+- [x] Component: `frontend_user/src/components/MonthHistory/EmptyState.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/ErrorState.tsx`
+- [x] Component: `frontend_user/src/components/MonthHistory/index.ts`
+- [x] Component: `frontend_user/src/components/BottomBar/BottomBar.tsx`
+- [x] Component: `frontend_user/src/components/BottomBar/BottomBar.module.css`
+- [x] Component: `frontend_user/src/components/ComingSoonModal/ComingSoonModal.tsx`
+- [x] Update: `frontend_user/src/App.tsx` to render MonthHistoryPage
+
+**Tests (frontend):**
+- [x] Component: renders multiple attendances per date
+- [x] Component: status badges by total hours/status
+- [x] Component: expand/collapse and edit/add actions
+- [x] Component: loading/error/empty states
+- [x] Hook: useMonthHistory fetches correct data
+- [x] Hook: useTimeLogs lazy loads on expand
+- [x] Utils: dateUtils Hebrew day names and formatting
+
 - **Coverage Target**: ≥60% for MonthHistory components + hooks
-- **Validation**: Month history matches expanded card behavior
+- **Validation**: Month history matches Figma mobile layout and expanded card behavior
 
 #### TASK-M2-090: Testing (Per `TESTING_GUIDE.md`)
 - [ ] Add unit tests colocated with new backend utilities/services

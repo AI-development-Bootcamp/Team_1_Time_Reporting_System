@@ -1,0 +1,42 @@
+/**
+ * DayAccordionItem styles - matches Figma design
+ * Width: 361px, Height: 48px (when closed)
+ * Padding: 12px horizontal, 10px vertical
+ * Corner radius: 10px
+ */
+
+.item {
+  background-color: #FFFFFF;
+  border-radius: 10px !important;
+  overflow: hidden;
+  width: 100%;
+  max-width: 361px;
+}
+
+.control {
+  padding: 10px 12px !important;
+  height: 48px;
+}
+
+.header {
+  width: 100%;
+}
+
+.dateText {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+  text-align: left !important;
+}
+
+.calendarIcon {
+  opacity: 0.6;
+}
+
+.panel {
+  padding: 0 12px 12px;
+}
+
+.addButton {
+  align-self: center;
+  margin-top: 8px;
+}

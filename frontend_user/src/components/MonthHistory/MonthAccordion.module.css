@@ -1,0 +1,13 @@
+/**
+ * MonthAccordion styles - matches Figma design
+ */
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  align-items: center;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
