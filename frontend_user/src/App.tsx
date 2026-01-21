@@ -23,7 +23,7 @@ function App() {
   }, []);
 
   // TODO: Get actual userId from auth context
-  const userId = '74';
+  const userId = '78';
 
   // Show message if not on mobile
   if (!isMobile) {
@@ -34,7 +34,7 @@ function App() {
             הדף מותאם רק לפלאפון
           </Text>
           <Text size="md" c="dimmed" ta="center" dir="rtl">
-            בבקשה תעבור לפלאפון בשביל להיות בדף
+            יש לעבור לפאלפון כדי להיות בדף זה
           </Text>
         </Stack>
       </Center>

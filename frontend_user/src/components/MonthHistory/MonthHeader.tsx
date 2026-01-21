@@ -65,7 +65,7 @@ export function MonthHeader({
       </Group>
 
       {/* Page title - on the right in RTL */}
-      <Title order={3} className={classes.title}>
+      <Title order={2} className={classes.title}>
         {HEBREW_STRINGS.pageTitle}
       </Title>
     </div>
