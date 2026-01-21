@@ -17,7 +17,7 @@ import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
 import { useAssignments } from '../../hooks/useAssignments';
 import { ClientForm } from './ClientForm';
-import { ProjectForm, CreateProjectInput } from '../Projects/ProjectForm';
+import { ProjectForm } from '../Projects/ProjectForm';
 import { TaskForm, CreateTaskInput } from '../Tasks/TaskForm';
 import { EmployeeAssignmentForm } from '../Assignments/EmployeeAssignmentForm';
 import { DeleteConfirmationModal } from '../Common/DeleteConfirmationModal';
@@ -175,7 +175,6 @@ export function ClientsTable() {
   const { createProjectMutation, updateProjectMutation, deleteProjectMutation } = useProjects();
   const { createTaskMutation, updateTaskMutation, deleteTaskMutation } = useTasks();
   const { assignmentsQuery, deleteAssignmentsMutation } = useAssignments();
-  const { assignmentsQuery } = useAssignments();
 
   const [formOpened, setFormOpened] = useState(false);
   const [projectFormOpened, setProjectFormOpened] = useState(false);
