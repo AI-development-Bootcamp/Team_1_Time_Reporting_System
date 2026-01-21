@@ -1,0 +1,23 @@
+.container {
+  max-width: 100%;
+  width: 100%;
+  padding: 24px 32px;
+  font-family: 'SimplerPro', sans-serif;
+}
+
+.titleColumn {
+  margin-bottom: 16px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-family: 'SimplerPro', sans-serif;
+}
+
+.subtitle {
+  margin-top: 0;
+  font-family: 'SimplerPro', sans-serif;
+}
+

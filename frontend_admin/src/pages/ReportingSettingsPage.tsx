@@ -1,17 +1,13 @@
-import { Container, Title, Text, Stack, Alert, Button, Skeleton, Paper, Box } from '@mantine/core';
+import { Container, Title, Text, Stack, Alert, Button, Skeleton, Paper, Box, TextInput, Group } from '@mantine/core';
 import { useState, useMemo, useEffect } from 'react';
 import { notifications } from '@mantine/notifications';
+import { IconSearch } from '@tabler/icons-react';
 import { useReportingSettings } from '../hooks/useReportingSettings';
 import { ReportingSettingsTable } from '../components/ReportingSettings/ReportingSettingsTable';
-import { ReportingSettingsSearch } from '../components/ReportingSettings/ReportingSettingsSearch';
-import { ReportingSettingsPagination } from '../components/ReportingSettings/ReportingSettingsPagination';
+import { ReusablePagination } from '../components/Common/ReusablePagination';
 import { PAGINATION } from '../utils/constants';
 import styles from './ReportingSettingsPage.module.css';
-
-// Helper to check if we're in development mode (type-safe)
-const isDev = (): boolean => {
-  return (import.meta as { env?: { DEV?: boolean } }).env?.DEV ?? false;
-};
+import searchStyles from '../styles/components/ClientsTable.module.css';
 
 function ReportingSettingsPage() {
   const { projects, isLoading, isError, updateReportingType, isUpdating, refetch } = useReportingSettings();
@@ -49,10 +45,6 @@ function ReportingSettingsPage() {
 
   // Wrap mutation to match expected signature with notifications
   const handleReportingTypeChange = (projectId: number, reportingType: 'duration' | 'startEnd') => {
-    if (isDev()) {
-      console.log('Changing reporting type:', { projectId, reportingType });
-    }
-    
     updateReportingType(
       { projectId, reportingType },
       {
@@ -63,23 +55,15 @@ function ReportingSettingsPage() {
             color: 'green',
           });
         },
-        onError: (error) => {
+        onError: () => {
           notifications.show({
             title: 'שגיאה',
             message: 'אירעה שגיאה בעדכון סוג הדיווח',
             color: 'red',
           });
-          if (isDev()) {
-            console.error('Error updating reporting type:', error);
-          }
         },
       }
     );
-  };
-
-  // Retry fetching projects
-  const handleRetry = () => {
-    refetch();
   };
 
   return (
@@ -89,38 +73,34 @@ function ReportingSettingsPage() {
       className={styles.container}
     >
       <Stack gap={8}>
-        {/* Page Title and Search Bar Row */}
-        <Box className={styles.titleRow}>
-          <Box className={styles.titleColumn}>
-            {/* Page Title */}
-            <Title 
-              order={2} 
-              ta="right" 
-              className={styles.pageTitle}
-            >
-              הגדרת דיווחי שעות
-            </Title>
-            
-            {/* Page Subtitle */}
-            <Text 
-              c="dimmed" 
-              size="sm" 
-              ta="right" 
-              className={styles.subtitle}
-            >
-              כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
-            </Text>
-          </Box>
-
-          {/* Search Bar */}
-          {!isLoading && !isError && (
-            <Box className={styles.searchBox}>
-              <ReportingSettingsSearch onSearchChange={setSearchValue} />
-            </Box>
-          )}
+        <Box className={styles.titleColumn}>
+          <Title 
+            order={2} 
+            ta="right" 
+            className={styles.pageTitle}
+          >
+            הגדרת דיווחי שעות
+          </Title>
+          <Text 
+            c="dimmed" 
+            size="sm" 
+            ta="right" 
+            className={styles.subtitle}
+          >
+            כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
+          </Text>
         </Box>
-
-        {/* Loading State with Skeleton */}
+        {!isLoading && !isError && (
+          <Group justify="flex-end" gap="md" mb="md">
+            <TextInput
+              placeholder="חיפוש לפי שם לקוח/פרויקט"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.currentTarget.value)}
+              leftSection={<IconSearch size={16} />}
+              className={searchStyles.searchInput}
+            />
+          </Group>
+        )}
         {isLoading && (
           <Stack gap="md">
             <Skeleton height={40} radius="sm" />
@@ -135,20 +115,16 @@ function ReportingSettingsPage() {
             </Paper>
           </Stack>
         )}
-
-        {/* Error State with Retry Button */}
         {isError && (
           <Alert title="שגיאה" color="red">
             <Stack gap="md">
               <Text>אירעה שגיאה בטעינת הפרויקטים. אנא נסה שוב.</Text>
-              <Button onClick={handleRetry} variant="light" color="red">
+              <Button onClick={() => refetch()} variant="light" color="red">
                 נסה שוב
               </Button>
             </Stack>
           </Alert>
         )}
-
-        {/* Settings Table and Pagination Container */}
         {!isLoading && !isError && (
           <Stack gap={0} className={styles.contentStack}>
             <ReportingSettingsTable
@@ -156,10 +132,8 @@ function ReportingSettingsPage() {
               onReportingTypeChange={handleReportingTypeChange}
               isUpdating={isUpdating}
             />
-            
-            {/* Pagination */}
             {filteredProjects.length > 0 && (
-              <ReportingSettingsPagination
+              <ReusablePagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}

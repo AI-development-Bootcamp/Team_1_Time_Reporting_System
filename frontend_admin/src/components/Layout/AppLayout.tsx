@@ -25,6 +25,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { user } = useAuth();
 
+  const isClientManagement =
+    location.pathname === '/client-management' || location.pathname === '/';
+  const isReportingSettings = location.pathname === '/client-management/reporting-setting';
+
   return (
     <AppShell
       navbar={{
@@ -61,7 +65,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </Box>
             }
             onClick={() => navigate('/client-management')}
-            active={location.pathname === '/'}
+            active={isClientManagement && !isReportingSettings}
             styles={{
               root: {
                 borderRadius: 8,
@@ -90,7 +94,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </Box>
             }
             onClick={() => navigate('/client-management/reporting-setting')}
-            active={location.pathname === '/client-management/reporting-setting'}
+            active={isReportingSettings}
             styles={{
               root: {
                 borderRadius: 8,

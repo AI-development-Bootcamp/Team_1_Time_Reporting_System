@@ -8,7 +8,6 @@ import {
   Loader,
   Center,
   ActionIcon,
-  Pagination,
   TextInput,
   Menu,
 } from '@mantine/core';
@@ -23,6 +22,9 @@ import { TaskForm, CreateTaskInput } from '../Tasks/TaskForm';
 import { EmployeeAssignmentForm } from '../Assignments/EmployeeAssignmentForm';
 import { DeleteConfirmationModal } from '../Common/DeleteConfirmationModal';
 import { DeleteAssignmentModal } from '../Assignments/DeleteAssignmentModal';
+import { ReusableTable } from '../Common/ReusableTable';
+import { ReusablePagination } from '../Common/ReusablePagination';
+import tableStyles from '../Common/ReusableTable.module.css';
 import styles from '../../styles/components/ClientsTable.module.css';
 import { useQueries } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
@@ -57,17 +59,23 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
   const remainingCount = rowData.employeeNames.length - maxVisible;
 
   return (
-    <Table.Tr className={styles.clientsTableRow}>
-      <Table.Td className={styles.clientsTableCell}>
-        {rowData.clientName}
+    <Table.Tr className={tableStyles.tableBodyRow}>
+      <Table.Td className={tableStyles.tableCell}>
+        <Text size="sm" className={tableStyles.tableText}>
+          {rowData.clientName}
+        </Text>
       </Table.Td>
-      <Table.Td className={styles.clientsTableCell}>
-        {rowData.projectName}
+      <Table.Td className={tableStyles.tableCellWithBorder}>
+        <Text size="sm" className={tableStyles.tableText}>
+          {rowData.projectName}
+        </Text>
       </Table.Td>
-      <Table.Td className={styles.clientsTableCell}>
-        {rowData.taskName}
+      <Table.Td className={tableStyles.tableCellWithBorder}>
+        <Text size="sm" className={tableStyles.tableText}>
+          {rowData.taskName}
+        </Text>
       </Table.Td>
-      <Table.Td className={styles.clientsTableCell}>
+      <Table.Td className={tableStyles.tableCellWithBorder}>
         {rowData.employeeNames.length === 0 ? (
           <></>
         ) : (
@@ -85,7 +93,7 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
           </Group>
         )}
       </Table.Td>
-      <Table.Td className={`${styles.clientsTableCell} ${styles.clientsTableCellCenter}`}>
+      <Table.Td className={tableStyles.tableCellWithBorder} style={{ textAlign: 'center' }}>
         <Group gap="xs" justify="center">
           <Menu shadow="md" width={200} position="bottom-end">
             <Menu.Target>
@@ -232,14 +240,15 @@ export function ClientsTable() {
     projectsQueries.forEach((query, index) => {
       const client = clients[index];
       if (client) {
+        const clientId = String(client.id);
         // Initialize with empty array if client doesn't exist in map
-        if (!map.has(client.id)) {
-          map.set(client.id, []);
+        if (!map.has(clientId)) {
+          map.set(clientId, []);
         }
         // Add projects from this client's query (could be empty array)
         const projects = (query.data ?? []) as Project[];
         projects.forEach((project: Project) => {
-          map.get(client.id)!.push(project);
+          map.get(clientId)!.push(project);
         });
       }
     });
@@ -276,12 +285,12 @@ export function ClientsTable() {
     // Build rows: iterate through all clients
     const rows: TableRowData[] = [];
     clients.forEach((client) => {
-      const clientProjects = clientProjectsMap.get(client.id) ?? [];
+      const clientProjects = clientProjectsMap.get(String(client.id)) ?? [];
       
       // If client has no projects, show one row with empty project/task
       if (clientProjects.length === 0) {
         rows.push({
-          clientId: client.id,
+          clientId: String(client.id),
           clientName: client.name,
           projectId: '',
           projectName: '',
@@ -299,9 +308,9 @@ export function ClientsTable() {
         // If project has no tasks, show one row with project name but empty task
         if (projectTasks.length === 0) {
           rows.push({
-            clientId: client.id,
+            clientId: String(client.id),
             clientName: client.name,
-            projectId: project.id,
+            projectId: String(project.id),
             projectName: project.name,
             taskId: '',
             taskName: '',
@@ -314,11 +323,11 @@ export function ClientsTable() {
         projectTasks.forEach((task) => {
           const employeeNames = taskEmployeesMap.get(task.id) ?? [];
           rows.push({
-            clientId: client.id,
+            clientId: String(client.id),
             clientName: client.name,
-            projectId: project.id,
+            projectId: String(project.id),
             projectName: project.name,
-            taskId: task.id,
+            taskId: String(task.id),
             taskName: task.name,
             employeeNames,
           });
@@ -351,7 +360,7 @@ export function ClientsTable() {
   };
 
   const openEditClient = (clientId: string) => {
-    const client = clients.find((c) => c.id === clientId);
+    const client = clients.find((c) => String(c.id) === clientId);
     if (client) {
       setSelectedClient(client);
       setFormMode('edit');
@@ -425,7 +434,7 @@ export function ClientsTable() {
       await createClientMutation.mutateAsync(values);
     } else if (formMode === 'edit' && selectedClient) {
       await updateClientMutation.mutateAsync({
-        id: selectedClient.id,
+        id: String(selectedClient.id),
         data: {
           name: values.name,
           description: values.description,
@@ -568,70 +577,39 @@ export function ClientsTable() {
         </Menu>
       </Group>
 
-      <Table withTableBorder className={styles.clientsTable}>
-        <Table.Thead>
-          <Table.Tr className={styles.clientsTableHeader}>
-            <Table.Th className={styles.clientsTableHeaderCell}>
-              שם לקוח
-            </Table.Th>
-            <Table.Th className={styles.clientsTableHeaderCell}>
-              שם פרויקט
-            </Table.Th>
-            <Table.Th className={styles.clientsTableHeaderCell}>
-              שם משימה
-            </Table.Th>
-            <Table.Th className={styles.clientsTableHeaderCell}>
-              שמות העובדים המשוייכים
-            </Table.Th>
-            <Table.Th
-              className={`${styles.clientsTableHeaderCell} ${styles.clientsTableHeaderCellCenter}`}
-            >
-              פעולות
-            </Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {paginatedRows.map((row, index) => (
-            <TableRow
-              key={`${row.clientId}-${row.projectId}-${row.taskId}-${index}`}
-              rowData={row}
-              onEditClient={openEditClient}
-              onEditProject={openEditProject}
-              onEditTask={openEditTask}
-              onEditAssignment={openEditAssignment}
-              onDeleteClient={openDeleteClient}
-              onDeleteProject={openDeleteProject}
-              onDeleteTask={openDeleteTask}
-              onDeleteAssignment={openDeleteAssignment}
-            />
-          ))}
-
-          {filteredRows.length === 0 && (
-            <Table.Tr>
-              <Table.Td colSpan={5} className={styles.clientsTableCell}>
-                <Text ta="center" c="dimmed" py="xl">
-                  לא נמצאו נתונים
-                </Text>
-              </Table.Td>
-            </Table.Tr>
-          )}
-        </Table.Tbody>
-      </Table>
+      <ReusableTable
+        columns={[
+          { label: 'שם לקוח' },
+          { label: 'שם פרויקט' },
+          { label: 'שם משימה' },
+          { label: 'שמות העובדים המשוייכים' },
+          { label: 'פעולות', align: 'center' },
+        ]}
+        isEmpty={filteredRows.length === 0}
+        emptyMessage="לא נמצאו נתונים"
+      >
+        {paginatedRows.map((row, index) => (
+          <TableRow
+            key={`${row.clientId}-${row.projectId}-${row.taskId}-${index}`}
+            rowData={row}
+            onEditClient={openEditClient}
+            onEditProject={openEditProject}
+            onEditTask={openEditTask}
+            onEditAssignment={openEditAssignment}
+            onDeleteClient={openDeleteClient}
+            onDeleteProject={openDeleteProject}
+            onDeleteTask={openDeleteTask}
+            onDeleteAssignment={openDeleteAssignment}
+          />
+        ))}
+      </ReusableTable>
 
       {filteredRows.length > 0 && (
-        <Group justify="center" mt="md" className={styles.paginationContainer}>
-          <Pagination
-            value={activePage}
-            onChange={setActivePage}
-            total={totalPages}
-            siblings={1}
-            withEdges
-            boundaries={1}
-            classNames={{
-              control: styles.paginationControl,
-            }}
-          />
-        </Group>
+        <ReusablePagination
+          currentPage={activePage}
+          totalPages={totalPages}
+          onPageChange={setActivePage}
+        />
       )}
 
       <ClientForm
