@@ -1,16 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/app';
-
-const app = createApp();
+import type { Express } from 'express';
 
 describe('Rate Limiting - Auth Endpoints', () => {
     // Store original env values
     const originalEnv = { ...process.env };
+    let app: Express;
 
     beforeEach(() => {
         // Ensure we're not in test mode for rate limit tests
         delete process.env.NODE_ENV;
+        // Set CORS origins to satisfy the CORS check when not in dev/test mode
+        process.env.LOCAL_CORS_ORIGINS = 'http://localhost:3000';
+        // Create app after clearing NODE_ENV so rate limiter reads correct env
+        app = createApp();
     });
 
     afterEach(() => {
