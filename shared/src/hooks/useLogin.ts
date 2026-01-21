@@ -1,3 +1,7 @@
+/**
+ * useLogin Hook
+ * Handles user authentication with form validation and error notifications
+ */
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { apiClient } from '../utils/ApiClient';
