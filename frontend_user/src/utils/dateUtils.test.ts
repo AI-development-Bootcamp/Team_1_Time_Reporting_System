@@ -19,20 +19,20 @@ describe('dateUtils', () => {
     it('formats date with Hebrew day name', () => {
       // Sunday Jan 19, 2025
       const result = formatDateWithDay('2025-01-19');
-      expect(result).toContain("יום א'");
+      expect(result).toContain("'יום א");
       expect(result).toContain('19/01/25');
     });
 
     it('formats Saturday correctly', () => {
       // Saturday Jan 18, 2025
       const result = formatDateWithDay('2025-01-18');
-      expect(result).toContain("יום ש'");
+      expect(result).toContain("'יום ש");
     });
 
     it('formats Friday correctly', () => {
       // Friday Jan 17, 2025
       const result = formatDateWithDay('2025-01-17');
-      expect(result).toContain("יום ו'");
+      expect(result).toContain("'יום ו");
     });
   });
 
@@ -85,19 +85,23 @@ describe('dateUtils', () => {
 
   describe('formatDurationHours', () => {
     it('formats full hours', () => {
-      expect(formatDurationHours(540)).toBe("9 ש'"); // 9 hours
+      expect(formatDurationHours(540)).toBe("09:00"); // 9 hours
     });
 
     it('formats partial hours', () => {
-      expect(formatDurationHours(90)).toBe("1.5 ש'"); // 1.5 hours
+      expect(formatDurationHours(90)).toBe("01:30"); // 1 hour 30 minutes
     });
 
     it('formats zero hours', () => {
-      expect(formatDurationHours(0)).toBe("0 ש'");
+      expect(formatDurationHours(0)).toBe("00:00");
     });
 
     it('formats minutes less than an hour', () => {
-      expect(formatDurationHours(30)).toBe("0.5 ש'");
+      expect(formatDurationHours(30)).toBe("00:30"); // 30 minutes
+    });
+
+    it('formats 4.5 hours correctly', () => {
+      expect(formatDurationHours(270)).toBe("04:30"); // 4 hours 30 minutes
     });
   });
 

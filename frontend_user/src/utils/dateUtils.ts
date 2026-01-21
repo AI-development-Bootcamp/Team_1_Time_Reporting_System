@@ -118,16 +118,18 @@ export function calculateDurationMinutes(startTime: string, endTime: string): nu
 }
 
 /**
- * Format duration in minutes to "X 'ש" format
- * Example: 540 minutes → "9 'ש"
+ * Format duration in minutes to HH:MM format (without label)
+ * Example: 270 minutes → "04:30", 540 minutes → "09:00"
  */
 export function formatDurationHours(minutes: number): string {
-  const hours = minutes / 60;
-  // Show one decimal place if not a whole number
-  const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
-  const hoursSuffix = "'ש";
-  // Build: number + space + suffix (will reverse in RTL badge)
-  return `${formatted} ${hoursSuffix}`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  
+  // Format with leading zeros
+  const hoursStr = hours.toString().padStart(2, '0');
+  const minsStr = mins.toString().padStart(2, '0');
+  
+  return `${hoursStr}:${minsStr}`;
 }
 
 /**

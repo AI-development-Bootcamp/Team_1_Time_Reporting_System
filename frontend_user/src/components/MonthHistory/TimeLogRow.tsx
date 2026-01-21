@@ -13,14 +13,19 @@ interface TimeLogRowProps {
 }
 
 export function TimeLogRow({ timeLog }: TimeLogRowProps) {
-  const durationLabel = formatDurationHours(timeLog.duration);
+  const timeFormatted = formatDurationHours(timeLog.duration);
   const projectName = timeLog.task.project.name;
 
   return (
     <Group justify="space-between" wrap="nowrap">
-      <Text size="sm" c="dimmed" dir="ltr" style={{ unicodeBidi: 'embed' }}>
-        {durationLabel}
-      </Text>
+      <Group gap={4} wrap="nowrap">
+        <Text size="sm" c="dimmed">
+          'ש
+        </Text>
+        <Text size="sm" c="dimmed" dir="ltr" style={{ unicodeBidi: 'embed' }}>
+          {timeFormatted}
+        </Text>
+      </Group>
       <Text size="sm" c="dimmed">
         {projectName}
       </Text>
