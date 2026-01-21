@@ -34,18 +34,12 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         // 400 Validation errors - set field errors AND show notification
         const details = errorData.error.details;
         
-        // Set field errors (only if details is a Record, not an array)
-        if (!Array.isArray(details) && typeof details === 'object' && details !== null) {
-          // TypeScript needs explicit casting here due to union type
-          const detailsRecord = details as unknown as Record<string, string[]>;
-          const mailError = detailsRecord['mail'];
-          const passwordError = detailsRecord['password'];
-          if (mailError && Array.isArray(mailError) && mailError.length > 0) {
-            form.setFieldError('mail', mailError[0]);
-          }
-          if (passwordError && Array.isArray(passwordError) && passwordError.length > 0) {
-            form.setFieldError('password', passwordError[0]);
-          }
+        // Set field errors
+        if (details.mail) {
+          form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
+        }
+        if (details.password) {
+          form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
         }
         
         // Also show notification for validation errors
