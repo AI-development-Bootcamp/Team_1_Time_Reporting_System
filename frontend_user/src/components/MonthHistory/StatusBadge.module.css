@@ -5,8 +5,8 @@
 .badge {
   font-weight: 600;
   padding: 4px 12px;
-  direction: ltr;
-  unicode-bidi: embed;
+  direction: rtl;
+  unicode-bidi: normal;
 }
 
 .dot {

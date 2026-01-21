@@ -82,8 +82,8 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
       if (hasBothHalfDayAndWork && totalMinutes > 0) {
         const hours = totalMinutes / 60;
         const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
-        // Build REVERSED: suffix + space + number + prefix (will display correctly in RTL with LTR CSS)
-        const label = BADGE_LABELS.hoursSuffix + ' ' + formatted + '/' + BADGE_LABELS.halfDayOff;
+        // Build: prefix + number + space + suffix
+        const label = BADGE_LABELS.halfDayWorkPrefix + formatted + ' ' + BADGE_LABELS.hoursSuffix;
         return {
           label,
           colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
@@ -100,8 +100,8 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
     case 'work':
       const hours = totalMinutes / 60;
       const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
-      // Build REVERSED: suffix + space + number (will display correctly in RTL with LTR CSS)
-      const label = BADGE_LABELS.hoursSuffix + ' ' + formatted;
+      // Build: number + space + suffix
+      const label = formatted + ' ' + BADGE_LABELS.hoursSuffix;
       return {
         label,
         colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
@@ -131,8 +131,8 @@ export function StatusBadge(props: StatusBadgeProps) {
       radius="xl"
     >
       <Group gap={4}>
-        {label}
         <span className={classes.dot} style={{ backgroundColor: colors.dark }} />
+        {label}
       </Group>
     </Badge>
   );
