@@ -40,6 +40,23 @@ jobs:
     needs: unit-tests
     if: github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')
     runs-on: ubuntu-latest
+    
+    # PostgreSQL service for integration tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
     steps:
       - uses: actions/checkout@v4
       
@@ -54,9 +71,17 @@ jobs:
 
       - name: Generate Prisma Client
         run: npm run prisma:generate -w backend
+      
+      - name: Run Database Migrations
+        working-directory: backend
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
 
       - name: Run Integration Tests
         run: npm run test:integration
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
 
   # 3. Deployment - Runs on merge/push to main after tests pass
   deploy:
