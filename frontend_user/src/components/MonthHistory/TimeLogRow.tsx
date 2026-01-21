@@ -18,7 +18,7 @@ export function TimeLogRow({ timeLog }: TimeLogRowProps) {
 
   return (
     <Group justify="space-between" wrap="nowrap">
-      <Text size="sm" c="dimmed">
+      <Text size="sm" c="dimmed" dir="ltr" style={{ unicodeBidi: 'embed' }}>
         {durationLabel}
       </Text>
       <Text size="sm" c="dimmed">

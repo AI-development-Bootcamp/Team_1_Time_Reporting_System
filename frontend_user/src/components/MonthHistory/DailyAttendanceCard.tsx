@@ -60,7 +60,7 @@ export function DailyAttendanceCard({ attendance, onEdit }: DailyAttendanceCardP
           </Group>
         </UnstyledButton>
 
-        <Text size="sm" c="blue" fw={500}>
+        <Text size="sm" c="blue" fw={500} dir="ltr" style={{ unicodeBidi: 'embed' }}>
           {isWorkStatus ? timeRange : statusLabel}
         </Text>
       </Group>

@@ -119,14 +119,18 @@ export function calculateDurationMinutes(startTime: string, endTime: string): nu
 }
 
 /**
- * Format duration in minutes to "X ש'" format
- * Example: 540 minutes → "9 ש'"
+ * Format duration in minutes to "X 'ש" format
+ * Example: 540 minutes → "9 'ש"
+ * Uses LTR embedding to ensure correct display order in RTL
  */
 export function formatDurationHours(minutes: number): string {
   const hours = minutes / 60;
   // Show one decimal place if not a whole number
   const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
-  return `${formatted} ש'`;
+  // Build REVERSED: suffix + space + number (will display correctly in RTL with LTR CSS)
+  const hoursSuffix = "'ש";
+  // Use LTR embedding (U+202A) and Pop Directional Formatting (U+202C)
+  return `\u202A${hoursSuffix} ${formatted}\u202C`;
 }
 
 /**

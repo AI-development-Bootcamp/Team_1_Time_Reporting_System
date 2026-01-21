@@ -11,7 +11,7 @@ import {
   FULL_WORK_DAY_MINUTES,
   DOCUMENT_REQUIRED_STATUSES,
 } from '../../utils/constants';
-import { formatDurationHours, isWeekend } from '../../utils/dateUtils';
+import { isWeekend } from '../../utils/dateUtils';
 import classes from './StatusBadge.module.css';
 
 interface StatusBadgeProps {
@@ -80,9 +80,12 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
     case 'halfDayOff':
       // Combined badge if there's also work
       if (hasBothHalfDayAndWork && totalMinutes > 0) {
-        const hoursLabel = formatDurationHours(totalMinutes);
+        const hours = totalMinutes / 60;
+        const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
+        // Build REVERSED: suffix + space + number + prefix (will display correctly in RTL with LTR CSS)
+        const label = BADGE_LABELS.hoursSuffix + ' ' + formatted + '/' + BADGE_LABELS.halfDayOff;
         return {
-          label: `${BADGE_LABELS.halfDayWorkPrefix}${hoursLabel}`,
+          label,
           colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
         };
       }
@@ -95,9 +98,12 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
       return { label: BADGE_LABELS.reserves, colorType: 'blue' };
 
     case 'work':
-      const hoursLabel = formatDurationHours(totalMinutes);
+      const hours = totalMinutes / 60;
+      const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
+      // Build REVERSED: suffix + space + number (will display correctly in RTL with LTR CSS)
+      const label = BADGE_LABELS.hoursSuffix + ' ' + formatted;
       return {
-        label: hoursLabel,
+        label,
         colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
       };
 
@@ -125,8 +131,8 @@ export function StatusBadge(props: StatusBadgeProps) {
       radius="xl"
     >
       <Group gap={4}>
-        <span className={classes.dot} style={{ backgroundColor: colors.dark }} />
         {label}
+        <span className={classes.dot} style={{ backgroundColor: colors.dark }} />
       </Group>
     </Badge>
   );
