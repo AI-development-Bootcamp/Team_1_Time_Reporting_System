@@ -34,12 +34,14 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         // 400 Validation errors - set field errors AND show notification
         const details = errorData.error.details;
         
-        // Set field errors
-        if (details.mail) {
-          form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
-        }
-        if (details.password) {
-          form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
+        // Set field errors (only if details is a Record, not an array)
+        if (!Array.isArray(details)) {
+          if (details.mail) {
+            form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
+          }
+          if (details.password) {
+            form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
+          }
         }
         
         // Also show notification for validation errors

@@ -31,3 +31,10 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+CODE_REVIEW_ISSUES.md
+mcp-trello-config.json
+real_tasks.md
+tasks_trello.md
+test-trello-connection.js
+sync-tasks-to-trello.js

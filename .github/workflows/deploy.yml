@@ -90,12 +90,16 @@ jobs:
       - name: Run Integration Tests
         run: npm run test:integration
 
-  # 3. Deployment - Runs on merge/push to main after tests pass
+  # 3. Deployment - Runs on merge/push to main after tests pass, or on fix branches for testing
   deploy:
     name: Deploy to Production
     needs: [unit-tests, integration-tests]
-    # Only run on push to main (which happens after a PR is merged)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Run on push to main OR on fix branches (for testing deployment before merging)
+    if: |
+      github.event_name == 'push' && (
+        github.ref == 'refs/heads/main' ||
+        contains(github.ref, '/fix/')
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
