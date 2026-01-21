@@ -36,11 +36,12 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         
         // Set field errors (only if details is a Record, not an array)
         if (!Array.isArray(details)) {
-          if (details.mail) {
-            form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
+          const detailsRecord = details as Record<string, string[]>;
+          if (detailsRecord.mail && detailsRecord.mail.length > 0) {
+            form.setFieldError('mail', detailsRecord.mail[0]);
           }
-          if (details.password) {
-            form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
+          if (detailsRecord.password && detailsRecord.password.length > 0) {
+            form.setFieldError('password', detailsRecord.password[0]);
           }
         }
         
