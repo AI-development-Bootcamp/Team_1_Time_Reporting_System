@@ -17,12 +17,13 @@ interface EmptyStateProps {
 export function EmptyState({ type }: EmptyStateProps) {
   const isFuture = type === 'future';
   const image = isFuture ? futureMonthImage : emptyListImage;
+  const altText = isFuture ? 'לא ניתן לצפות בחודש עתידי' : 'אין נתונים להצגה';
 
   return (
     <Center className={classes.container}>
       <Image
         src={image}
-        alt=""
+        alt={altText}
         className={classes.image}
         fit="contain"
       />

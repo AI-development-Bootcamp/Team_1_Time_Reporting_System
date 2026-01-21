@@ -53,10 +53,12 @@ export function MonthHeader({
       <Group gap="xs" className={classes.navigation}>
         {/* Left arrow = Next month (forward in RTL) */}
         <UnstyledButton
-          onClick={onNextMonth}
+          onClick={isNextDisabled ? undefined : onNextMonth}
           disabled={isNextDisabled}
           className={classes.navButton}
           data-disabled={isNextDisabled || undefined}
+          aria-disabled={isNextDisabled}
+          style={{ pointerEvents: isNextDisabled ? 'none' : 'auto' }}
         >
           <ChevronLeft />
         </UnstyledButton>
@@ -67,10 +69,12 @@ export function MonthHeader({
 
         {/* Right arrow = Previous month (back in RTL) */}
         <UnstyledButton
-          onClick={onPreviousMonth}
+          onClick={isPreviousDisabled ? undefined : onPreviousMonth}
           disabled={isPreviousDisabled}
           className={classes.navButton}
           data-disabled={isPreviousDisabled || undefined}
+          aria-disabled={isPreviousDisabled}
+          style={{ pointerEvents: isPreviousDisabled ? 'none' : 'auto' }}
         >
           <ChevronRight />
         </UnstyledButton>
