@@ -1,0 +1,56 @@
+.task-form-modal-content {
+  border-radius: 12px;
+  width: calc((100vw - 320px) / 3);
+  max-width: 600px;
+  min-width: 400px;
+}
+
+.task-form-modal-inner {
+  padding-right: 320px;
+}
+
+.task-form-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  right: 320px;
+}
+
+.task-form-header {
+  direction: rtl;
+}
+
+.task-form-icon-button {
+  background-color: #0C69FF;
+  color: white;
+}
+
+.task-form-close-button {
+  color: #666;
+}
+
+.task-form-title {
+  text-align: right;
+}
+
+.task-form-description {
+  text-align: right;
+}
+
+.task-form-field {
+  direction: rtl;
+}
+
+.task-form-field-label {
+  text-align: right;
+}
+
+.task-form-field-input {
+  text-align: right;
+}
+
+.task-form-submit-button {
+  background-color: #808080;
+  color: white;
+  direction: rtl;
+}
+
+

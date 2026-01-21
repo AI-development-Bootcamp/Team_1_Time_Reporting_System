@@ -58,6 +58,22 @@ export class ClientService {
       throw new AppError('NOT_FOUND', 'Client not found', 404);
     }
 
+    // If name is being updated, ensure no other ACTIVE client has this name
+    if (data.name !== undefined && data.name !== existingClient.name) {
+      const existingActiveClientWithSameName = await prisma.client.findFirst({
+        where: {
+          name: data.name,
+          active: true,
+          // Exclude the current client from the uniqueness check
+          NOT: { id },
+        },
+      });
+
+      if (existingActiveClientWithSameName) {
+        throw new AppError('CONFLICT', 'Active client with this name already exists', 409);
+      }
+    }
+
     // Prepare update data (only include fields that are provided)
     const updateData: {
       name?: string;

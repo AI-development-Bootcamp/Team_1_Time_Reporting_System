@@ -1,0 +1,64 @@
+.client-form-modal-content {
+  border-radius: 12px;
+  width: calc((100vw - 320px) / 3);
+  max-width: 600px;
+  min-width: 400px;
+}
+
+.client-form-modal-inner {
+  padding-right: 320px; /* Account for sidebar width (RTL) */
+}
+
+.client-form-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  right: 320px; /* Don't cover sidebar */
+}
+
+.client-form-header {
+  direction: rtl;
+}
+
+.client-form-icon-button {
+  background-color: #0C69FF;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.client-form-icon-button:hover {
+  background-color: #0a57d4;
+  color: white;
+  box-shadow: 0 2px 6px rgba(12, 105, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.client-form-close-button {
+  color: #666;
+}
+
+.client-form-title {
+  text-align: right;
+}
+
+.client-form-description {
+  text-align: right;
+}
+
+.client-form-field {
+  direction: rtl;
+}
+
+.client-form-field-label {
+  text-align: right;
+}
+
+.client-form-field-input {
+  text-align: right;
+}
+
+.client-form-submit-button {
+  background-color: #808080;
+  color: white;
+  direction: rtl;
+}
+

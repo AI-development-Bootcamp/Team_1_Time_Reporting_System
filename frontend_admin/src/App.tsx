@@ -4,24 +4,26 @@ import { AuthContextProvider } from '@shared/context/AuthContext';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute/ProtectedRoute';
 import { LoginPage } from '@shared/components/Login/LoginPage';
 import { useAuth } from '@shared/hooks/useAuth';
-import { AppLayout } from '@components/Layout/AppLayout';
-import { ClientManagement } from '@pages/ClientManagement';
-import ReportingSettingsPage from '@pages/ReportingSettingsPage';
 import { ErrorBoundary } from '@components/ErrorBoundary';
+import { AppLayout } from '@components/Layout/AppLayout';
+import { ClientsPage } from '@pages/ClientsPage';
+import ReportingSettingsPage from '@pages/ReportingSettingsPage';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
+      {/* Login route - redirect to /client-management if already authenticated */}
       <Route path="/login" element={isAuthenticated ? <Navigate to="/client-management" replace /> : <LoginPage appType="admin" />} />
 
+      {/* Protected admin routes */}
       <Route
         path="/client-management"
         element={
           <ProtectedRoute requireAdmin>
             <AppLayout>
-              <ClientManagement />
+              <ClientsPage />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -38,6 +40,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* Root route - redirect to /login if not authenticated, otherwise to /client-management */}
       <Route path="/" element={<Navigate to={isAuthenticated ? '/client-management' : '/login'} replace />} />
     </Routes>
   );

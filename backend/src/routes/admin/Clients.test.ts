@@ -309,6 +309,8 @@ describe('Clients Router', () => {
       };
 
       mockPrisma.client.findUnique.mockResolvedValue(existingClient);
+      // No other active client with the new name -> should NOT conflict
+      mockPrisma.client.findFirst.mockResolvedValue(null);
       mockPrisma.client.update.mockResolvedValue({
         ...existingClient,
         name: 'Updated Client',
@@ -345,6 +347,8 @@ describe('Clients Router', () => {
       };
 
       mockPrisma.client.findUnique.mockResolvedValue(existingClient);
+      // No other active client with the new name -> should NOT conflict
+      mockPrisma.client.findFirst.mockResolvedValue(null);
       mockPrisma.client.update.mockResolvedValue(existingClient);
 
       const response = await request(app)
@@ -361,6 +365,43 @@ describe('Clients Router', () => {
           name: 'Updated Name Only',
         },
       });
+    });
+
+    it('should return 409 if updating name to an existing active client name', async () => {
+      const existingClient = {
+        id: BigInt(1),
+        name: 'Original Client',
+        description: 'Original description',
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const otherActiveClientWithSameName = {
+        id: BigInt(2),
+        name: 'Conflicting Name',
+        description: 'Another client',
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockPrisma.client.findUnique.mockResolvedValue(existingClient);
+      // Simulate another ACTIVE client with the same target name
+      mockPrisma.client.findFirst.mockResolvedValue(otherActiveClientWithSameName);
+
+      const response = await request(app)
+        .put('/api/admin/clients/1')
+        .send({
+          name: 'Conflicting Name',
+        })
+        .expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('CONFLICT');
+      expect(response.body.error.message).toBe('Active client with this name already exists');
+      // Update must not be executed when conflict occurs
+      expect(mockPrisma.client.update).not.toHaveBeenCalled();
     });
 
     it('should update only description when only description is provided', async () => {

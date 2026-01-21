@@ -1,0 +1,44 @@
+.project-form-modal-content {
+  border-radius: 12px;
+}
+
+.project-form-header {
+  direction: rtl;
+}
+
+.project-form-icon-button {
+  background-color: #0C69FF;
+  color: white;
+}
+
+.project-form-close-button {
+  color: #666;
+}
+
+.project-form-title {
+  text-align: right;
+}
+
+.project-form-description {
+  text-align: right;
+}
+
+.project-form-field {
+  direction: rtl;
+}
+
+.project-form-field-label {
+  text-align: right;
+}
+
+.project-form-field-input {
+  text-align: right;
+}
+
+.project-form-submit-button {
+  background-color: #808080;
+  color: white;
+  direction: rtl;
+}
+
+
