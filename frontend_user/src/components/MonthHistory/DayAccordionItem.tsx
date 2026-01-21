@@ -7,7 +7,7 @@ import { Accordion, Group, Text, Stack, Button, Image } from '@mantine/core';
 import { DailyAttendance } from '../../types';
 import { StatusBadge } from './StatusBadge';
 import { DailyAttendanceCard } from './DailyAttendanceCard';
-import { formatDateWithDay, isWeekend, isWorkday, calculateDurationMinutes } from '../../utils/dateUtils';
+import { formatDate, getHebrewDayName, isWorkday, calculateDurationMinutes } from '../../utils/dateUtils';
 import { HEBREW_STRINGS } from '../../utils/constants';
 import workDayIcon from '@images/WorkDayLogo.png';
 import notWorkIcon from '@images/CalendarNotWorkIcon.png';
@@ -73,8 +73,8 @@ export function DayAccordionItem({
   onEdit,
   onAddReport,
 }: DayAccordionItemProps) {
-  const formattedDate = formatDateWithDay(date);
-  const isWeekendDay = isWeekend(date);
+  const dateOnly = formatDate(date);
+  const dayLabel = getHebrewDayName(date);
   const isWorkingDay = isWorkday(date);
   const hasAttendances = attendances.length > 0;
   const isMissing = isWorkingDay && !hasAttendances;
@@ -108,9 +108,11 @@ export function DayAccordionItem({
             hasBothHalfDayAndWork={hasBothHalfDayAndWork}
           />
           <Group gap="xs" wrap="nowrap">
-            <Text size="sm" fw={500} className={classes.dateText}>
-              {formattedDate}
-            </Text>
+            <Group gap={4} wrap="nowrap">
+              <Text size="sm" fw={500} style={{ direction: 'ltr' }}>{dayLabel}</Text>
+              <Text size="sm" fw={500}>,</Text>
+              <Text size="sm" fw={500}>{dateOnly}</Text>
+            </Group>
             <Image src={calendarIcon} alt="" w={20} h={20} className={classes.calendarIcon} />
           </Group>
         </Group>

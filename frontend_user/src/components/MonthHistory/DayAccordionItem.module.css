@@ -24,7 +24,7 @@
 
 .dateText {
   direction: ltr !important;
-  unicode-bidi: bidi-override !important;
+  unicode-bidi: embed !important;
   text-align: left !important;
 }
 
