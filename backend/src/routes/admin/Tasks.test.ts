@@ -22,7 +22,7 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 // Mock the prisma singleton instance directly
-vi.mock('../../utils/prisma', () => ({
+vi.mock('@utils/prisma', () => ({
   prisma: mockPrisma,
 }));
 
