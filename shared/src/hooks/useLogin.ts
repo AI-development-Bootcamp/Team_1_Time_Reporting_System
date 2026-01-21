@@ -1,16 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
-import { apiClient, ValidationErrorDetails } from '../utils/ApiClient';
+import { apiClient } from '../utils/ApiClient';
 import { useAuth } from './useAuth';
 import { LoginRequest, LoginResponse } from '../types/User';
 import { UseFormReturnType } from '@mantine/form';
 import { AxiosError } from 'axios';
 import { ApiErrorResponse } from '../utils/ApiClient';
-
-// Type guard to check if details is a Record
-function isRecordDetails(details: ValidationErrorDetails): details is Record<string, string[]> {
-  return !Array.isArray(details) && typeof details === 'object';
-}
 
 interface UseLoginOptions {
   form: UseFormReturnType<LoginRequest>;
@@ -40,13 +35,15 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         const details = errorData.error.details;
         
         // Set field errors (only if details is a Record, not an array)
-        if (isRecordDetails(details)) {
-          const mailError = details['mail'];
-          const passwordError = details['password'];
-          if (mailError && mailError.length > 0) {
+        if (!Array.isArray(details) && typeof details === 'object' && details !== null) {
+          // TypeScript needs explicit casting here due to union type
+          const detailsRecord = details as unknown as Record<string, string[]>;
+          const mailError = detailsRecord['mail'];
+          const passwordError = detailsRecord['password'];
+          if (mailError && Array.isArray(mailError) && mailError.length > 0) {
             form.setFieldError('mail', mailError[0]);
           }
-          if (passwordError && passwordError.length > 0) {
+          if (passwordError && Array.isArray(passwordError) && passwordError.length > 0) {
             form.setFieldError('password', passwordError[0]);
           }
         }
