@@ -168,6 +168,16 @@ export interface CreateAbsenceAttendanceRequest {
 }
 
 /**
+ * Update attendance request body
+ * PUT /api/attendance/:id
+ */
+export interface UpdateAttendanceInput {
+  startTime?: string | null; // HH:mm
+  endTime?: string | null; // HH:mm
+  status?: DailyAttendanceStatus;
+}
+
+/**
  * Combined attendance creation response
  */
 export interface CreateCombinedAttendanceResponse {

@@ -1311,13 +1311,13 @@ backend/src/
   - [x] Add unit tests (≥80% coverage)
 
 **Frontend - API Services:**
-- [ ] TASK-M2-020-FE-004: Extend attendance API service
-  - [ ] Update `services/attendanceApi.ts`:
-    - [ ] `createCombinedAttendance(data)` - POST /api/attendance/combined
-    - [ ] `updateAttendance(id, data)` - PUT /api/attendance/:id
-    - [ ] `uploadDocument(attendanceId, file)` - POST /api/attendance/:id/document
-    - [ ] `deleteDocument(attendanceId)` - DELETE /api/attendance/:id/document
-  - [ ] Add proper TypeScript types and error handling
+- [x] TASK-M2-020-FE-004: Extend attendance API service
+  - [x] Update `services/attendanceApi.ts`:
+    - [x] `createCombinedAttendance(data)` - POST /api/attendance/combined
+    - [x] `updateAttendance(id, data)` - PUT /api/attendance/:id
+    - [x] `uploadDocument(attendanceId, file)` - POST /api/attendance/:id/document
+    - [x] `deleteDocument(attendanceId)` - DELETE /api/attendance/:id/document
+  - [x] Add proper TypeScript types and error handling
 
 - [ ] TASK-M2-020-FE-005: Create project selector API service
   - [ ] Create `services/projectSelectorApi.ts`:
