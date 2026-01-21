@@ -1345,13 +1345,13 @@ backend/src/
     - [x] Return: `{ mutate, mutateAsync, isLoading, error }`
   - [x] Add tests (≥70% coverage)
 
-- [ ] TASK-M2-020-FE-008: Create useUpdateDailyReport hook
-  - [ ] Create `hooks/useUpdateDailyReport.ts`:
-    - [ ] Use `useMutation` for updating attendance
-    - [ ] Separate mutations for time logs (create/update/delete via API)
-    - [ ] Invalidate queries on success
-    - [ ] Handle success/error notifications
-  - [ ] Add tests (≥70% coverage)
+- [x] TASK-M2-020-FE-008: Create useUpdateDailyReport hook
+  - [x] Create `hooks/useUpdateDailyReport.ts`:
+    - [x] Use `useMutation` for updating attendance
+    - [x] Separate mutations for time logs (create/update/delete via API)
+    - [x] Invalidate queries on success
+    - [x] Handle success/error notifications
+  - [x] Add tests (≥70% coverage)
 
 - [ ] TASK-M2-020-FE-009: Create useDailyReportForm hook
   - [ ] Create `hooks/useDailyReportForm.ts`:
