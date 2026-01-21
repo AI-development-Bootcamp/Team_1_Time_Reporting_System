@@ -40,7 +40,7 @@ export const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
         },
         overlay: {
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          right: '320px',
+          zIndex: 200,
         },
       }}
     >

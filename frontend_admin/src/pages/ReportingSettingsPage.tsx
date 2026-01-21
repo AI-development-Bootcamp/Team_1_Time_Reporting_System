@@ -73,24 +73,24 @@ function ReportingSettingsPage() {
       className={styles.container}
     >
       <Stack gap={8}>
-        <Box className={styles.titleColumn}>
-          <Title 
-            order={2} 
-            ta="right" 
-            className={styles.pageTitle}
-          >
-            הגדרת דיווחי שעות
-          </Title>
-          <Text 
-            c="dimmed" 
-            size="sm" 
-            ta="right" 
-            className={styles.subtitle}
-          >
-            כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
-          </Text>
-        </Box>
-        {!isLoading && !isError && (
+          <Box className={styles.titleColumn}>
+            <Title 
+              order={2} 
+              ta="right" 
+              className={styles.pageTitle}
+            >
+              הגדרת דיווחי שעות
+            </Title>
+            <Text 
+              c="dimmed" 
+              size="sm" 
+              ta="right" 
+              className={styles.subtitle}
+            >
+              כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
+            </Text>
+          </Box>
+          {!isLoading && !isError && (
           <Group justify="flex-end" gap="md" mb="md">
             <TextInput
               placeholder="חיפוש לפי שם לקוח/פרויקט"
@@ -100,7 +100,7 @@ function ReportingSettingsPage() {
               className={searchStyles.searchInput}
             />
           </Group>
-        )}
+          )}
         {isLoading && (
           <Stack gap="md">
             <Skeleton height={40} radius="sm" />

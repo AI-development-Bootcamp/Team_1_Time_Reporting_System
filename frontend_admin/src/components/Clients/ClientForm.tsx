@@ -67,7 +67,7 @@ export const ClientForm: FC<ClientFormProps> = ({
         },
         overlay: {
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          right: '320px',
+          zIndex: 200,
         },
       }}
     >

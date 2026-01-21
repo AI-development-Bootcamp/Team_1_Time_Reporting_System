@@ -273,24 +273,27 @@ export function ClientsTable() {
       }
     });
 
-    // Create maps: projectId -> tasks
+    // Create maps: projectId -> tasks (ensure consistent string IDs)
     const projectTasksMap = new Map<string, (typeof allTasks)[0][]>();
     allTasks.forEach((task) => {
-      if (!projectTasksMap.has(task.projectId)) {
-        projectTasksMap.set(task.projectId, []);
+      const projectId = String(task.projectId);
+      if (!projectTasksMap.has(projectId)) {
+        projectTasksMap.set(projectId, []);
       }
-      projectTasksMap.get(task.projectId)!.push(task);
+      projectTasksMap.get(projectId)!.push(task);
     });
 
     // Build rows: iterate through all clients
+    // Each client-project-task combination gets its own row
     const rows: TableRowData[] = [];
     clients.forEach((client) => {
-      const clientProjects = clientProjectsMap.get(String(client.id)) ?? [];
+      const clientId = String(client.id);
+      const clientProjects = clientProjectsMap.get(clientId) ?? [];
       
-      // If client has no projects, show one row with empty project/task
+      // If client has no projects, show one row with client only
       if (clientProjects.length === 0) {
         rows.push({
-          clientId: String(client.id),
+          clientId,
           clientName: client.name,
           projectId: '',
           projectName: '',
@@ -301,16 +304,17 @@ export function ClientsTable() {
         return;
       }
 
-      // For each project of the client
+      // For each project of the client, create rows
       clientProjects.forEach((project) => {
-        const projectTasks = projectTasksMap.get(project.id) ?? [];
+        const projectId = String(project.id);
+        const projectTasks = projectTasksMap.get(projectId) ?? [];
         
-        // If project has no tasks, show one row with project name but empty task
+        // If project has no tasks, show one row with client + project
         if (projectTasks.length === 0) {
           rows.push({
-            clientId: String(client.id),
+            clientId,
             clientName: client.name,
-            projectId: String(project.id),
+            projectId,
             projectName: project.name,
             taskId: '',
             taskName: '',
@@ -319,15 +323,17 @@ export function ClientsTable() {
           return;
         }
 
-        // For each task in the project, create a row
+        // For each task in the project, create a separate row
+        // This ensures: client1-project1-task1, client1-project1-task2, etc.
         projectTasks.forEach((task) => {
-          const employeeNames = taskEmployeesMap.get(task.id) ?? [];
+          const taskId = String(task.id);
+          const employeeNames = taskEmployeesMap.get(taskId) ?? [];
           rows.push({
-            clientId: String(client.id),
+            clientId,
             clientName: client.name,
-            projectId: String(project.id),
+            projectId,
             projectName: project.name,
-            taskId: String(task.id),
+            taskId,
             taskName: task.name,
             employeeNames,
           });

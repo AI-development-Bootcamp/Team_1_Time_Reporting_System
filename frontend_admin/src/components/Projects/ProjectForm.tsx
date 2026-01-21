@@ -109,6 +109,12 @@ export const ProjectForm: FC<ProjectFormProps> = ({
       classNames={{
         content: 'project-form-modal-content',
       }}
+      styles={{
+        overlay: {
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 200,
+        },
+      }}
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="lg">

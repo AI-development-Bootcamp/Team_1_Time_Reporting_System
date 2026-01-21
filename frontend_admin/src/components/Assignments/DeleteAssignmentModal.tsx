@@ -57,6 +57,7 @@ export const DeleteAssignmentModal: FC<DeleteAssignmentModalProps> = ({
     if (selectedUserIds.length > 0) {
       onConfirm(selectedUserIds);
       setSelectedUserIds([]);
+      onClose();
     }
   };
 
@@ -80,7 +81,7 @@ export const DeleteAssignmentModal: FC<DeleteAssignmentModalProps> = ({
         },
         overlay: {
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          right: '320px',
+          zIndex: 200,
         },
       }}
     >
