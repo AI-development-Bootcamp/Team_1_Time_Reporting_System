@@ -1319,12 +1319,12 @@ backend/src/
     - [x] `deleteDocument(attendanceId)` - DELETE /api/attendance/:id/document
   - [x] Add proper TypeScript types and error handling
 
-- [ ] TASK-M2-020-FE-005: Create project selector API service
-  - [ ] Create `services/projectSelectorApi.ts`:
-    - [ ] `getProjectSelector(userId)` - GET /api/projects/selector
-    - [ ] `buildTaskLookupMap(data)` - flatten hierarchy for quick lookup
-    - [ ] Use existing ProjectSelectorResponse type
-  - [ ] Export from `services/index.ts`
+- [x] TASK-M2-020-FE-005: Create project selector API service
+  - [x] Create `services/projectSelectorApi.ts`:
+    - [x] `getProjectSelector(userId)` - GET /api/projects/selector
+    - [x] `buildTaskLookupMap(data)` - flatten hierarchy for quick lookup
+    - [x] Use existing ProjectSelectorResponse type
+  - [x] Export from `services/index.ts`
 
 **Frontend - Custom Hooks:**
 - [ ] TASK-M2-020-FE-006: Create useProjectSelector hook
