@@ -37,7 +37,13 @@ interface BadgeConfig {
 }
 
 /**
- * Get badge configuration based on status and conditions
+ * Determine the badge label and color for an attendance day based on provided props.
+ *
+ * Evaluates weekend, missing attendance, document-required statuses, half-day-with-work combinations,
+ * and work hours to produce a human-readable label and a color key.
+ *
+ * @param props - Input properties affecting badge selection: `date`, `status`, `totalMinutes`, `hasDocument`, `isMissing`, and `hasBothHalfDayAndWork`.
+ * @returns An object with `label` (the text to display) and `colorType` (one of `'green'|'orange'|'blue'|'red'|'purple'`) indicating the badge color category.
  */
 function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
   const {
@@ -121,6 +127,12 @@ const DOT_SYMBOLS = {
   purple: '/',     // Slash - half day + work
 };
 
+/**
+ * Render a colored attendance badge with a status-specific symbol and label.
+ *
+ * @param props - Component properties controlling date, status, totalMinutes, hasDocument, isMissing, and hasBothHalfDayAndWork
+ * @returns A Mantine Badge element containing a colored dot symbol and the computed status label
+ */
 export function StatusBadge(props: StatusBadgeProps) {
   const { label, colorType } = getBadgeConfig(props);
   const colors = BADGE_COLORS[colorType];

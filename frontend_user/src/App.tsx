@@ -5,6 +5,15 @@ import { MonthHistoryPage } from './components/MonthHistory';
 import { BottomBar } from './components/BottomBar';
 import { ComingSoonModal } from './components/ComingSoonModal';
 
+/**
+ * Root React component that renders a mobile-first application layout and coordinates the Coming Soon modal.
+ *
+ * Renders a centered informational message on non-mobile viewports. On mobile viewports it renders the mobile
+ * container with MonthHistoryPage, BottomBar, and ComingSoonModal, and manages modal open/close state passed to
+ * child components. Uses a placeholder `userId` until an auth context is integrated.
+ *
+ * @returns The React element tree for the app's current viewport (non-mobile message or mobile layout).
+ */
 function App() {
   // Check if mobile view (max-width: 768px)
   const isMobile = useMediaQuery('(max-width: 768px)');

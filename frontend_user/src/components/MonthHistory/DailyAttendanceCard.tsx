@@ -19,7 +19,10 @@ interface DailyAttendanceCardProps {
 }
 
 /**
- * Get display label for attendance status
+ * Map an attendance status to its display label.
+ *
+ * @param status - The attendance status to map (e.g., 'work', 'dayOff', 'halfDayOff', 'sickness', 'reserves')
+ * @returns The corresponding display label from BADGE_LABELS, or an empty string when no label is defined for the status
  */
 function getStatusLabel(status: DailyAttendance['status']): string {
   switch (status) {
@@ -37,6 +40,16 @@ function getStatusLabel(status: DailyAttendance['status']): string {
   }
 }
 
+/**
+ * Render a card for a single daily attendance record.
+ *
+ * Displays an edit action, a primary label (time range for work status or a status label for non-work),
+ * an optional secondary status label for non-work statuses, and a list of project time logs when present.
+ *
+ * @param attendance - The DailyAttendance record to display.
+ * @param onEdit - Optional callback invoked with the attendance `id` when the edit action is triggered.
+ * @returns The JSX element representing the attendance card.
+ */
 export function DailyAttendanceCard({ attendance, onEdit }: DailyAttendanceCardProps) {
   const timeRange = formatTimeRange(attendance.startTime, attendance.endTime);
   const statusLabel = getStatusLabel(attendance.status);

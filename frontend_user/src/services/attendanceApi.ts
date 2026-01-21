@@ -7,11 +7,12 @@ import { apiClient } from '@shared/utils/ApiClient';
 import { DailyAttendance, MonthHistoryParams } from '../types';
 
 /**
- * Get month history for a user
- * Returns all DailyAttendance records with embedded time logs for a specific month
- * 
- * @param params - Month (1-12) and userId
- * @returns Array of DailyAttendance records sorted by date descending
+ * Retrieve a user's daily attendance records for a specific month.
+ *
+ * Includes embedded time logs for each day.
+ *
+ * @param params - Object with `month` (1-12) and `userId` identifying the target month and user
+ * @returns An array of DailyAttendance records sorted by date descending
  */
 export async function getMonthHistory(params: MonthHistoryParams): Promise<DailyAttendance[]> {
   const response = await apiClient.get<DailyAttendance[]>('/attendance/month-history', {
@@ -24,10 +25,10 @@ export async function getMonthHistory(params: MonthHistoryParams): Promise<Daily
 }
 
 /**
- * Get a single attendance record by ID
- * 
- * @param id - Attendance record ID
- * @returns DailyAttendance record
+ * Retrieve an attendance record by its ID.
+ *
+ * @param id - The attendance record's ID
+ * @returns The attendance record matching `id`
  */
 export async function getAttendanceById(id: string): Promise<DailyAttendance> {
   const response = await apiClient.get<DailyAttendance>(`/attendance/${id}`);

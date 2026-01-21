@@ -14,6 +14,12 @@ interface EmptyStateProps {
   type: 'future' | 'noData';
 }
 
+/**
+ * Renders a centered empty-state image for either a future month or a month with no data.
+ *
+ * @param type - Determines which empty-state to show: `'future'` selects the future-month illustration and Hebrew alt text indicating future months cannot be viewed; `'noData'` selects the empty-list illustration and Hebrew alt text indicating no data is available.
+ * @returns A JSX element containing a centered Image set to `contain`, styled via the component's CSS module.
+ */
 export function EmptyState({ type }: EmptyStateProps) {
   const isFuture = type === 'future';
   const image = isFuture ? futureMonthImage : emptyListImage;

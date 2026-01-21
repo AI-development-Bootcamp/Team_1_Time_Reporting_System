@@ -13,6 +13,13 @@ interface ComingSoonModalProps {
   onClose: () => void;
 }
 
+/**
+ * Render a centered "Coming soon" modal with a title, message, and dismiss button.
+ *
+ * @param opened - Whether the modal is visible
+ * @param onClose - Callback invoked when the modal should be closed
+ * @returns The modal element containing the title, message, and a button that triggers `onClose`
+ */
 export function ComingSoonModal({ opened, onClose }: ComingSoonModalProps) {
   return (
     <Modal

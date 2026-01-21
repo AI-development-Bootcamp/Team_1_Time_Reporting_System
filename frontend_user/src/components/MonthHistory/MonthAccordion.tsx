@@ -23,7 +23,10 @@ interface MonthAccordionProps {
 }
 
 /**
- * Group attendances by date
+ * Group DailyAttendance entries by their `date` property.
+ *
+ * @param attendances - Array of attendances to group; each item must have a `date` string
+ * @returns A Map whose keys are date strings and whose values are arrays of `DailyAttendance` for that date
  */
 function groupAttendancesByDate(
   attendances: DailyAttendance[]
@@ -39,6 +42,16 @@ function groupAttendancesByDate(
   return grouped;
 }
 
+/**
+ * Render an accordion showing each day of a given month with its attendances.
+ *
+ * @param month - Month number (1-12) to display
+ * @param year - Full year (e.g., 2026) for the target month
+ * @param attendances - Array of DailyAttendance entries to be grouped by date and shown on their respective day
+ * @param onEdit - Optional callback invoked with an attendance ID when an attendance is edited
+ * @param onAddReport - Optional callback invoked with a date string when a new report should be added for that date
+ * @returns The Accordion element containing a DayAccordionItem for every date generated for the month
+ */
 export function MonthAccordion({
   month,
   year,

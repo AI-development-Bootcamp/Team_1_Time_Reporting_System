@@ -22,6 +22,17 @@ interface MonthHistoryPageProps {
   onAddReport?: (date: string) => void;
 }
 
+/**
+ * Render a month-by-month attendance history view with month navigation and conditional states.
+ *
+ * Displays loading, error, future-month, no-data, or populated-data states and allows navigating
+ * between months within the current year. Passes edit and add-report interactions to optional callbacks.
+ *
+ * @param userId - The identifier of the user whose attendance history is displayed.
+ * @param onEdit - Optional callback invoked with an `attendanceId` when an attendance entry is edited.
+ * @param onAddReport - Optional callback invoked with a `date` string when adding a report for a specific date.
+ * @returns The rendered month history page as a JSX element.
+ */
 export function MonthHistoryPage({ userId, onEdit, onAddReport }: MonthHistoryPageProps) {
   // State for current month/year
   const [month, setMonth] = useState(getCurrentMonth());

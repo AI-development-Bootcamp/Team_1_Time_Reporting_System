@@ -31,10 +31,19 @@ interface UseMonthHistoryReturn {
 }
 
 /**
- * Hook to fetch month history data
- * 
- * @param params - Month, year, userId, and optional enabled flag
- * @returns Attendance data, loading/error states, and refetch function
+ * Fetches a user's attendance history for a specific month and exposes query state and controls.
+ *
+ * @param month - Month number (1-12) for which to fetch attendance
+ * @param year - Four-digit year for which to fetch attendance
+ * @param userId - Identifier of the user whose attendance is requested
+ * @param enabled - When false, disables the query even if `userId` is provided (default: `true`)
+ * @returns An object containing:
+ *  - `attendances`: array of DailyAttendance records (empty array if none),
+ *  - `isLoading`: whether the initial load is in progress,
+ *  - `isError`: whether the query encountered an error,
+ *  - `error`: the Error object when `isError` is true, otherwise `null`,
+ *  - `refetch`: function to manually re-run the query,
+ *  - `isFetching`: whether the query is currently fetching (including background fetches)
  */
 export function useMonthHistory({
   month,

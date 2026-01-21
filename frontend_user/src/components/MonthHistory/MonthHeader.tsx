@@ -37,6 +37,17 @@ interface MonthHeaderProps {
   isNextDisabled?: boolean;
 }
 
+/**
+ * Display a header showing the Hebrew month name with RTL-aware previous/next controls and the page title.
+ *
+ * @param month - Month number (1-12) used to compute and display the Hebrew month name
+ * @param year - Current year (accepted but reserved for future use; not displayed)
+ * @param onPreviousMonth - Callback invoked when the previous-month control is activated
+ * @param onNextMonth - Callback invoked when the next-month control is activated
+ * @param isPreviousDisabled - When `true`, disables the previous-month control and prevents interaction
+ * @param isNextDisabled - When `true`, disables the next-month control and prevents interaction
+ * @returns The header element containing month navigation and the page title
+ */
 export function MonthHeader({
   month,
   year: _year, // Reserved for future use (e.g., display year in header)

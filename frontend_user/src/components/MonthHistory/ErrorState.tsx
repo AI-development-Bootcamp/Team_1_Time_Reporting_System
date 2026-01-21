@@ -13,6 +13,12 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
+/**
+ * Render a centered error UI with an illustration, Hebrew title and message, and an optional retry button.
+ *
+ * @param onRetry - Optional callback invoked when the user clicks the retry button.
+ * @returns A React element representing the error state UI.
+ */
 export function ErrorState({ onRetry }: ErrorStateProps) {
   return (
     <Center className={classes.container}>

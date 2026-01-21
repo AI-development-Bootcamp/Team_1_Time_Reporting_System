@@ -30,11 +30,17 @@ interface UseTimeLogsReturn {
 }
 
 /**
- * Hook to fetch time logs for a specific attendance record
- * Use `enabled` prop to control when to fetch (e.g., only when accordion is expanded)
- * 
- * @param params - dailyAttendanceId and optional enabled flag
- * @returns Time logs data, loading/error states, and refetch function
+ * Fetch time logs for a specific daily attendance record and expose fetch state and manual refetch control.
+ *
+ * @param params - Parameters for fetching time logs.
+ * @param params.dailyAttendanceId - Identifier of the attendance record whose time logs should be fetched.
+ * @param params.enabled - When `false`, disables automatic fetching (useful for lazy loading, e.g., when an accordion is collapsed); defaults to `true`.
+ * @returns An object with:
+ * - `timeLogs`: an array of `SerializedTimeLog` (empty array if no data),
+ * - `isLoading`: `true` while the query is loading,
+ * - `isError`: `true` if the query failed,
+ * - `error`: the `Error` instance when a failure occurred, or `null`,
+ * - `refetch`: a function to trigger a manual refetch.
  */
 export function useTimeLogs({
   dailyAttendanceId,

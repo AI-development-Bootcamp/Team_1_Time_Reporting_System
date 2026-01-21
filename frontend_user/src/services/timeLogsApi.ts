@@ -7,10 +7,10 @@ import { apiClient } from '@shared/utils/ApiClient';
 import { SerializedTimeLog, TimeLogsParams } from '../types';
 
 /**
- * Get time logs for a specific attendance record
- * 
- * @param params - dailyAttendanceId
- * @returns Array of time logs
+ * Fetches time logs for the given daily attendance record.
+ *
+ * @param params - Object containing `dailyAttendanceId`, the ID of the daily attendance used to filter time logs
+ * @returns An array of serialized time log records for the specified daily attendance
  */
 export async function getTimeLogsByAttendance(params: TimeLogsParams): Promise<SerializedTimeLog[]> {
   const response = await apiClient.get<SerializedTimeLog[]>('/time-logs', {
@@ -22,10 +22,10 @@ export async function getTimeLogsByAttendance(params: TimeLogsParams): Promise<S
 }
 
 /**
- * Get a single time log by ID
- * 
- * @param id - Time log ID
- * @returns Time log record
+ * Retrieve a time log by its identifier.
+ *
+ * @param id - The ID of the time log to fetch
+ * @returns The time log record for the given `id`
  */
 export async function getTimeLogById(id: string): Promise<SerializedTimeLog> {
   const response = await apiClient.get<SerializedTimeLog>(`/time-logs/${id}`);

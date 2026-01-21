@@ -26,7 +26,10 @@ interface DayAccordionItemProps {
 }
 
 /**
- * Calculate total minutes from all attendances on a date
+ * Compute the sum of durations (in minutes) for attendances that have both start and end times.
+ *
+ * @param attendances - Array of daily attendance records to include in the calculation
+ * @returns The total duration in minutes for attendances with both `startTime` and `endTime` (0 if none)
  */
 function calculateTotalMinutes(attendances: DailyAttendance[]): number {
   return attendances.reduce((total, att) => {
@@ -38,7 +41,12 @@ function calculateTotalMinutes(attendances: DailyAttendance[]): number {
 }
 
 /**
- * Determine the primary status for badge display
+ * Selects a single status to represent a day's attendances.
+ *
+ * Chooses a priority-based status for badge display: prefers `dayOff`, then `sickness`, then `reserves`, then `halfDayOff` (treated as `halfDayOff` when combined with `work`), then `work`; if none match, returns the first attendance's status.
+ *
+ * @param attendances - Array of daily attendance records to evaluate
+ * @returns The selected status (`'dayOff'`, `'sickness'`, `'reserves'`, `'halfDayOff'`, `'work'`, or another status from the first attendance), or `undefined` when `attendances` is empty
  */
 function getPrimaryStatus(attendances: DailyAttendance[]) {
   if (attendances.length === 0) return undefined;
@@ -62,12 +70,25 @@ function getPrimaryStatus(attendances: DailyAttendance[]) {
 }
 
 /**
- * Check if any attendance has a document
+ * Determines whether any attendance includes a submitted document.
+ *
+ * @returns `true` if at least one attendance has `document === true`, `false` otherwise.
  */
 function hasAnyDocument(attendances: DailyAttendance[]): boolean {
   return attendances.some((a) => a.document === true);
 }
 
+/**
+ * Render an accordion item for a single date that displays a status badge, date label, calendar icon, and the day's attendance entries.
+ *
+ * Renders a header summarizing the day's attendance (primary status, total minutes, document presence, and missing/workday indicators) and a panel containing one DailyAttendanceCard per attendance plus an Add Report button which is hidden for day-off, sickness, or reserves statuses.
+ *
+ * @param date - The day in `YYYY-MM-DD` format represented by this accordion item
+ * @param attendances - Array of DailyAttendance objects for `date`
+ * @param onEdit - Optional callback invoked with an attendance id when an attendance card requests edit
+ * @param onAddReport - Optional callback invoked with `date` when the Add Report button is clicked
+ * @returns The rendered accordion item for the given date
+ */
 export function DayAccordionItem({
   date,
   attendances,

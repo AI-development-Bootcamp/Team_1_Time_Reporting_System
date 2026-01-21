@@ -19,9 +19,10 @@ dayjs.extend(utc);
 // ============================================================================
 
 /**
- * Format date as DD/MM/YY, יום X'
- * Example: "20/01/26, יום ג'"
- * Simple concatenation: date, comma, day label
+ * Format a date as "DD/MM/YY, <Hebrew day name>".
+ *
+ * @param date - The date to format; accepted types: string, Date, or Dayjs
+ * @returns The formatted date string, for example: "20/01/26, יום ג'"
  */
 export function formatDateWithDay(date: string | Date | Dayjs): string {
   const d = dayjs(date);
@@ -32,35 +33,49 @@ export function formatDateWithDay(date: string | Date | Dayjs): string {
 }
 
 /**
- * Format date as DD/MM/YY
+ * Formats a date as DD/MM/YY.
+ *
+ * @param date - The input date (string, Date, or Dayjs)
+ * @returns The formatted date string in `DD/MM/YY` format
  */
 export function formatDate(date: string | Date | Dayjs): string {
   return dayjs(date).format('DD/MM/YY');
 }
 
 /**
- * Get Hebrew day name
+ * Get the full Hebrew weekday name for the specified date.
+ *
+ * @returns The Hebrew weekday name corresponding to the provided `date`.
  */
 export function getHebrewDayName(date: string | Date | Dayjs): string {
   return HEBREW_DAY_NAMES[dayjs(date).day()];
 }
 
 /**
- * Get short Hebrew day name
+ * Get the short Hebrew name of the weekday for a given date.
+ *
+ * @param date - The date to evaluate (string, Date, or Dayjs)
+ * @returns The short Hebrew weekday name for `date`
  */
 export function getHebrewDayNameShort(date: string | Date | Dayjs): string {
   return HEBREW_DAY_NAMES_SHORT[dayjs(date).day()];
 }
 
 /**
- * Get Hebrew month name (1-indexed month)
+ * Get the Hebrew name for a month specified as a 1-indexed value.
+ *
+ * @param month - The month number where January is `1` and December is `12`
+ * @returns The Hebrew month name for `month`, or an empty string if `month` is out of range
  */
 export function getHebrewMonthName(month: number): string {
   return HEBREW_MONTH_NAMES[month - 1] || '';
 }
 
 /**
- * Get Hebrew month name from date
+ * Return the Hebrew month name for the given date.
+ *
+ * @param date - A date value (string, Date, or Dayjs) from which to derive the month
+ * @returns The Hebrew name of the month corresponding to `date`
  */
 export function getHebrewMonthNameFromDate(date: string | Date | Dayjs): string {
   return HEBREW_MONTH_NAMES[dayjs(date).month()];
@@ -71,7 +86,9 @@ export function getHebrewMonthNameFromDate(date: string | Date | Dayjs): string 
 // ============================================================================
 
 /**
- * Check if date is weekend (Friday or Saturday in Israel)
+ * Determines whether the given date falls on Israel's weekend (Friday or Saturday).
+ *
+ * @returns `true` if the date is Friday or Saturday, `false` otherwise.
  */
 export function isWeekend(date: string | Date | Dayjs): boolean {
   const day = dayjs(date).day();
@@ -79,7 +96,10 @@ export function isWeekend(date: string | Date | Dayjs): boolean {
 }
 
 /**
- * Check if date is a workday (Sunday-Thursday)
+ * Determines whether the provided date falls on a workday (Sunday through Thursday).
+ *
+ * @param date - The date to check; may be a string, Date, or Dayjs instance.
+ * @returns `true` if the date is Sunday, Monday, Tuesday, Wednesday, or Thursday; `false` otherwise.
  */
 export function isWorkday(date: string | Date | Dayjs): boolean {
   const day = dayjs(date).day();
@@ -87,14 +107,18 @@ export function isWorkday(date: string | Date | Dayjs): boolean {
 }
 
 /**
- * Check if date is Friday
+ * Determines whether the given date falls on a Friday.
+ *
+ * @returns `true` if the date falls on a Friday, `false` otherwise.
  */
 export function isFriday(date: string | Date | Dayjs): boolean {
   return dayjs(date).day() === 5;
 }
 
 /**
- * Check if date is Saturday
+ * Determines whether the given date falls on Saturday.
+ *
+ * @returns `true` if the date is Saturday, `false` otherwise.
  */
 export function isSaturday(date: string | Date | Dayjs): boolean {
   return dayjs(date).day() === 6;
@@ -105,7 +129,11 @@ export function isSaturday(date: string | Date | Dayjs): boolean {
 // ============================================================================
 
 /**
- * Calculate duration in minutes from HH:mm times
+ * Compute the difference in minutes from `startTime` to `endTime`.
+ *
+ * @param startTime - Start time in `HH:mm` format
+ * @param endTime - End time in `HH:mm` format
+ * @returns The number of minutes from `startTime` to `endTime`; may be negative if `endTime` is earlier than `startTime`
  */
 export function calculateDurationMinutes(startTime: string, endTime: string): number {
   const [startHour, startMin] = startTime.split(':').map(Number);
@@ -118,8 +146,10 @@ export function calculateDurationMinutes(startTime: string, endTime: string): nu
 }
 
 /**
- * Format duration in minutes to HH:MM format (without label)
- * Example: 270 minutes → "04:30", 540 minutes → "09:00"
+ * Convert a duration given in minutes into an `HH:MM` string with leading zeros.
+ *
+ * @param minutes - Total minutes to format
+ * @returns The duration formatted as `HH:MM` (e.g., `270` → `04:30`)
  */
 export function formatDurationHours(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -133,7 +163,11 @@ export function formatDurationHours(minutes: number): string {
 }
 
 /**
- * Format time range as "HH:mm-HH:mm"
+ * Format a start and end time into an HH:mm-HH:mm range.
+ *
+ * @param startTime - Start time in `HH:mm` format or `null`
+ * @param endTime - End time in `HH:mm` format or `null`
+ * @returns A string in the form `"HH:mm-HH:mm"` when both `startTime` and `endTime` are provided, otherwise an empty string
  */
 export function formatTimeRange(startTime: string | null, endTime: string | null): string {
   if (!startTime || !endTime) return '';
@@ -145,11 +179,12 @@ export function formatTimeRange(startTime: string | null, endTime: string | null
 // ============================================================================
 
 /**
- * Generate array of dates for a month
- * @param month 1-12
- * @param year Full year (e.g., 2026)
- * @param upToToday If true, only return dates up to today (for current month)
- * @returns Array of date strings in YYYY-MM-DD format, sorted descending (latest first)
+ * Generate an array of date strings for the specified month, ordered with the latest date first.
+ *
+ * @param month - Month as 1-12
+ * @param year - Full year (for example, 2026)
+ * @param upToToday - If true and the target month/year is the current month, include dates only up to today; ignored for other months
+ * @returns An array of date strings in `YYYY-MM-DD` format, sorted descending (latest first). If the target month is in the future, returns an empty array.
  */
 export function generateMonthDates(
   month: number,
@@ -184,7 +219,11 @@ export function generateMonthDates(
 }
 
 /**
- * Check if a month is in the future
+ * Determine whether a given month and year are after the current month.
+ *
+ * @param month - The target month as 1–12
+ * @param year - The target calendar year (e.g., 2026)
+ * @returns `true` if the target month/year is after the current month (compared at month granularity), `false` otherwise
  */
 export function isFutureMonth(month: number, year: number): boolean {
   const today = dayjs();
@@ -193,7 +232,11 @@ export function isFutureMonth(month: number, year: number): boolean {
 }
 
 /**
- * Check if a month is the current month
+ * Determines whether the specified month and year correspond to the current calendar month.
+ *
+ * @param month - The 1-based month number (1 = January, 12 = December).
+ * @param year - The full year (e.g., 2026).
+ * @returns `true` if the given month and year match the current month and year, `false` otherwise.
  */
 export function isCurrentMonth(month: number, year: number): boolean {
   const today = dayjs();
@@ -201,21 +244,28 @@ export function isCurrentMonth(month: number, year: number): boolean {
 }
 
 /**
- * Get current month (1-12)
+ * Get the current calendar month as a number from 1 to 12.
+ *
+ * @returns The current month (1–12)
  */
 export function getCurrentMonth(): number {
   return dayjs().month() + 1;
 }
 
 /**
- * Get current year
+ * Get the current calendar year.
+ *
+ * @returns The current calendar year as a four-digit number
  */
 export function getCurrentYear(): number {
   return dayjs().year();
 }
 
 /**
- * Parse date string to Dayjs object
+ * Convert a parseable date string into a Dayjs instance.
+ *
+ * @param date - A date string parseable by Day.js (commonly ISO 8601 or other formats supported by Day.js)
+ * @returns A Dayjs object representing the parsed date
  */
 export function parseDate(date: string): Dayjs {
   return dayjs(date);

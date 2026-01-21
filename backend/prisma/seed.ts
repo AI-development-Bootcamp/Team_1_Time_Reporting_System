@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+/**
+ * Populates the database with initial seed data for development and testing.
+ *
+ * Creates users (admin, several workers and a dedicated test user), clients, projects, tasks, task assignments, daily attendance records, and project time logs — including a comprehensive set of Month History scenarios for the test user. Logs progress, created entity summaries, and final login credentials to the console.
+ */
 async function main() {
   console.log('🌱 Starting seed...');
 
