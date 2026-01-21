@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { Container, Title, Text, Button, Stack, Paper } from '@mantine/core';
+import styles from './ErrorBoundary.module.css';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -76,7 +77,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default error UI
       return (
-        <Container size="sm" style={{ marginTop: '100px' }}>
+        <Container size="sm" className={styles.container}>
           <Paper shadow="md" p="xl" withBorder>
             <Stack gap="lg">
               <Title order={2} ta="center">משהו השתבש</Title>
@@ -90,7 +91,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   <Text fw={700} size="sm" c="red.9" mb="xs">
                     פרטי שגיאה (במצב פיתוח):
                   </Text>
-                  <Text size="xs" c="red.9" style={{ fontFamily: 'monospace' }}>
+                  <Text size="xs" c="red.9" className={styles.errorText}>
                     {this.state.error.toString()}
                   </Text>
                   {this.state.errorInfo && (
@@ -98,7 +99,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                       size="xs" 
                       c="red.8" 
                       mt="xs" 
-                      style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}
+                      className={styles.errorStack}
                     >
                       {this.state.errorInfo.componentStack}
                     </Text>

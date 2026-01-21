@@ -3,6 +3,7 @@ import type { ProjectWithClient } from '../../hooks/useReportingSettings';
 import type { ReportingType } from '../../types/Project';
 import { ReportingTypeToggle } from './ReportingTypeToggle';
 import emptyListImage from '../../../../shared/image_components/web_empty_list.png';
+import styles from './ReportingSettingsTable.module.css';
 
 const BODY_COLUMN_BORDER = '1px solid #e9ecef';
 const HEADER_COLUMN_BORDER = '1px solid rgba(255, 255, 255, 0.18)';
@@ -44,21 +45,11 @@ export function ReportingSettingsTable({
       <Paper
         shadow="xs"
         withBorder
-        style={{
-          overflow: 'hidden',
-          width: '100%',
-          maxWidth: '100%',
-          flex: 1,
-          borderRadius: 8,
-          borderWidth: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'white',
-        }}
+        className={styles.paper}
       >
         <Table 
           striped 
-          style={{ tableLayout: 'fixed' }}
+          className={styles.table}
           styles={{
             thead: {
               backgroundColor: '#141e3e',
@@ -66,47 +57,33 @@ export function ReportingSettingsTable({
           }}
         >
           <Table.Thead>
-            <Table.Tr style={{ height: 36 }}>
-              <Table.Th style={{ textAlign: 'right', height: 36, padding: '6px 12px' }}>
+            <Table.Tr className={styles.tableRow}>
+              <Table.Th className={styles.tableHeader}>
                 <Text 
                   fw={600} 
                   size="sm" 
                   c="white" 
-                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                  className={styles.tableText}
                 >
                   שם לקוח
                 </Text>
               </Table.Th>
-              <Table.Th
-                style={{
-                  textAlign: 'right',
-                  height: 36,
-                  padding: '6px 12px',
-                  borderInlineStart: HEADER_COLUMN_BORDER,
-                }}
-              >
+              <Table.Th className={styles.tableHeaderWithBorder}>
                 <Text 
                   fw={600} 
                   size="sm" 
                   c="white" 
-                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                  className={styles.tableText}
                 >
                   שם פרויקט
                 </Text>
               </Table.Th>
-              <Table.Th
-                style={{
-                  textAlign: 'right',
-                  height: 36,
-                  padding: '6px 12px',
-                  borderInlineStart: HEADER_COLUMN_BORDER,
-                }}
-              >
+              <Table.Th className={styles.tableHeaderWithBorder}>
                 <Text 
                   fw={600} 
                   size="sm" 
                   c="white" 
-                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                  className={styles.tableText}
                 >
                   סוג הדיווח
                 </Text>
@@ -115,11 +92,11 @@ export function ReportingSettingsTable({
           </Table.Thead>
         </Table>
 
-        <Center style={{ flex: 1, padding: 24 }}>
+        <Center className={styles.emptyStateCenter}>
           <Stack align="center" gap={16}>
             <Text 
               fw={700} 
-              style={{ fontFamily: 'SimplerPro, sans-serif', fontSize: 18 }}
+              className={styles.emptyStateText}
             >
               אין מידע קיים עד כה
             </Text>
@@ -134,21 +111,12 @@ export function ReportingSettingsTable({
     <Paper 
       shadow="xs" 
       withBorder 
-      style={{ 
-        overflow: 'hidden',
-        width: '100%',
-        maxWidth: '100%',
-        flex: 1,
-        borderRadius: 8,
-        borderWidth: 1,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+      className={styles.paper}
     >
-      <Box style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <Box className={styles.tableContentBox}>
         <Table 
           striped 
-          style={{ tableLayout: 'fixed' }}
+          className={styles.table}
           styles={{
             thead: {
               backgroundColor: '#141e3e',
@@ -156,47 +124,33 @@ export function ReportingSettingsTable({
           }}
         >
         <Table.Thead>
-          <Table.Tr style={{ height: 36 }}>
-            <Table.Th style={{ textAlign: 'right', height: 36, padding: '6px 12px' }}>
+          <Table.Tr className={styles.tableRow}>
+            <Table.Th className={styles.tableHeader}>
               <Text 
                 fw={600} 
                 size="sm" 
                 c="white" 
-                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                className={styles.tableText}
               >
                 שם לקוח
               </Text>
             </Table.Th>
-            <Table.Th
-              style={{
-                textAlign: 'right',
-                height: 36,
-                padding: '6px 12px',
-                borderInlineStart: HEADER_COLUMN_BORDER,
-              }}
-            >
+            <Table.Th className={styles.tableHeaderWithBorder}>
               <Text 
                 fw={600} 
                 size="sm" 
                 c="white" 
-                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                className={styles.tableText}
               >
                 שם פרויקט
               </Text>
             </Table.Th>
-            <Table.Th
-              style={{
-                textAlign: 'right',
-                height: 36,
-                padding: '6px 12px',
-                borderInlineStart: HEADER_COLUMN_BORDER,
-              }}
-            >
+            <Table.Th className={styles.tableHeaderWithBorder}>
               <Text 
                 fw={600} 
                 size="sm" 
                 c="white" 
-                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                className={styles.tableText}
               >
                 סוג הדיווח
               </Text>
@@ -206,37 +160,23 @@ export function ReportingSettingsTable({
         
         <Table.Tbody>
           {projects.map((project) => (
-            <Table.Tr key={project.id} style={{ height: 48 }}>
+            <Table.Tr key={project.id} className={styles.tableBodyRow}>
               {/* Client Name */}
-              <Table.Td style={{ textAlign: 'right', height: 48, padding: '6px 12px' }}>
-                <Text size="sm" style={{ fontFamily: 'SimplerPro, sans-serif' }}>
+              <Table.Td className={styles.tableCell}>
+                <Text size="sm" className={styles.tableText}>
                   {project.client.name}
                 </Text>
               </Table.Td>
 
               {/* Project Name */}
-              <Table.Td
-                style={{
-                  textAlign: 'right',
-                  height: 48,
-                  padding: '6px 12px',
-                  borderInlineStart: BODY_COLUMN_BORDER,
-                }}
-              >
-                <Text size="sm" style={{ fontFamily: 'SimplerPro, sans-serif' }}>
+              <Table.Td className={styles.tableCellWithBorder}>
+                <Text size="sm" className={styles.tableText}>
                   {project.name}
                 </Text>
               </Table.Td>
 
               {/* Reporting Type Toggle */}
-              <Table.Td
-                style={{
-                  textAlign: 'right',
-                  height: 48,
-                  padding: '6px 12px',
-                  borderInlineStart: BODY_COLUMN_BORDER,
-                }}
-              >
+              <Table.Td className={styles.tableCellWithBorder}>
                 <Box>
                   <ReportingTypeToggle
                     value={project.reportingType}

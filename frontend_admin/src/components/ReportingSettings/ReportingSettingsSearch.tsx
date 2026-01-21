@@ -1,6 +1,7 @@
 import { TextInput, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useState, useEffect } from 'react';
+import styles from './ReportingSettingsSearch.module.css';
 
 interface ReportingSettingsSearchProps {
   /**
@@ -41,7 +42,7 @@ export function ReportingSettingsSearch({
       value={searchValue}
       onChange={(event) => setSearchValue(event.currentTarget.value)}
       leftSection={
-        <Box component="span" style={{ opacity: 0.5 }}>
+        <Box component="span" className={styles.searchIcon}>
           🔍
         </Box>
       }

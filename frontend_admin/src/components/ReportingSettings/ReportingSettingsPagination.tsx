@@ -1,4 +1,5 @@
 import { Pagination, Center } from '@mantine/core';
+import styles from './ReportingSettingsPagination.module.css';
 
 interface ReportingSettingsPaginationProps {
   /**
@@ -33,7 +34,7 @@ export function ReportingSettingsPagination({
   onPageChange,
 }: ReportingSettingsPaginationProps) {
   return (
-    <Center style={{ height: 50, padding: '8px 0', fontFamily: 'SimplerPro, sans-serif' }}>
+    <Center className={styles.paginationCenter}>
       <Pagination
         value={currentPage}
         onChange={onPageChange}

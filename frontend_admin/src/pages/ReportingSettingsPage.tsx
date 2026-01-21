@@ -6,6 +6,7 @@ import { ReportingSettingsTable } from '../components/ReportingSettings/Reportin
 import { ReportingSettingsSearch } from '../components/ReportingSettings/ReportingSettingsSearch';
 import { ReportingSettingsPagination } from '../components/ReportingSettings/ReportingSettingsPagination';
 import { PAGINATION } from '../utils/constants';
+import styles from './ReportingSettingsPage.module.css';
 
 // Helper to check if we're in development mode (type-safe)
 const isDev = (): boolean => {
@@ -85,29 +86,17 @@ function ReportingSettingsPage() {
     <Container 
       size="xl" 
       dir="rtl" 
-      style={{ 
-        maxWidth: '100%',
-        width: '100%',
-        height: '100vh',
-        overflow: 'hidden',
-        padding: '24px 32px',
-        fontFamily: 'SimplerPro, sans-serif',
-      }}
+      className={styles.container}
     >
       <Stack gap={8}>
         {/* Page Title and Search Bar Row */}
-        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-          <Box style={{ flex: 1 }}>
+        <Box className={styles.titleRow}>
+          <Box className={styles.titleColumn}>
             {/* Page Title */}
             <Title 
               order={2} 
               ta="right" 
-              style={{ 
-                fontSize: '24px',
-                fontWeight: 700,
-                marginBottom: 4,
-                fontFamily: 'SimplerPro, sans-serif',
-              }}
+              className={styles.pageTitle}
             >
               הגדרת דיווחי שעות
             </Title>
@@ -117,7 +106,7 @@ function ReportingSettingsPage() {
               c="dimmed" 
               size="sm" 
               ta="right" 
-              style={{ marginTop: 0, fontFamily: 'SimplerPro, sans-serif' }}
+              className={styles.subtitle}
             >
               כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
             </Text>
@@ -125,7 +114,7 @@ function ReportingSettingsPage() {
 
           {/* Search Bar */}
           {!isLoading && !isError && (
-            <Box style={{ width: 350, flexShrink: 0 }}>
+            <Box className={styles.searchBox}>
               <ReportingSettingsSearch onSearchChange={setSearchValue} />
             </Box>
           )}
@@ -161,7 +150,7 @@ function ReportingSettingsPage() {
 
         {/* Settings Table and Pagination Container */}
         {!isLoading && !isError && (
-          <Stack gap={0} style={{ flex: 1, maxWidth: '100%', overflow: 'hidden' }}>
+          <Stack gap={0} className={styles.contentStack}>
             <ReportingSettingsTable
               projects={paginatedProjects}
               onReportingTypeChange={handleReportingTypeChange}

@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import abraLogo from '../../../../shared/image_components/abraLogo_inverted.png';
 import bottomLogo from '../../../../shared/image_components/bottom_logo.png';
 import { useAuth } from '../../hooks/useAuth';
+import styles from './AppLayout.module.css';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -34,17 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       dir="rtl"
     >
       <AppShell.Navbar 
-        style={{
-          backgroundColor: '#141e3e',
-          borderRight: 'none',
-          right: 0,
-          height: '100vh',
-          justifyContent: 'space-between',
-          paddingTop: 24,
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingBottom: 16,
-        }}
+        className={styles.navbar}
       >
         {/* Logo / Brand */}
         <AppShell.Section mb="lg">
@@ -55,7 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               w={106.18}
               h={24}
               fit="contain"
-              style={{ opacity: 1 }}
+              className={styles.logoImage}
             />
           </Group>
         </AppShell.Section>
@@ -65,16 +56,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <NavLink
             label="ניהול לקוחות/פרויקטים"
             rightSection={
-              <Box 
-                style={{ 
-                  width: 20, 
-                  height: 20, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  fontSize: '16px'
-                }}
-              >
+              <Box className={styles.iconBox}>
                 📋
               </Box>
             }
@@ -103,16 +85,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <NavLink
             label="הגדרת דיווחי שעות"
             rightSection={
-              <Box 
-                style={{ 
-                  width: 20, 
-                  height: 20, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  fontSize: '16px'
-                }}
-              >
+              <Box className={styles.iconBox}>
                 ⏰
               </Box>
             }
@@ -140,16 +113,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Admin Profile Section */}
         <AppShell.Section>
-          <Box
-            style={{
-              borderRadius: 8,
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              padding: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-            }}
-          >
+          <Box className={styles.profileBox}>
             <Image
               src={bottomLogo}
               alt="Profile"
@@ -161,11 +125,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               size="sm"
               fw={600}
               c="white"
-              style={{ 
-                fontFamily: 'SimplerPro, sans-serif',
-                textAlign: 'right',
-                flex: 1,
-              }}
+              className={styles.profileText}
             >
               {user?.name || 'Admin'}
             </Text>
@@ -173,16 +133,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      <AppShell.Main 
-        style={{ 
-          backgroundColor: '#f5f5f5',
-          marginRight: 0,
-          marginLeft: 0,
-          height: '100vh',
-          maxHeight: 1080,
-          overflow: 'hidden',
-        }}
-      >
+      <AppShell.Main className={styles.main}>
         {children}
       </AppShell.Main>
     </AppShell>
