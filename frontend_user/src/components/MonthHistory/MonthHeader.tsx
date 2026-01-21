@@ -39,26 +39,28 @@ export function MonthHeader({
     <div className={classes.header}>
       {/* Month navigation - on the left in RTL */}
       <Group gap="xs" className={classes.navigation}>
-        <UnstyledButton
-          onClick={onPreviousMonth}
-          disabled={isPreviousDisabled}
-          className={classes.navButton}
-          data-disabled={isPreviousDisabled || undefined}
-        >
-          <Image src={leftArrowIcon} alt="Previous month" w={24} h={24} />
-        </UnstyledButton>
-
-        <Text size="md" fw={500} className={classes.monthName}>
-          {monthName}
-        </Text>
-
+        {/* Left arrow = Next month (forward in RTL) */}
         <UnstyledButton
           onClick={onNextMonth}
           disabled={isNextDisabled}
           className={classes.navButton}
           data-disabled={isNextDisabled || undefined}
         >
-          <Image src={rightArrowIcon} alt="Next month" w={24} h={24} />
+          <Image src={leftArrowIcon} alt="Next month" w={24} h={24} />
+        </UnstyledButton>
+
+        <Text size="md" fw={500} className={classes.monthName}>
+          {monthName}
+        </Text>
+
+        {/* Right arrow = Previous month (back in RTL) */}
+        <UnstyledButton
+          onClick={onPreviousMonth}
+          disabled={isPreviousDisabled}
+          className={classes.navButton}
+          data-disabled={isPreviousDisabled || undefined}
+        >
+          <Image src={rightArrowIcon} alt="Previous month" w={24} h={24} />
         </UnstyledButton>
       </Group>
 
