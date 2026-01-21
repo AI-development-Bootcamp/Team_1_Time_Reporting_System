@@ -1513,10 +1513,8 @@ backend/src/
 
 - [ ] TASK-M2-020-FE-024: Create SelectorErrorState component
   - [ ] Create `components/ProjectSelector/SelectorErrorState.tsx`:
-    - [ ] Robot image (broken robot from shared/image_components)
-    - [ ] "אופססס... 😅"
-    - [ ] "אין מידע זמין כרגע, נסה שוב מאוחר יותר"
-    - [ ] "או פנה למנהל ישיר"
+    - [ ] Use `error_message.png` from shared/image_components (contains Hebrew error text)
+    - [ ] Use `Oops! 404 Error with a broken robot-pana 1.png` from shared/image_components (broken robot illustration)
     - [ ] "חזור למסך ראשי" link
     - [ ] "המשך ובחר מיקום" button (disabled/greyed)
   - [ ] Create `SelectorErrorState.module.css`
