@@ -1,0 +1,243 @@
+/**
+ * TimePickerModal Styles
+ * RTL-supported, mobile-first time picker
+ */
+
+/* ============================================================================
+ * Modal Container
+ * ============================================================================ */
+
+.modalRoot {
+  direction: rtl;
+}
+
+.modalContent {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 0;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+/* ============================================================================
+ * Picker Container
+ * ============================================================================ */
+
+.pickerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.separator {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #495057;
+  padding: 0 0.5rem;
+  align-self: center;
+  margin-top: 1.5rem;
+}
+
+/* ============================================================================
+ * Scroll Container
+ * ============================================================================ */
+
+.scrollContainer {
+  width: 100%;
+  height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  position: relative;
+  
+  /* Add padding to allow centering */
+  padding: 75px 0;
+  
+  /* Hide scrollbar for cleaner look */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================================
+ * Time Items
+ * ============================================================================ */
+
+.item {
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #868e96;
+  transition: all 0.2s ease;
+  user-select: none;
+  border-radius: 6px;
+  margin: 0.25rem 0.5rem;
+}
+
+.item:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.selected {
+  background: #228be6;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(34, 139, 230, 0.3);
+}
+
+.selected:hover {
+  background: #1971c2;
+  color: white;
+}
+
+/* ============================================================================
+ * Display
+ * ============================================================================ */
+
+.display {
+  padding: 1rem;
+  background: #e7f5ff;
+  border-radius: 8px;
+  border: 2px solid #228be6;
+}
+
+/* ============================================================================
+ * Buttons
+ * ============================================================================ */
+
+/* Button styles are handled by Mantine, but we can add custom tweaks */
+.modalBody button {
+  height: 44px;
+  font-weight: 600;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .modalBody {
+    padding: 2rem;
+  }
+
+  .scrollContainer {
+    height: 200px;
+    padding: 80px 0;
+  }
+
+  .item {
+    padding: 0.875rem;
+    font-size: 1.25rem;
+  }
+
+  .selected {
+    font-size: 1.375rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .scrollContainer {
+    height: 220px;
+    padding: 85px 0;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.item:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.item {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+/* Ensure proper RTL layout */
+.pickerContainer {
+  direction: ltr; /* Keep time display LTR */
+  text-align: center;
+}
+
+.modalBody {
+  direction: rtl; /* RTL for buttons and labels */
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .item {
+    padding: 1rem;
+    min-height: 48px;
+  }
+}
+
+/* ============================================================================
+ * Scroll Indicators
+ * ============================================================================ */
+
+.scrollContainer {
+  /* Add subtle gradient to indicate scrollability */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 20%,
+    black 80%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 20%,
+    black 80%,
+    transparent 100%
+  );
+}

@@ -1387,13 +1387,13 @@ backend/src/
     - [x] Handle validation errors and show appropriate toasts/modals
   - [x] Create `WorkReportTab.module.css`
 
-- [ ] TASK-M2-020-FE-012: Create TimePickerModal component
-  - [ ] Create `components/DailyReport/TimePickerModal.tsx`:
-    - [ ] Scrollable time picker (hours 00-23, minutes 00-59 in 5min increments)
-    - [ ] Current selection highlighted
-    - [ ] "שמירה" (save) and "נקה" (clear) buttons
-    - [ ] Props: `isOpen`, `onClose`, `value`, `onChange`, `label`
-  - [ ] Create `TimePickerModal.module.css`
+- [x] TASK-M2-020-FE-012: Create TimePickerModal component
+  - [x] Create `components/DailyReport/TimePickerModal.tsx`:
+    - [x] Scrollable time picker (hours 00-23, minutes 00-59 in 5min increments)
+    - [x] Current selection highlighted
+    - [x] "שמירה" (save) and "נקה" (clear) buttons
+    - [x] Props: `isOpen`, `onClose`, `value`, `onChange`, `label`
+  - [x] Create `TimePickerModal.module.css`
 
 - [ ] TASK-M2-020-FE-013: Create DatePickerModal component
   - [ ] Create `components/DailyReport/DatePickerModal.tsx`:
