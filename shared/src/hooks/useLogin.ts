@@ -1,11 +1,16 @@
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
-import { apiClient } from '../utils/ApiClient';
+import { apiClient, ValidationErrorDetails } from '../utils/ApiClient';
 import { useAuth } from './useAuth';
 import { LoginRequest, LoginResponse } from '../types/User';
 import { UseFormReturnType } from '@mantine/form';
 import { AxiosError } from 'axios';
 import { ApiErrorResponse } from '../utils/ApiClient';
+
+// Type guard to check if details is a Record
+function isRecordDetails(details: ValidationErrorDetails): details is Record<string, string[]> {
+  return !Array.isArray(details) && typeof details === 'object';
+}
 
 interface UseLoginOptions {
   form: UseFormReturnType<LoginRequest>;
@@ -35,13 +40,14 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         const details = errorData.error.details;
         
         // Set field errors (only if details is a Record, not an array)
-        if (!Array.isArray(details)) {
-          const detailsRecord = details as Record<string, string[]>;
-          if (detailsRecord.mail && detailsRecord.mail.length > 0) {
-            form.setFieldError('mail', detailsRecord.mail[0]);
+        if (isRecordDetails(details)) {
+          const mailError = details['mail'];
+          const passwordError = details['password'];
+          if (mailError && mailError.length > 0) {
+            form.setFieldError('mail', mailError[0]);
           }
-          if (detailsRecord.password && detailsRecord.password.length > 0) {
-            form.setFieldError('password', detailsRecord.password[0]);
+          if (passwordError && passwordError.length > 0) {
+            form.setFieldError('password', passwordError[0]);
           }
         }
         
