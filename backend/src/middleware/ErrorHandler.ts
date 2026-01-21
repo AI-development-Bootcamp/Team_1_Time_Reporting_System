@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiResponse } from '../utils/Response';
+import { ApiResponse, ErrorDetails } from '../utils/Response';
 import { ZodError } from 'zod';
 
-export interface ErrorDetails {
+export interface AppErrorDetails {
   target?: string;
   details?: unknown;
   [key: string]: unknown;
@@ -13,7 +13,7 @@ export class AppError extends Error {
     public code: string,
     public message: string,
     public statusCode: number = 400,
-    public details?: ErrorDetails | unknown
+    public details?: AppErrorDetails | unknown
   ) {
     super(message);
     this.name = 'AppError';
@@ -42,11 +42,11 @@ export const errorHandler = (
   if (err instanceof AppError) {
     // Handle structured errors with target field
     let target: string | undefined;
-    let details: ErrorDetails | unknown = err.details;
+    let details: AppErrorDetails | unknown = err.details;
 
     if (details && typeof details === 'object' && 'target' in details) {
-      target = (details as ErrorDetails).target;
-      details = (details as ErrorDetails).details || details;
+      target = (details as AppErrorDetails).target;
+      details = (details as AppErrorDetails).details || details;
     }
 
     ApiResponse.error(
@@ -54,7 +54,7 @@ export const errorHandler = (
       err.code,
       err.message,
       err.statusCode,
-      details,
+      details as ErrorDetails,
       target
     );
     return;
@@ -69,3 +69,4 @@ export const errorHandler = (
     500
   );
 };
+

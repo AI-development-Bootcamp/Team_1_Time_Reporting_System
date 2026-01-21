@@ -6,7 +6,7 @@ import { Bcrypt } from '@/utils/Bcrypt';
 import jwt from 'jsonwebtoken';
 
 const app = createApp();
-const JWT_SECRET = process.env.JWT_SECRET || 'test_secret';
+const JWT_SECRET = 'test-secret-key';
 
 describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
     let adminToken: string;
@@ -20,9 +20,10 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
     let taskId: bigint;
     let emptyTaskId: bigint;
     let regularWorkerId: bigint;
+    const originalSecret = process.env.JWT_SECRET;
 
     beforeAll(async () => {
-        // Clean up any existing test data
+        process.env.JWT_SECRET = JWT_SECRET;
         await prisma.taskWorker.deleteMany({
             where: {
                 user: {
@@ -255,6 +256,7 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
                 },
             },
         });
+        process.env.JWT_SECRET = originalSecret;
     });
 
     it('should return 200 with list of active workers assigned to task', async () => {

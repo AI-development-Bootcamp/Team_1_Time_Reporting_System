@@ -1,6 +1,26 @@
 import { Response } from 'express';
+import { ZodIssue } from 'zod';
 
-export interface SuccessResponse<T = any> {
+/**
+ * Validation error detail structure
+ */
+export interface ValidationErrorDetail {
+  field: string;
+  message: string;
+  code?: string;
+}
+
+/**
+ * Error details can be validation errors, Zod issues, or other structured error info
+ */
+export type ErrorDetails =
+  | ValidationErrorDetail[]
+  | ZodIssue[]
+  | Record<string, string[]>
+  | Record<string, unknown>
+  | unknown[];
+
+export interface SuccessResponse<T = unknown> {
   success: true;
   data: T;
 }
@@ -11,7 +31,7 @@ export interface ErrorResponse {
     code: string;
     message: string;
     target?: string;
-    details?: any;
+    details?: ErrorDetails;
   };
 }
 
@@ -35,7 +55,7 @@ export class ApiResponse {
     code: string,
     message: string,
     statusCode: number = 400,
-    details?: any,
+    details?: ErrorDetails,
     target?: string
   ): void {
     const response: ErrorResponse = {
@@ -50,3 +70,4 @@ export class ApiResponse {
     res.status(statusCode).json(response);
   }
 }
+

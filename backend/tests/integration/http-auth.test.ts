@@ -4,13 +4,30 @@ import { createApp } from '../../src/app';
 import { prisma } from '../../src/utils/prismaClient';
 import { Bcrypt } from '../../src/utils/Bcrypt';
 import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
+
+interface JwtPayload {
+  userId: string;
+  userType: 'admin' | 'worker';
+  user: {
+    id: number;
+    name: string;
+    mail: string;
+    userType: 'admin' | 'worker';
+    active: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  iat?: number;
+  exp?: number;
+}
 
 const app = createApp();
 
 describe('HTTP Integration Tests - Auth Endpoints', () => {
-  let testUser: any;
-  let adminUser: any;
-  let inactiveUser: any;
+  let testUser: User;
+  let adminUser: User;
+  let inactiveUser: User;
   const originalSecret = process.env.JWT_SECRET;
 
   beforeAll(async () => {
@@ -164,7 +181,7 @@ describe('HTTP Integration Tests - Auth Endpoints', () => {
       const token = response.body.data.token;
 
       // Decode token (no secret needed for reading payload)
-      const decoded = jwt.decode(token) as any;
+      const decoded = jwt.decode(token) as JwtPayload;
       expect(decoded).toHaveProperty('userId');
       expect(decoded).toHaveProperty('userType', 'worker');
       expect(decoded).toHaveProperty('user');

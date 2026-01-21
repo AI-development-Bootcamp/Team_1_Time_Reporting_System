@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MantineProvider, DirectionProvider } from '@mantine/core';
 import { AuthContextProvider } from '@shared/context/AuthContext';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute/ProtectedRoute';
 import { LoginPage } from '@shared/components/Login/LoginPage';
@@ -27,17 +28,21 @@ const AppRoutes = () => {
 /**
  * Root component that initializes application routing and authentication context.
  *
- * Wraps the app's route tree with a router and the authentication provider.
+ * Wraps the app's route tree with a router, RTL-configured MantineProvider, and the authentication provider.
  *
- * @returns The root JSX element containing the BrowserRouter, AuthContextProvider, and AppRoutes
+ * @returns The root JSX element containing the BrowserRouter, MantineProvider, AuthContextProvider, and AppRoutes
  */
 function App() {
   return (
-    <BrowserRouter>
-      <AuthContextProvider>
-        <AppRoutes />
-      </AuthContextProvider>
-    </BrowserRouter>
+    <DirectionProvider initialDirection="rtl">
+      <MantineProvider>
+        <BrowserRouter>
+          <AuthContextProvider>
+            <AppRoutes />
+          </AuthContextProvider>
+        </BrowserRouter>
+      </MantineProvider>
+    </DirectionProvider>
   );
 }
 

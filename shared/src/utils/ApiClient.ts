@@ -1,6 +1,17 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 
-export interface ApiSuccessResponse<T = any> {
+/**
+ * Validation error detail structure
+ */
+export interface ValidationErrorDetail {
+  field: string;
+  message: string;
+  code?: string;
+}
+
+export type ValidationErrorDetails = ValidationErrorDetail[] | Record<string, string[]>;
+
+export interface ApiSuccessResponse<T = unknown> {
   success: true;
   data: T;
 }
@@ -10,14 +21,16 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: any;
+    target?: string;
+    details?: ValidationErrorDetails;
   };
 }
 
-export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 class ApiClient {
   private client: AxiosInstance;
+  private initPromise: Promise<void>;
 
   constructor() {
     const primaryURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -30,8 +43,8 @@ class ApiClient {
       },
     });
 
-    // Test primary URL and fallback to 10000 if needed
-    this.initializeBaseURL(primaryURL, fallbackURL);
+    // Store init promise for lazy await pattern
+    this.initPromise = this.initializeBaseURL(primaryURL, fallbackURL);
 
     // Add request interceptor to include auth token
     this.client.interceptors.request.use(
@@ -98,25 +111,37 @@ class ApiClient {
     }
   }
 
-  async get<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
+  /**
+   * Wait for API client initialization to complete
+   */
+  async waitForReady(): Promise<void> {
+    await this.initPromise;
+  }
+
+  async get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.get<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }
 
-  async post<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
+  async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.post<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async put<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
+  async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.put<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async delete<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
+  async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.delete<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }
 }
 
 export const apiClient = new ApiClient();
+

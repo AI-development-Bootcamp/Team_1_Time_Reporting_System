@@ -138,7 +138,8 @@ Building a monorepo time-tracking platform with 3 services (backend, frontend_us
 - [x] File storage: Bytes in DB vs documentUrl? → **Bytes in DB**
 - [x] DailyAttendance deletion? → **No deletion, editing only**
 - [x] Timer state persistence? → **Memory only**
-- [x] Timer auto-stop status? → **Uses 'work' status**
-- [x] MonthLock model? → **Removed for now, will add later**
-- [x] Location of Work field? → **Added to ProjectTimeLogs (office/client/home)**
+- [x] Timer auto-stop status? → **Uses 'Incomplete' status** (persisted when timer auto-stops without manual submission)
+- [x] MonthLock model? → **Enforced** - C/U/D operations on ProjectTimeLogs and related report endpoints must check MonthLock status before proceeding
+- [x] Location of Work field? → **Added to ProjectTimeLogs (office/client/home)** - Location field remains and is used to track where work was performed
 - [x] Locked month UI behavior? → **Edit button disabled**
+

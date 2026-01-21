@@ -1,4 +1,5 @@
 import { prisma } from '../utils/prismaClient';
+import { Prisma } from '@prisma/client';
 import { Bcrypt } from '../utils/Bcrypt';
 import { AppError } from '../middleware/ErrorHandler';
 import { CreateUserInput, UpdateUserInput } from '../validators/user.schema';
@@ -11,12 +12,12 @@ export class UserService {
      * Get users with optional filters
      */
     static async getUsers(filters: { active?: boolean; userType?: string }) {
-        const where: any = {
+        const where: Prisma.UserWhereInput = {
             active: filters.active !== undefined ? filters.active : true,
         };
 
         if (filters.userType) {
-            where.userType = filters.userType;
+            where.userType = filters.userType as Prisma.EnumUserTypeFilter | undefined;
         }
 
         const users = await prisma.user.findMany({
