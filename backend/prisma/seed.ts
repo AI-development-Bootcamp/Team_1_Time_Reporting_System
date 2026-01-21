@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+/**
+ * Populates the database with a deterministic set of seed data for users, clients, projects, tasks, task assignments, attendance, and time logs.
+ *
+ * Removes existing seed data (respecting foreign-key order) and inserts: one admin and three worker users (all created with a single hashed password), three clients, four projects, several tasks, task-worker assignments, sample daily attendance records, and project time logs; progress is emitted to the console.
+ */
 async function main() {
   console.log('🌱 Starting seed...');
 
@@ -18,7 +23,8 @@ async function main() {
   console.log('✅ Cleared existing data');
 
   // Hash password for all users
-  const hashedPassword = await bcrypt.hash('Password123', 10);
+  // Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  const hashedPassword = await bcrypt.hash('Password123!', 10);
 
   // Create Admin User
   const admin = await prisma.user.create({
@@ -298,10 +304,10 @@ async function main() {
 
   console.log('🎉 Seed completed successfully!');
   console.log('\n📝 Login credentials:');
-  console.log('   Admin: admin@timereporting.com / Password123');
-  console.log('   Worker: john.doe@timereporting.com / Password123');
-  console.log('   Worker: jane.smith@timereporting.com / Password123');
-  console.log('   Worker: david.cohen@timereporting.com / Password123');
+  console.log('   Admin: admin@timereporting.com / (password set during seeding)');
+  console.log('   Worker: john.doe@timereporting.com / (password set during seeding)');
+  console.log('   Worker: jane.smith@timereporting.com / (password set during seeding)');
+  console.log('   Worker: david.cohen@timereporting.com / (password set during seeding)');
 }
 
 main()

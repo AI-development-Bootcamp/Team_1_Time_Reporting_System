@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, DirectionProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@mantine/core/styles.css';
@@ -19,18 +19,19 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider 
-        theme={{ 
-          dir: 'rtl',
-          fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-          headings: {
+      <DirectionProvider initialDirection="rtl">
+        <MantineProvider
+          theme={{
             fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-          },
-        }}
-      >
-        <Notifications position="top-right" autoClose={3000} />
-        <App />
-      </MantineProvider>
+            headings: {
+              fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+            },
+          }}
+        >
+          <Notifications position="top-center" zIndex={10000} />
+          <App />
+        </MantineProvider>
+      </DirectionProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { isTokenExpired } from './jwt';
 
 // Helper to check if we're in development mode (type-safe)
@@ -14,7 +14,18 @@ const API_CONFIG = {
   HEALTH_CHECK_TIMEOUT_MS: 2000,
 } as const;
 
-export interface ApiSuccessResponse<T = any> {
+/**
+ * Validation error detail structure
+ */
+export interface ValidationErrorDetail {
+  field: string;
+  message: string;
+  code?: string;
+}
+
+export type ValidationErrorDetails = ValidationErrorDetail[] | Record<string, string[]>;
+
+export interface ApiSuccessResponse<T = unknown> {
   success: true;
   data: T;
 }
@@ -24,16 +35,17 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: any;
+    target?: string;
+    details?: ValidationErrorDetails;
   };
 }
 
-export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 class ApiClient {
   private client: AxiosInstance;
   private baseURL: string;
-  private initializationPromise: Promise<void>;
+  private initPromise: Promise<void>;
 
   constructor() {
     // Ensure baseURL always ends with /api
@@ -43,36 +55,31 @@ class ApiClient {
       }
       return url;
     };
-    
-    const envURL = (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL;
-    // Always default to port 3000 where backend runs
-    // Ignore env var if it points to 10000 (backend is on 3000)
+
+    const envURL = import.meta.env.VITE_API_URL;
+
+    // Default to 3000 (Primary), Fallback to 10000
+    // User logic: "make sure the default port is indeed 3000 else, go to 10000"
     const defaultURL = 'http://localhost:3000/api';
-    const primaryURL = (envURL && !envURL.includes(':10000'))
-      ? ensureApiSuffix(envURL)
-      : defaultURL;
-    // Fallback to the other port
-    const fallbackURL = primaryURL.includes(':3000') 
-      ? 'http://localhost:10000/api' 
-      : 'http://localhost:3000/api';
-    
-    // Initialize with primary URL, will be updated if needed
+    const primaryURL = envURL ? ensureApiSuffix(envURL) : defaultURL;
+    const fallbackURL = 'http://localhost:10000/api';
+
     this.baseURL = primaryURL;
-    
+
     this.client = axios.create({
       baseURL: primaryURL,
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     // Log the baseURL for debugging (development only)
     if (isDev()) {
       console.log('ApiClient initialized with baseURL:', this.baseURL);
     }
 
-    // Store initialization promise to ensure it completes before any requests
-    this.initializationPromise = this.initializeBaseURL(primaryURL, fallbackURL);
+    // Store init promise for lazy await pattern
+    this.initPromise = this.initializeBaseURL(primaryURL, fallbackURL);
 
     // Add request interceptor to include auth token and ensure baseURL is correct
     this.client.interceptors.request.use(
@@ -80,7 +87,7 @@ class ApiClient {
         // Always use the current baseURL to ensure it's correct
         config.baseURL = this.baseURL;
         const token = localStorage.getItem('token');
-        
+
         // Validate token expiration before making request
         if (token) {
           if (isTokenExpired(token)) {
@@ -92,7 +99,7 @@ class ApiClient {
           }
           config.headers.Authorization = `Bearer ${token}`;
         }
-        
+
         // Log the full URL for debugging (development only)
         if (isDev() && config.url) {
           const fullURL = `${config.baseURL}${config.url}`;
@@ -110,10 +117,17 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ApiErrorResponse>) => {
         if (error.response?.status === 401) {
-          // Unauthorized - clear all auth data and redirect to login
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+          // Skip auto-redirect for login and /auth/me endpoints
+          const requestUrl = error.config?.url || '';
+          const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/me');
+
+          if (!isAuthEndpoint) {
+            // Unauthorized on protected routes - clear token and redirect to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('user'); // Clear user too
+            window.location.href = '/login';
+          }
+          // For auth endpoints, let the error propagate to the component's error handler
         }
         return Promise.reject(error);
       }
@@ -123,7 +137,7 @@ class ApiClient {
   private async initializeBaseURL(primaryURL: string, fallbackURL: string): Promise<void> {
     // Extract base URL without /api for health check
     const getBaseUrl = (url: string) => url.replace('/api', '');
-    
+
     // Test primary URL with a health check
     try {
       const testClient = axios.create({
@@ -145,7 +159,7 @@ class ApiClient {
           timeout: API_CONFIG.HEALTH_CHECK_TIMEOUT_MS,
         });
         await testClient.get('/health');
-        // Fallback works, update baseURL - ensure it includes /api
+        // Fallback works, update client baseURL
         this.baseURL = fallbackURL;
         this.client.defaults.baseURL = fallbackURL;
         if (isDev()) {
@@ -156,7 +170,7 @@ class ApiClient {
         if (isDev()) {
           console.warn(`API client: Both primary (${primaryURL}) and fallback (${fallbackURL}) URLs are unavailable. Using primary.`);
         }
-        // Ensure baseURL is still set correctly even if health check fails - must include /api
+        // Ensure baseURL is still set correctly even if health check fails
         this.baseURL = primaryURL;
         this.client.defaults.baseURL = primaryURL;
       }
@@ -164,39 +178,38 @@ class ApiClient {
   }
 
   /**
-   * Ensures the client is fully initialized before making requests.
-   * This prevents race conditions where requests are made before the health check completes.
+   * Wait for API client initialization to complete
    */
-  private async ensureInitialized(): Promise<void> {
-    await this.initializationPromise;
+  async waitForReady(): Promise<void> {
+    await this.initPromise;
   }
 
-  async get<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
-    await this.ensureInitialized();
+  async get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.get<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }
 
-  async post<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
-    await this.ensureInitialized();
+  async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.post<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async put<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
-    await this.ensureInitialized();
+  async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.put<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async patch<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
-    await this.ensureInitialized();
+  async patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.patch<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
-  async delete<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
-    await this.ensureInitialized();
+  async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiSuccessResponse<T>> {
+    await this.initPromise;
     const response = await this.client.delete<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }

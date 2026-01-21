@@ -26,8 +26,9 @@ To implement a complete time-tracking platform with dual frontend interfaces (Us
 ## Impact
 - **Affected code**: Each member works on both backend and frontend for their feature
 - **New dependencies needed**:
-  - Backend: `bcrypt` (password hashing)
-  - Both frontends: `react-router-dom` (routing)
+  - Backend: `bcrypt`, `jsonwebtoken` (password hashing, JWT)
+  - Both frontends: `react-router-dom`, `@mantine/notifications` (routing, toast notifications)
+- **Shared components**: Login UI, AuthContext, and related auth utilities will be shared in `shared/src/` to avoid code duplication
 
 ## Critical Path
 ```
@@ -51,6 +52,39 @@ Phase 0 (All Members) → TASK-M1-010 (Auth Backend) → TASK-M1-020 (Login UI) 
 2. **After Member 1 completes Auth**: All members can test protected routes
 3. **Weekly sync**: Review API contracts, discuss blockers
 4. **Integration testing**: All members test together before release
+
+## Implementation Decisions (Member 1: Auth)
+
+### Shared Login Component
+- **Single shared Login component** (`shared/src/components/Login/LoginPage.tsx`) used by both apps
+- Adapts content (images, welcome text) based on `appType: 'user' | 'admin'` prop
+- Images via path alias: `@shared/image_components/`
+  - Admin: `log_in_background.png`, `Login card.png`, `abraLogo.png`
+  - User: `login_mobile.png`, `abraLogo.png`
+
+### Password Validation
+- **Frontend & Backend**: Minimum 8 characters, at least one uppercase, one lowercase, and one special character
+- Frontend: Zod schema validation with `form.setFieldError()` for inline errors
+- Backend: Zod schema validation in controllers
+
+### Error Handling
+- **Frontend**:
+  - 400 validation errors: Use `form.setFieldError()` for inline red text on inputs
+  - 401/409/500 operational errors: Use `notifications.show()` (Mantine) for toast messages
+- **Backend**:
+  - Global `errorHandler` middleware
+  - `AppError` class for structured errors
+  - Zod schemas for validation
+  - Controllers throw `AppError` (no try/catch in controllers)
+
+### Authentication & Routing
+- **Shared AuthContext** (`shared/src/context/AuthContext.tsx`) - same database for users and admins
+- **Admin verification**: Check `userType === 'admin'` in admin app's ProtectedRoute
+- **User interface**: Accepts both admin and user types (no type check)
+- **Redirects after login**:
+  - User app: `/month-history`
+  - Admin app: `/client-management`
+- **Token storage**: JWT token and user info in `localStorage`
 
 ## Risks & Mitigations
 

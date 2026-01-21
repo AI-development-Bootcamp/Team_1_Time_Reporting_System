@@ -1,12 +1,14 @@
 # Dependencies
 node_modules/
 */node_modules/
+package-lock.json
 
 # Environment variables
 .env
 .env.local
 .env.production
 backend/.env
+
 frontend_user/.env
 frontend_admin/.env
 backend/coverage
@@ -20,7 +22,7 @@ build/
 # Logs
 *.log
 npm-debug.log*
-
+backend/coverage/
 # OS
 .DS_Store
 Thumbs.db
@@ -29,6 +31,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+<<<<<<< HEAD
 *.swo
 mcp-trello-config.json
 real_tasks.md
@@ -37,3 +40,6 @@ test-trello-connection.js
 sync-tasks-to-trello.js
 
 CODE_REVIEW_ISSUES.md
+=======
+*.swo
+>>>>>>> dev
