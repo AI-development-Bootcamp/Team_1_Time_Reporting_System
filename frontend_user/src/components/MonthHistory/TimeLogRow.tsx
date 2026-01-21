@@ -6,6 +6,7 @@
 import { Group, Text } from '@mantine/core';
 import { ProjectTimeLog } from '../../types';
 import { formatDurationHours } from '../../utils/dateUtils';
+import styles from './TimeLogRow.module.css';
 
 interface TimeLogRowProps {
   /** Time log data */
@@ -22,7 +23,7 @@ export function TimeLogRow({ timeLog }: TimeLogRowProps) {
         <Text size="sm" c="dimmed">
           'ש
         </Text>
-        <Text size="sm" c="dimmed" dir="ltr" style={{ unicodeBidi: 'embed' }}>
+        <Text size="sm" c="dimmed" dir="ltr" className={styles.ltrText}>
           {timeFormatted}
         </Text>
       </Group>

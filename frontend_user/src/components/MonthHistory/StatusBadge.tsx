@@ -135,16 +135,18 @@ export function StatusBadge(props: StatusBadgeProps) {
           color: colors.dark,
           borderColor: colors.dark,
         },
+        label: {
+          [`& .${classes.dot}`]: {
+            backgroundColor: colors.dark,
+          },
+        },
       }}
       variant="outline"
       size="md"
       radius="xl"
     >
       <Group gap={4}>
-        <div 
-          className={classes.dot} 
-          style={{ backgroundColor: colors.dark }}
-        >
+        <div className={classes.dot}>
           {symbol}
         </div>
         {label}

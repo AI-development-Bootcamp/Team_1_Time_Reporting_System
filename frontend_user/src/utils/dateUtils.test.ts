@@ -124,8 +124,7 @@ describe('dateUtils', () => {
     it('returns empty array for future month', () => {
       const futureYear = dayjs().year() + 1;
       const dates = generateMonthDates(1, futureYear, false);
-      // This should still work as it checks month parameters, not actual future
-      expect(dates.length).toBeLessThanOrEqual(31);
+      expect(dates).toEqual([]);
     });
   });
 

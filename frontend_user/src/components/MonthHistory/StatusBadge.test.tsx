@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
+import type { ReactNode } from 'react';
 import { StatusBadge } from './StatusBadge';
 import { BADGE_LABELS } from '../../utils/constants';
 
-const renderWithProvider = (component: React.ReactNode) => {
+const renderWithProvider = (component: ReactNode) => {
   return render(
     <MantineProvider>
       {component}

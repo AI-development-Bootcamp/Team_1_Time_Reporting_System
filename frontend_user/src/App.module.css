@@ -1,0 +1,14 @@
+/**
+ * App Component Styles
+ */
+
+.mobileWarning {
+  height: 100vh;
+  padding: 20px;
+}
+
+.appContainer {
+  overflow: hidden;
+  max-width: 100vw;
+  min-height: 100vh;
+}

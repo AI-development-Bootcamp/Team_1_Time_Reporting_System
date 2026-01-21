@@ -38,7 +38,7 @@ interface UseMonthHistoryReturn {
  */
 export function useMonthHistory({
   month,
-  year,
+  year: _year, // Reserved for future use when backend supports year filtering
   userId,
   enabled = true,
 }: UseMonthHistoryParams): UseMonthHistoryReturn {
@@ -50,7 +50,7 @@ export function useMonthHistory({
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: [QUERY_KEYS.monthHistory, year, month, userId],
+    queryKey: [QUERY_KEYS.monthHistory, month, userId],
     queryFn: () => getMonthHistory({ month, userId }),
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes

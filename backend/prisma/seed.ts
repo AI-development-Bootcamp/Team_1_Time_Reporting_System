@@ -1,7 +1,15 @@
 import { PrismaClient, UserType, TaskStatus, DailyAttendanceStatus, LocationStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const prisma = new PrismaClient();
+
+// Helper functions for timezone-safe date/time handling
+const toDate = (iso: string): Date => dayjs.utc(iso).toDate();
+const toTime = (hhmm: string): Date => dayjs.utc(`1970-01-01T${hhmm}:00`).toDate();
 
 async function main() {
   console.log('🌱 Starting seed...');
@@ -107,8 +115,8 @@ async function main() {
       name: 'Frontend Modernization',
       clientId: techCorp.id,
       projectManagerId: admin.id,
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-06-30'),
+      startDate: toDate('2024-01-01'),
+      endDate: toDate('2024-06-30'),
       description: 'Modernize legacy frontend application with React and TypeScript',
       active: true,
     },
@@ -119,7 +127,7 @@ async function main() {
       name: 'Backend API Development',
       clientId: techCorp.id,
       projectManagerId: admin.id,
-      startDate: new Date('2024-02-01'),
+      startDate: toDate('2024-02-01'),
       description: 'Build RESTful API with Node.js and PostgreSQL',
       active: true,
     },
@@ -130,8 +138,8 @@ async function main() {
       name: 'Mobile App Development',
       clientId: globalSolutions.id,
       projectManagerId: admin.id,
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-09-30'),
+      startDate: toDate('2024-01-15'),
+      endDate: toDate('2024-09-30'),
       description: 'Cross-platform mobile application for iOS and Android',
       active: true,
     },
@@ -142,7 +150,7 @@ async function main() {
       name: 'Corporate Website Redesign',
       clientId: startupHub.id,
       projectManagerId: admin.id,
-      startDate: new Date('2024-03-01'),
+      startDate: toDate('2024-03-01'),
       description: 'Complete redesign of corporate website with modern UI/UX',
       active: true,
     },
@@ -154,7 +162,7 @@ async function main() {
     data: {
       name: 'UI/UX Design',
       projectId: techCorpFrontend.id,
-      startDate: new Date('2024-01-01'),
+      startDate: toDate('2024-01-01'),
       description: 'Design new user interface and user experience flows',
       status: TaskStatus.open,
     },
@@ -164,7 +172,7 @@ async function main() {
     data: {
       name: 'React Component Development',
       projectId: techCorpFrontend.id,
-      startDate: new Date('2024-01-15'),
+      startDate: toDate('2024-01-15'),
       description: 'Develop reusable React components',
       status: TaskStatus.open,
     },
@@ -174,7 +182,7 @@ async function main() {
     data: {
       name: 'REST API Implementation',
       projectId: techCorpBackend.id,
-      startDate: new Date('2024-02-01'),
+      startDate: toDate('2024-02-01'),
       description: 'Implement RESTful API endpoints',
       status: TaskStatus.open,
     },
@@ -184,7 +192,7 @@ async function main() {
     data: {
       name: 'Database Schema Design',
       projectId: techCorpBackend.id,
-      startDate: new Date('2024-02-01'),
+      startDate: toDate('2024-02-01'),
       description: 'Design and implement database schema',
       status: TaskStatus.closed,
     },
@@ -194,7 +202,7 @@ async function main() {
     data: {
       name: 'iOS Native Development',
       projectId: globalSolutionsMobile.id,
-      startDate: new Date('2024-01-15'),
+      startDate: toDate('2024-01-15'),
       description: 'Develop iOS native application',
       status: TaskStatus.open,
     },
@@ -204,7 +212,7 @@ async function main() {
     data: {
       name: 'Android Native Development',
       projectId: globalSolutionsMobile.id,
-      startDate: new Date('2024-01-15'),
+      startDate: toDate('2024-01-15'),
       description: 'Develop Android native application',
       status: TaskStatus.open,
     },
@@ -214,7 +222,7 @@ async function main() {
     data: {
       name: 'Website Design & Wireframing',
       projectId: startupHubWebsite.id,
-      startDate: new Date('2024-03-01'),
+      startDate: toDate('2024-03-01'),
       description: 'Create wireframes and design mockups',
       status: TaskStatus.open,
     },
@@ -249,8 +257,8 @@ async function main() {
     data: {
       userId: worker1.id,
       date: yesterday,
-      startTime: new Date('1970-01-01T09:00:00'),
-      endTime: new Date('1970-01-01T17:30:00'),
+      startTime: toTime('09:00'),
+      endTime: toTime('17:30'),
       status: DailyAttendanceStatus.work,
     },
   });
@@ -259,8 +267,8 @@ async function main() {
     data: {
       userId: worker2.id,
       date: yesterday,
-      startTime: new Date('1970-01-01T08:30:00'),
-      endTime: new Date('1970-01-01T17:00:00'),
+      startTime: toTime('08:30'),
+      endTime: toTime('17:00'),
       status: DailyAttendanceStatus.work,
     },
   });
@@ -269,8 +277,8 @@ async function main() {
     data: {
       userId: worker3.id,
       date: yesterday,
-      startTime: new Date('1970-01-01T09:00:00'),
-      endTime: new Date('1970-01-01T13:00:00'),
+      startTime: toTime('09:00'),
+      endTime: toTime('13:00'),
       status: DailyAttendanceStatus.halfDayOff,
     },
   });
@@ -349,9 +357,9 @@ async function main() {
   const jan19 = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-19'), // Monday
-      startTime: new Date('1970-01-01T09:00:00'),
-      endTime: new Date('1970-01-01T13:30:00'), // 4.5 hours
+      date: toDate('2026-01-19'), // Monday
+      startTime: toTime('09:00'),
+      endTime: toTime('13:30'), // 4.5 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -369,9 +377,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-18'), // Sunday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-18'), // Sunday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.dayOff,
     },
   });
@@ -380,9 +388,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-15'), // Thursday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-15'), // Thursday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.halfDayOff,
     },
   });
@@ -391,18 +399,18 @@ async function main() {
   const jan14Morning = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-14'), // Wednesday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-14'), // Wednesday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.halfDayOff,
     },
   });
   const jan14Afternoon = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-14'), // Wednesday (same date)
-      startTime: new Date('1970-01-01T13:00:00'),
-      endTime: new Date('1970-01-01T17:30:00'), // 4.5 hours
+      date: toDate('2026-01-14'), // Wednesday (same date)
+      startTime: toTime('13:00'),
+      endTime: toTime('17:30'), // 4.5 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -420,9 +428,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-13'), // Tuesday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-13'), // Tuesday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.sickness,
       document: Buffer.from('sick_note_2026-01-13.pdf'), // Mock document
     },
@@ -432,9 +440,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-12'), // Monday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-12'), // Monday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.sickness,
       document: null,
     },
@@ -444,9 +452,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-11'), // Sunday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-11'), // Sunday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.reserves,
       document: Buffer.from('reserves_2026-01-11.pdf'), // Mock document
     },
@@ -456,9 +464,9 @@ async function main() {
   await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-08'), // Thursday
-      startTime: new Date('1970-01-01T00:00:00'),
-      endTime: new Date('1970-01-01T00:00:00'),
+      date: toDate('2026-01-08'), // Thursday
+      startTime: toTime('00:00'),
+      endTime: toTime('00:00'),
       status: DailyAttendanceStatus.reserves,
       document: null,
     },
@@ -468,9 +476,9 @@ async function main() {
   const jan07Morning = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-07'), // Wednesday
-      startTime: new Date('1970-01-01T08:00:00'),
-      endTime: new Date('1970-01-01T12:00:00'), // 4 hours
+      date: toDate('2026-01-07'), // Wednesday
+      startTime: toTime('08:00'),
+      endTime: toTime('12:00'), // 4 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -487,9 +495,9 @@ async function main() {
   const jan07Afternoon = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-07'), // Wednesday (same date)
-      startTime: new Date('1970-01-01T13:00:00'),
-      endTime: new Date('1970-01-01T18:00:00'), // 5 hours
+      date: toDate('2026-01-07'), // Wednesday (same date)
+      startTime: toTime('13:00'),
+      endTime: toTime('18:00'), // 5 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -514,9 +522,9 @@ async function main() {
   const jan05 = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-05'), // Monday
-      startTime: new Date('1970-01-01T09:00:00'),
-      endTime: new Date('1970-01-01T18:00:00'), // exactly 9 hours
+      date: toDate('2026-01-05'), // Monday
+      startTime: toTime('09:00'),
+      endTime: toTime('18:00'), // exactly 9 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -534,9 +542,9 @@ async function main() {
   const jan04 = await prisma.dailyAttendance.create({
     data: {
       userId: testUser.id,
-      date: new Date('2026-01-04'), // Sunday
-      startTime: new Date('1970-01-01T10:00:00'),
-      endTime: new Date('1970-01-01T11:30:00'), // 1.5 hours
+      date: toDate('2026-01-04'), // Sunday
+      startTime: toTime('10:00'),
+      endTime: toTime('11:30'), // 1.5 hours
       status: DailyAttendanceStatus.work,
     },
   });
@@ -569,12 +577,15 @@ async function main() {
   console.log('   - Jan 16: Friday (no attendance) - BLUE badge');
 
   console.log('🎉 Seed completed successfully!');
-  console.log('\n📝 Login credentials:');
-  console.log('   Admin: admin@timereporting.com / Password123');
-  console.log('   Worker: john.doe@timereporting.com / Password123');
-  console.log('   Worker: jane.smith@timereporting.com / Password123');
-  console.log('   Worker: david.cohen@timereporting.com / Password123');
-  console.log('   Test User: test.monthhistory@timereporting.com / Password123 (ID:', testUser.id, ')');
+  console.log('\n📝 User accounts created:');
+  console.log('   Admin: admin@timereporting.com (ID:', admin.id, ')');
+  console.log('   Worker: john.doe@timereporting.com (ID:', worker1.id, ')');
+  console.log('   Worker: jane.smith@timereporting.com (ID:', worker2.id, ')');
+  console.log('   Worker: david.cohen@timereporting.com (ID:', worker3.id, ')');
+  console.log('   Test User: test.monthhistory@timereporting.com (ID:', testUser.id, ')');
+  if (process.env.SHOW_SEED_CREDENTIALS === 'true') {
+    console.log('\n🔑 Credentials (dev only): Password123');
+  }
 }
 
 main()

@@ -4,6 +4,7 @@ import { Center, Text, Stack } from '@mantine/core';
 import { MonthHistoryPage } from './components/MonthHistory';
 import { BottomBar } from './components/BottomBar';
 import { ComingSoonModal } from './components/ComingSoonModal';
+import styles from './App.module.css';
 
 function App() {
   // Check if mobile view (max-width: 768px)
@@ -28,13 +29,13 @@ function App() {
   // Show message if not on mobile
   if (!isMobile) {
     return (
-      <Center style={{ height: '100vh', padding: '20px' }}>
+      <Center className={styles.mobileWarning}>
         <Stack align="center" gap="md">
           <Text size="xl" fw={600} ta="center" dir="rtl">
             הדף מותאם רק לפלאפון
           </Text>
           <Text size="md" c="dimmed" ta="center" dir="rtl">
-            יש לעבור לפאלפון כדי להיות בדף זה
+            יש לעבור לפלאפון כדי להיות בדף זה
           </Text>
         </Stack>
       </Center>
@@ -42,11 +43,7 @@ function App() {
   }
 
   return (
-    <div style={{ 
-      overflow: 'hidden',
-      maxWidth: '100vw',
-      minHeight: '100vh'
-    }}>
+    <div className={styles.appContainer}>
       <MonthHistoryPage
         userId={userId}
         onEdit={openModal}
