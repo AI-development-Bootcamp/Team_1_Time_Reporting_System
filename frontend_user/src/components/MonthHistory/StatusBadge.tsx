@@ -97,7 +97,7 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
     case 'reserves':
       return { label: BADGE_LABELS.reserves, colorType: 'blue' };
 
-    case 'work':
+    case 'work': {
       const hours = totalMinutes / 60;
       const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
       // Build: number + space + suffix
@@ -106,6 +106,7 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
         label,
         colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
       };
+    }
 
     default:
       return { label: BADGE_LABELS.missing, colorType: 'red' };
