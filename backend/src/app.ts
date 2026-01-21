@@ -16,7 +16,8 @@ export const createApp = () => {
 
   // Trust proxy for Render and other hosting platforms
   // This is required for rate limiting and IP detection to work correctly
-  app.set('trust proxy', true);
+  // Set to 1 to trust only the first proxy (Render's load balancer)
+  app.set('trust proxy', 1);
 
   // Parse CORS origins from environment variables
   const localOrigins = process.env.LOCAL_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
