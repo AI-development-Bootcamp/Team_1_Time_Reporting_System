@@ -1293,14 +1293,14 @@ backend/src/
     - [x] `ValidationErrors` (field-level error messages)
   - [x] Export from `types/index.ts`
 
-- [ ] TASK-M2-020-FE-002: Create validation utilities
-  - [ ] Create `utils/validation.ts`:
-    - [ ] `validateTimeRange(start, end)` - ensure end > start
-    - [ ] `validateDuration(hhMM)` - max 23:59, valid format
-    - [ ] `validateRequiredFields(projectReport)` - check project/task/location
-    - [ ] `calculateTotalDuration(projectReports[])` - sum durations in minutes
-    - [ ] `validateTrackerComplete(total, target)` - check total >= target
-  - [ ] Add unit tests (≥80% coverage)
+- [x] TASK-M2-020-FE-002: Create validation utilities
+  - [x] Create `utils/validation.ts`:
+    - [x] `validateTimeRange(start, end)` - ensure end > start
+    - [x] `validateDuration(hhMM)` - max 23:59, valid format
+    - [x] `validateRequiredFields(projectReport)` - check project/task/location
+    - [x] `calculateTotalDuration(projectReports[])` - sum durations in minutes
+    - [x] `validateTrackerComplete(total, target)` - check total >= target
+  - [x] Add unit tests (≥80% coverage)
 
 - [ ] TASK-M2-020-FE-003: Create time formatting utilities
   - [ ] Create `utils/timeUtils.ts`:
