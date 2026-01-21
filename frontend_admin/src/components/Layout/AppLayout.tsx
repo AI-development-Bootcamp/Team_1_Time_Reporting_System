@@ -78,7 +78,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 📋
               </Box>
             }
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/client-management')}
             active={location.pathname === '/'}
             styles={{
               root: {

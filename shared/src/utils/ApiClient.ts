@@ -33,6 +33,7 @@ export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
 class ApiClient {
   private client: AxiosInstance;
   private baseURL: string;
+  private initializationPromise: Promise<void>;
 
   constructor() {
     // Ensure baseURL always ends with /api
@@ -70,8 +71,8 @@ class ApiClient {
       console.log('ApiClient initialized with baseURL:', this.baseURL);
     }
 
-    // Test primary URL and fallback to 10000 if needed
-    this.initializeBaseURL(primaryURL, fallbackURL);
+    // Store initialization promise to ensure it completes before any requests
+    this.initializationPromise = this.initializeBaseURL(primaryURL, fallbackURL);
 
     // Add request interceptor to include auth token and ensure baseURL is correct
     this.client.interceptors.request.use(
@@ -162,27 +163,40 @@ class ApiClient {
     }
   }
 
+  /**
+   * Ensures the client is fully initialized before making requests.
+   * This prevents race conditions where requests are made before the health check completes.
+   */
+  private async ensureInitialized(): Promise<void> {
+    await this.initializationPromise;
+  }
+
   async get<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
+    await this.ensureInitialized();
     const response = await this.client.get<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }
 
   async post<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
+    await this.ensureInitialized();
     const response = await this.client.post<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
   async put<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
+    await this.ensureInitialized();
     const response = await this.client.put<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
   async patch<T = any>(url: string, data?: any, config?: any): Promise<ApiSuccessResponse<T>> {
+    await this.ensureInitialized();
     const response = await this.client.patch<ApiSuccessResponse<T>>(url, data, config);
     return response.data;
   }
 
   async delete<T = any>(url: string, config?: any): Promise<ApiSuccessResponse<T>> {
+    await this.ensureInitialized();
     const response = await this.client.delete<ApiSuccessResponse<T>>(url, config);
     return response.data;
   }
