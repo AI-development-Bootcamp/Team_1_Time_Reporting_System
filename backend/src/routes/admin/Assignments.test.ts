@@ -2,7 +2,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import { errorHandler } from '../../middleware/ErrorHandler';
-import assignmentsRouter from './Assignments';
+
+// Mock the auth middleware to bypass authentication in unit tests
+vi.mock('../../middleware/AuthMiddleware', () => ({
+  authMiddleware: vi.fn((req, res, next) => next()),
+}));
+
+vi.mock('../../middleware/Admin', () => ({
+  adminMiddleware: vi.fn((req, res, next) => next()),
+}));
 
 // Use vi.hoisted() to create mocks before module imports
 const { mockPrisma } = vi.hoisted(() => {
@@ -24,9 +32,14 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 // Mock the prisma singleton instance directly
-vi.mock('@utils/prisma', () => ({
+// NOTE: Services import from prismaClient, not prisma
+// This must be set up BEFORE importing the router
+vi.mock('../../utils/prismaClient', () => ({
   prisma: mockPrisma,
 }));
+
+// Import router AFTER mocks are set up
+import assignmentsRouter from './Assignments';
 
 // Create a test app
 const createTestApp = () => {

@@ -61,7 +61,6 @@ export function validateToken(): boolean {
   if (isTokenExpired(token)) {
     // Token expired, clear auth data
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     return false;
   }
 

@@ -44,7 +44,7 @@ export const createApp = () => {
   // Mount API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/admin', adminUsersRoutes);
-  app.use('/api/admin', assignmentsRoutes);
+  app.use('/api/admin/assignments', assignmentsRoutes);
   app.use('/api/admin/projects', projectsRouter);
   app.use('/api/admin/clients', clientsRouter);
   app.use('/api/admin/tasks', tasksRouter);

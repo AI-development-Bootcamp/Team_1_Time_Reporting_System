@@ -93,7 +93,6 @@ class ApiClient {
           if (isTokenExpired(token)) {
             // Token expired, clear auth data and redirect
             localStorage.removeItem('token');
-            localStorage.removeItem('user');
             window.location.href = '/login';
             return Promise.reject(new Error('Token expired'));
           }
@@ -124,7 +123,6 @@ class ApiClient {
           if (!isAuthEndpoint) {
             // Unauthorized on protected routes - clear token and redirect to login
             localStorage.removeItem('token');
-            localStorage.removeItem('user'); // Clear user too
             window.location.href = '/login';
           }
           // For auth endpoints, let the error propagate to the component's error handler

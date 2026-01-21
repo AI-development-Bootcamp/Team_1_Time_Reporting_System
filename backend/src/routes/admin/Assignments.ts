@@ -24,19 +24,20 @@ router.get('/', AssignmentController.getAssignments);
 router.post('/', AssignmentController.createAssignment);
 
 /**
+ * GET /api/admin/assignments/:taskId/users
+ * Get list of workers assigned to a specific task
+ * Returns: [{ id: number, name: string }, ...]
+ * Only returns active users
+ * NOTE: This must come before DELETE /:id to ensure proper route matching
+ */
+router.get('/:taskId/users', AssignmentController.getTaskWorkers);
+
+/**
  * DELETE /api/admin/assignments/:id
  * Delete assignment
  * id format: "taskId:userId"
  * Auth: Required, Role: admin
  */
 router.delete('/:id', AssignmentController.deleteAssignment);
-
-/**
- * GET /api/admin/assignments/:taskId/users
- * Get list of workers assigned to a specific task
- * Returns: [{ id: number, name: string }, ...]
- * Only returns active users
- */
-router.get('/:taskId/users', AssignmentController.getTaskWorkers);
 
 export default router;

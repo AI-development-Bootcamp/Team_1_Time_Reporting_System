@@ -22,13 +22,13 @@ const { mockPrisma } = vi.hoisted(() => {
     taskWorker: {
       deleteMany: vi.fn(),
     },
-    $transaction: vi.fn((cb: any) => cb(mockPrismaInstance)),
+    $transaction: vi.fn(async (cb: any) => await cb(mockPrismaInstance)),
   };
   return { mockPrisma: mockPrismaInstance };
 });
 
 // Mock the prisma singleton instance directly
-vi.mock('@utils/prisma', () => ({
+vi.mock('../../utils/prisma', () => ({
   prisma: mockPrisma,
 }));
 
@@ -45,13 +45,13 @@ import projectsRouter from './Projects';
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
-  
+
   // Use the imported router
   app.use('/api/admin/projects', projectsRouter);
-  
+
   // Error handler
   app.use(errorHandler);
-  
+
   return app;
 };
 
@@ -132,7 +132,7 @@ describe('Projects Router', () => {
           createdAt: 'desc',
         },
       });
-      
+
       // Verify all returned projects belong to the filtered client
       const allMatch = response.body.data.every((p: any) => p.clientId === '1');
       expect(allMatch).toBe(true);

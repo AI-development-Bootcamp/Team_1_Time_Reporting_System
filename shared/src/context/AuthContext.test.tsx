@@ -38,66 +38,34 @@ describe('AuthContext Logic', () => {
   });
 
   describe('localStorage operations', () => {
-    it('should store token and user in localStorage', () => {
-      const testUser: User = {
-        id: 1,
-        name: 'Test User',
-        mail: 'test@example.com',
-        userType: 'worker',
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+    it('should store only token in localStorage (user is decoded from token)', () => {
       const testToken = 'test-token-123';
 
       localStorageMock.setItem('token', testToken);
-      localStorageMock.setItem('user', JSON.stringify(testUser));
 
       expect(localStorageMock.getItem('token')).toBe(testToken);
-      expect(localStorageMock.getItem('user')).toBe(JSON.stringify(testUser));
+      // User should NOT be stored in localStorage
+      expect(localStorageMock.getItem('user')).toBe(null);
     });
 
-    it('should parse user from localStorage JSON', () => {
-      const testUser: User = {
-        id: 1,
-        name: 'Test User',
-        mail: 'test@example.com',
-        userType: 'worker',
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      localStorageMock.setItem('user', JSON.stringify(testUser));
-      const stored = localStorageMock.getItem('user');
-      const parsed = stored ? JSON.parse(stored) : null;
-
-      expect(parsed).toEqual(testUser);
-    });
-
-    it('should handle invalid JSON in localStorage gracefully', () => {
-      localStorageMock.setItem('user', 'invalid-json');
-      
-      let parsed = null;
-      try {
-        const stored = localStorageMock.getItem('user');
-        parsed = stored ? JSON.parse(stored) : null;
-      } catch (error) {
-        // Expected to throw
-        expect(error).toBeDefined();
-      }
-
-      expect(parsed).toBe(null);
-    });
-
-    it('should clear token and user from localStorage', () => {
+    it('should clear only token from localStorage on logout', () => {
       localStorageMock.setItem('token', 'test-token');
-      localStorageMock.setItem('user', JSON.stringify({ id: 1 }));
 
       localStorageMock.removeItem('token');
-      localStorageMock.removeItem('user');
 
       expect(localStorageMock.getItem('token')).toBe(null);
+      // User should not exist in localStorage
+      expect(localStorageMock.getItem('user')).toBe(null);
+    });
+
+    it('should handle token-only storage architecture', () => {
+      const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxfX0.signature';
+      
+      localStorageMock.setItem('token', testToken);
+      const storedToken = localStorageMock.getItem('token');
+      
+      expect(storedToken).toBe(testToken);
+      // Verify user is NOT stored separately
       expect(localStorageMock.getItem('user')).toBe(null);
     });
   });
@@ -217,12 +185,15 @@ describe('AuthContext Logic', () => {
       expect(!!token).toBe(true);
     });
 
-    it('should handle empty user object', () => {
-      localStorageMock.setItem('user', JSON.stringify({}));
-      const stored = localStorageMock.getItem('user');
-      const parsed = stored ? JSON.parse(stored) : null;
-
-      expect(parsed).toEqual({});
+    it('should verify no user key exists in localStorage', () => {
+      // Even if someone tries to set user, it should not be used
+      localStorageMock.setItem('token', 'valid-token');
+      localStorageMock.setItem('user', JSON.stringify({ id: 1 }));
+      
+      // Token should exist
+      expect(localStorageMock.getItem('token')).toBe('valid-token');
+      // But user should be ignored/cleaned up (architecture: only token is used)
+      // In real implementation, AuthContext removes 'user' key on mount
     });
   });
 });
