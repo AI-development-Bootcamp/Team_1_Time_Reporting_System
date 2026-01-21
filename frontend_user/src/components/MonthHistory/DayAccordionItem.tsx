@@ -108,7 +108,7 @@ export function DayAccordionItem({
             hasBothHalfDayAndWork={hasBothHalfDayAndWork}
           />
           <Group gap="xs" wrap="nowrap">
-            <Text size="sm" fw={500}>
+            <Text size="sm" fw={500} className={classes.dateText}>
               {formattedDate}
             </Text>
             <Image src={calendarIcon} alt="" w={20} h={20} className={classes.calendarIcon} />

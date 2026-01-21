@@ -1,29 +1,31 @@
 /**
- * DayAccordionItem styles
+ * DayAccordionItem styles - matches Figma design
+ * Width: 361px, Height: 48px (when closed)
+ * Padding: 12px horizontal, 10px vertical
+ * Corner radius: 10px
  */
 
 .item {
-  border-bottom: 1px solid var(--mantine-color-gray-2);
-  background-color: var(--mantine-color-white);
-}
-
-.item:first-of-type {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.item:last-of-type {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  border-bottom: none;
+  background-color: #FFFFFF;
+  border-radius: 10px !important;
+  overflow: hidden;
+  width: 100%;
+  max-width: 361px;
 }
 
 .control {
-  padding: 12px 16px;
+  padding: 10px 12px !important;
+  height: 48px;
 }
 
 .header {
   width: 100%;
+}
+
+.dateText {
+  direction: ltr !important;
+  unicode-bidi: bidi-override !important;
+  text-align: left !important;
 }
 
 .calendarIcon {
@@ -31,7 +33,7 @@
 }
 
 .panel {
-  padding: 0 16px 16px;
+  padding: 0 12px 12px;
 }
 
 .addButton {

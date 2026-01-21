@@ -20,13 +20,16 @@ dayjs.extend(utc);
 
 /**
  * Format date as DD/MM/YY, יום X'
- * Example: "25/10/15, יום ד'"
+ * Example: "16/10/25, יום ה'"
+ * Uses LTR embedding to ensure correct display order in RTL layout
  */
 export function formatDateWithDay(date: string | Date | Dayjs): string {
   const d = dayjs(date);
   const formatted = d.format('DD/MM/YY');
   const dayName = HEBREW_DAY_NAMES[d.day()];
-  return `${formatted}, ${dayName}`;
+  // Use LTR embedding (U+202A) and Pop Directional Formatting (U+202C)
+  // This forces the entire string to display left-to-right
+  return `\u202A${formatted}, ${dayName}\u202C`;
 }
 
 /**

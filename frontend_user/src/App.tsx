@@ -42,7 +42,12 @@ function App() {
   }
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
+    <div style={{ 
+      paddingBottom: '80px',
+      overflow: 'hidden',
+      maxWidth: '100vw',
+      minHeight: '100vh'
+    }}>
       <MonthHistoryPage
         userId={userId}
         onEdit={openModal}
