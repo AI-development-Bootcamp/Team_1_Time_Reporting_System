@@ -83,6 +83,7 @@ describe('Projects API Integration Tests', () => {
 
       expect(createResponse.body.success).toBe(true);
       expect(createResponse.body.data.id).toBeDefined();
+      // IDs are returned as strings (BigInt serialized)
       const projectId = BigInt(createResponse.body.data.id);
       createdProjectIds.push(projectId);
 
@@ -102,7 +103,7 @@ describe('Projects API Integration Tests', () => {
 
       expect(listResponse.body.success).toBe(true);
       const foundProject = listResponse.body.data.find(
-        (p: any) => p.id === Number(projectId)
+        (p: any) => p.id === projectId.toString()
       );
       expect(foundProject).toBeDefined();
 
@@ -113,7 +114,7 @@ describe('Projects API Integration Tests', () => {
 
       expect(filteredResponse.body.success).toBe(true);
       const filteredProject = filteredResponse.body.data.find(
-        (p: any) => p.id === Number(projectId)
+        (p: any) => p.id === projectId.toString()
       );
       expect(filteredProject).toBeDefined();
 

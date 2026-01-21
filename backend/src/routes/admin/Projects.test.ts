@@ -17,8 +17,13 @@ const { mockPrisma } = vi.hoisted(() => {
       findUnique: vi.fn(),
     },
     task: {
-      findUnique: vi.fn(),
+      findUnique: vi.fn(),      // Needed for your NEW feature
+      updateMany: vi.fn(),      // Needed for entity_management feature
     },
+    taskWorker: {
+      deleteMany: vi.fn(),      // Needed for entity_management feature
+    },
+    $transaction: vi.fn((cb: any) => cb(mockPrismaInstance)), // Needed for entity_management
   };
   return { mockPrisma: mockPrismaInstance };
 });
@@ -133,7 +138,7 @@ describe('Projects Router', () => {
       });
       
       // Verify all returned projects belong to the filtered client
-      const allMatch = response.body.data.every((p: any) => p.clientId === 1);
+      const allMatch = response.body.data.every((p: any) => p.clientId === '1');
       expect(allMatch).toBe(true);
     });
 
@@ -252,7 +257,7 @@ describe('Projects Router', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.id).toBe(1);
+      expect(response.body.data.id).toBe('1');
       expect(mockPrisma.client.findUnique).toHaveBeenCalledWith({
         where: { id: BigInt(1) },
       });
