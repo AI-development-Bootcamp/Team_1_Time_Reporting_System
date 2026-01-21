@@ -1302,13 +1302,13 @@ backend/src/
     - [x] `validateTrackerComplete(total, target)` - check total >= target
   - [x] Add unit tests (≥80% coverage)
 
-- [ ] TASK-M2-020-FE-003: Create time formatting utilities
-  - [ ] Create `utils/timeUtils.ts`:
-    - [ ] `formatDurationInput(minutes)` - convert to hh:mm display
-    - [ ] `parseDurationInput(hhMM)` - convert to minutes
-    - [ ] `formatTimeForPicker(time)` - format HH:mm for time picker
-    - [ ] `parseTimeFromPicker(time)` - parse picker value
-  - [ ] Add unit tests (≥80% coverage)
+- [x] TASK-M2-020-FE-003: Create time formatting utilities
+  - [x] Create `utils/timeUtils.ts`:
+    - [x] `formatDurationInput(minutes)` - convert to hh:mm display
+    - [x] `parseDurationInput(hhMM)` - convert to minutes
+    - [x] `formatTimeForPicker(time)` - format HH:mm for time picker
+    - [x] `parseTimeFromPicker(time)` - parse picker value
+  - [x] Add unit tests (≥80% coverage)
 
 **Frontend - API Services:**
 - [ ] TASK-M2-020-FE-004: Extend attendance API service
