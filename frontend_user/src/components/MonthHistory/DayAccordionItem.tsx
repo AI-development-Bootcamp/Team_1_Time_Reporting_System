@@ -129,16 +129,20 @@ export function DayAccordionItem({
             />
           ))}
 
-          {/* Add report button - now available on all days including weekends */}
-          <Button
-            variant="subtle"
-            color="blue"
-            size="sm"
-            onClick={handleAddReport}
-            className={classes.addButton}
-          >
-            {HEBREW_STRINGS.addReport}
-          </Button>
+          {/* Add report button - Hide for dayOff, sickness, reserves */}
+          {!attendances.some((a) =>
+            ['dayOff', 'sickness', 'reserves'].includes(a.status)
+          ) && (
+            <Button
+              variant="subtle"
+              color="blue"
+              size="sm"
+              onClick={handleAddReport}
+              className={classes.addButton}
+            >
+              {HEBREW_STRINGS.addReport}
+            </Button>
+          )}
         </Stack>
       </Accordion.Panel>
     </Accordion.Item>

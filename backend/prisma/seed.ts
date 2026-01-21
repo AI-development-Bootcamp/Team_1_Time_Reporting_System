@@ -424,7 +424,7 @@ async function main() {
       startTime: new Date('1970-01-01T00:00:00'),
       endTime: new Date('1970-01-01T00:00:00'),
       status: DailyAttendanceStatus.sickness,
-      documentPath: '/documents/sick_note_2026-01-13.pdf',
+      document: Buffer.from('sick_note_2026-01-13.pdf'), // Mock document
     },
   });
 
@@ -436,7 +436,7 @@ async function main() {
       startTime: new Date('1970-01-01T00:00:00'),
       endTime: new Date('1970-01-01T00:00:00'),
       status: DailyAttendanceStatus.sickness,
-      documentPath: null,
+      document: null,
     },
   });
 
@@ -448,7 +448,7 @@ async function main() {
       startTime: new Date('1970-01-01T00:00:00'),
       endTime: new Date('1970-01-01T00:00:00'),
       status: DailyAttendanceStatus.reserves,
-      documentPath: '/documents/reserves_2026-01-11.pdf',
+      document: Buffer.from('reserves_2026-01-11.pdf'), // Mock document
     },
   });
 
@@ -460,7 +460,7 @@ async function main() {
       startTime: new Date('1970-01-01T00:00:00'),
       endTime: new Date('1970-01-01T00:00:00'),
       status: DailyAttendanceStatus.reserves,
-      documentPath: null,
+      document: null,
     },
   });
 

@@ -72,6 +72,11 @@ export const BADGE_COLORS = {
     dark: '#AC2632',
     light: '#FCE3D6',
   },
+  // Purple - halfDayOff + work combined
+  purple: {
+    dark: '#AE0088',
+    light: '#FFECFC',
+  },
 } as const;
 
 // ============================================================================

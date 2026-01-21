@@ -29,7 +29,7 @@ interface StatusBadgeProps {
   hasBothHalfDayAndWork?: boolean;
 }
 
-type BadgeColorType = 'green' | 'orange' | 'blue' | 'red';
+type BadgeColorType = 'green' | 'orange' | 'blue' | 'red' | 'purple';
 
 interface BadgeConfig {
   label: string;
@@ -78,7 +78,7 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
       return { label: BADGE_LABELS.dayOff, colorType: 'blue' };
 
     case 'halfDayOff':
-      // Combined badge if there's also work
+      // Combined badge if there's also work - PURPLE
       if (hasBothHalfDayAndWork && totalMinutes > 0) {
         const hours = totalMinutes / 60;
         const formatted = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
@@ -86,7 +86,7 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
         const label = BADGE_LABELS.halfDayWorkPrefix + formatted + ' ' + BADGE_LABELS.hoursSuffix;
         return {
           label,
-          colorType: totalMinutes >= FULL_WORK_DAY_MINUTES ? 'green' : 'orange',
+          colorType: 'purple', // Always purple for combined badge
         };
       }
       return { label: BADGE_LABELS.halfDayOff, colorType: 'blue' };
@@ -112,9 +112,19 @@ function getBadgeConfig(props: StatusBadgeProps): BadgeConfig {
   }
 }
 
+// Map badge colors to Unicode symbols
+const DOT_SYMBOLS = {
+  green: '✓',      // Checkmark - complete work
+  orange: '!',     // Checkmark - partial work
+  red: '!',        // Exclamation - missing
+  blue: 'X',       // X mark - absence/weekend
+  purple: '/',     // Slash - half day + work
+};
+
 export function StatusBadge(props: StatusBadgeProps) {
   const { label, colorType } = getBadgeConfig(props);
   const colors = BADGE_COLORS[colorType];
+  const symbol = DOT_SYMBOLS[colorType];
 
   return (
     <Badge
@@ -131,7 +141,12 @@ export function StatusBadge(props: StatusBadgeProps) {
       radius="xl"
     >
       <Group gap={4}>
-        <span className={classes.dot} style={{ backgroundColor: colors.dark }} />
+        <div 
+          className={classes.dot} 
+          style={{ backgroundColor: colors.dark }}
+        >
+          {symbol}
+        </div>
         {label}
       </Group>
     </Badge>
