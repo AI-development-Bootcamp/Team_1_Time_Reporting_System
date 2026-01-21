@@ -58,7 +58,8 @@ Error:
 
 - **User**: `{ id, name, mail, userType, active, createdAt, updatedAt }`
 - **Client**: `{ id, name, description?, active, createdAt, updatedAt }`
-- **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, active, createdAt, updatedAt }`
+- **Project**: `{ id, name, clientId, projectManagerId, startDate, endDate?, description?, reportingType, active, createdAt, updatedAt }`
+- **ReportingType**: `startEnd` (Default) | `duration`
 - **Task**: `{ id, name, projectId, startDate?, endDate?, description?, status, createdAt, updatedAt }`
 - **TaskWorker**: `{ taskId, userId }`
 - **DailyAttendance**: `{ id, userId, date, startTime, endTime, status, document?, createdAt, updatedAt }`
@@ -311,6 +312,7 @@ List projects.
       "startDate": "2026-01-01",
       "endDate": null,
       "description": "Build UI",
+      "reportingType": "startEnd",
       "active": true,
       "createdAt": "2026-01-01T09:00:00.000Z",
       "updatedAt": "2026-01-10T09:00:00.000Z"
@@ -336,6 +338,24 @@ Create project.
 
 ## PUT `/admin/projects/:id`
 Update project.
+
+## PATCH `/admin/projects/:id`
+Partial update for project settings (e.g., reportingType).
+
+**Auth:** Required  
+**Role:** `admin`
+
+### Request Body
+```json
+{
+  "reportingType": "duration"
+}
+```
+
+### 200 OK
+```json
+{ "success": true, "data": { "updated": true } }
+```
 
 ## DELETE `/admin/projects/:id`
 Soft delete project (`active=false`).

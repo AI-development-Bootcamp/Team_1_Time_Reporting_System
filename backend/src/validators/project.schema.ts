@@ -30,3 +30,7 @@ export const clientIdQuerySchema = z.object({
   clientId: z.string().regex(/^\d+$/, 'Client ID must be a valid number').transform(val => BigInt(val)).optional(),
 });
 
+export const taskIdParamSchema = z.object({
+  taskId: z.string().regex(/^\d+$/, 'Task ID must be a valid number').transform(val => BigInt(val)),
+});
+

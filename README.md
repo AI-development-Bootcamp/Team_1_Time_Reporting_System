@@ -48,7 +48,9 @@ To get a local copy up and running, follow these steps.
 
 ### Prerequisites
 * **Node.js** (v18 or higher)
-* **Docker** (for running the PostgreSQL database)
+* **Docker Desktop** (for running the PostgreSQL database)
+  - **Important:** Docker Desktop must be running before executing the setup script
+  - The setup script will check if Docker is running and provide instructions if it's not
 
 ### Installation
 
@@ -58,12 +60,7 @@ To get a local copy up and running, follow these steps.
     cd Team_1_Time_Reporting_System
     ```
 
-2.  **Install NPM packages**
-    ```sh
-    npm install
-    ```
-
-3.  **Quick Setup (Recommended)**
+2.  **Quick Setup (Recommended)**
     
     Run the automated setup script that handles everything:
     ```sh
@@ -71,16 +68,27 @@ To get a local copy up and running, follow these steps.
     ```
     
     This single command will:
+    - Install all dependencies for root, backend, frontend_user, and frontend_admin
+    - Check if Docker Desktop is running (will exit with instructions if not)
+    - Check for available PostgreSQL port (starts with 5432, uses alternative if occupied)
+    - Update `docker-compose.yml` and `backend/.env` with the selected port
     - Start Docker Compose (PostgreSQL database)
     - Wait for database to be ready
     - Generate Prisma Client
     - Run database migrations
     - Seed the database with sample data
     
+    **Important:** Make sure Docker Desktop is running before executing `npm run setup`. The script will check and provide clear instructions if Docker is not running.
+    
+    **Note:** If port 5432 is already in use, the setup script will automatically find and use an alternative port (5433, 5434, etc.) and update all necessary configuration files.
+    
     **Alternative: Manual Setup**
     
     If you prefer to run steps manually:
     ```sh
+    # Install dependencies
+    npm install
+    
     # Start Docker Compose
     docker-compose up -d
     
@@ -108,6 +116,22 @@ npm run dev:admin
 
 **Note:** Make sure you've run `npm run setup` first to initialize the database and seed data.
 
+## Restarting Setup
+
+To restart the setup process (useful if you need to reset the database or reinstall dependencies):
+
+```sh
+npm run setup
+```
+
+The setup script will:
+- Reinstall all dependencies
+- Check for port availability and update configuration if needed
+- Clear existing seed data and reseed the database
+- Handle existing migrations gracefully
+
+**Note:** The seed script automatically clears existing seed data before creating new records, so running setup multiple times is safe.
+
 ## Shutting Down
 
 When you're done working:
@@ -131,27 +155,38 @@ When you're done working:
 
 ## Environment Variables
 
-Create a `.env` file in the `/backend` folder:
+### Backend Environment Variables
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/time_db"
-JWT_SECRET="super_secret_key_change_this"
-PORT=3000
-```
+The `backend/.env` file is automatically created/updated by the setup script with the correct `DATABASE_URL` based on the selected PostgreSQL port.
+
+**Required variables:**
+- `DATABASE_URL` - Automatically set by setup script 
+- `JWT_SECRET` - Secret key for JWT token signing 
+- `PORT` - Backend server port 
+
+**Note:** The setup script automatically handles port conflicts and updates the `DATABASE_URL` accordingly. If you manually change the PostgreSQL port, make sure to update `DATABASE_URL` in `backend/.env`.
+
+### Frontend Environment Variables
+
+Each frontend has its own `.env` file:
+- `frontend_user/.env`
+- `frontend_admin/.env`
+
+**Required variables:**
+- `VITE_API_URL` - Backend API URL (
+- `BACKEND_PORT` - Reference variable for the backend port
 
 ## Seed Database
 
-After running migrations, seed the database with initial data:
+The database is automatically seeded when you run `npm run setup`. If you need to reseed manually:
 
 ```sh
 cd backend
 npx prisma db seed
 ```
 
-This will create:
-- Initial admin user
-- Sample clients, projects, and tasks
-- User-task assignments
+**Note:** The seed script automatically clears existing seed data before creating new records, so it's safe to run multiple times.
+
 
 ## Project Structure
 

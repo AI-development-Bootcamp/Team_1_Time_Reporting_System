@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@mantine/core/styles.css';
-import './styles/global.css';
+import '@mantine/notifications/styles.css';
 import App from './App';
 
 const queryClient = new QueryClient({
@@ -18,7 +19,16 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={{ dir: 'rtl' }}>
+      <MantineProvider 
+        theme={{ 
+          dir: 'rtl',
+          fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+          headings: {
+            fontFamily: 'SimplerPro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+          },
+        }}
+      >
+        <Notifications position="top-right" autoClose={3000} />
         <App />
       </MantineProvider>
     </QueryClientProvider>

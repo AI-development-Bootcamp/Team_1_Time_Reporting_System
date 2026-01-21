@@ -2,13 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { ProjectService } from '../services/ProjectService';
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
-import { createProjectSchema, updateProjectSchema, projectIdParamSchema, clientIdQuerySchema } from '../validators/project.schema';
+import { createProjectSchema, updateProjectSchema, projectIdParamSchema, clientIdQuerySchema, taskIdParamSchema } from '../validators/project.schema';
 
 export class ProjectController {
   static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      // TODO: Add admin auth middleware check (userType === 'admin')
-      // For now, this endpoint is accessible without auth (will be secured by Member 1)
 
       // Query param: clientId (optional filter) - validate with Zod
       let clientIdFilter: bigint | undefined;
@@ -92,6 +90,19 @@ export class ProjectController {
 
       const result = await ProjectService.deleteProject(projectId);
       ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getProjectByTaskId(req: Request, res: Response, next: NextFunction) {
+    try {
+
+      // Validate route parameter
+      const { taskId } = taskIdParamSchema.parse({ taskId: req.params.taskId });
+
+      const project = await ProjectService.getProjectByTaskId(taskId);
+      ApiResponse.success(res, project);
     } catch (error) {
       next(error);
     }
