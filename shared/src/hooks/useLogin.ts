@@ -34,45 +34,38 @@ export const useLogin = ({ form, onSuccessRedirect }: UseLoginOptions) => {
         // 400 Validation errors - set field errors AND show notification
         const details = errorData.error.details;
         
-        // Set field errors
-        if (details.mail) {
-          form.setFieldError('mail', Array.isArray(details.mail) ? details.mail[0] : details.mail);
-        }
-        if (details.password) {
-          form.setFieldError('password', Array.isArray(details.password) ? details.password[0] : details.password);
-        }
-        
-        // Also show notification for validation errors
-        // Extract specific error message from details if available
+        // Extract specific error message from details
         let validationMessage = errorData?.error?.message || 'פרטי ההתחברות שגויים. אנא בדוק את השדות.';
+        const detailMessages: string[] = [];
         
-        // If details exist, try to extract a more specific message
-        if (details && typeof details === 'object') {
-          const detailMessages: string[] = [];
-          
-          // Handle Zod error format (array of error objects)
-          if (Array.isArray(details)) {
-            details.forEach((err: any) => {
-              if (err.path && err.message) {
-                const field = err.path[0] || 'field';
-                detailMessages.push(`${field}: ${err.message}`);
+        // Handle Zod error format (array of error objects with path/message)
+        if (Array.isArray(details)) {
+          details.forEach((err) => {
+            if (err.field && err.message) {
+              // Set field error if it's a known field
+              if (err.field === 'mail' || err.field === 'password') {
+                form.setFieldError(err.field, err.message);
               }
-            });
-          } else {
-            // Handle object format
-            Object.keys(details).forEach((key) => {
-              const fieldError = details[key];
-              if (Array.isArray(fieldError)) {
-                detailMessages.push(fieldError[0]);
-              } else if (typeof fieldError === 'string') {
-                detailMessages.push(fieldError);
+              detailMessages.push(err.message);
+            }
+          });
+        } else {
+          // Handle object format (Record<string, string[]>)
+          const detailsObj = details as Record<string, string[]>;
+          Object.keys(detailsObj).forEach((key) => {
+            const fieldErrors = detailsObj[key];
+            if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+              // Set field error if it's a known field
+              if (key === 'mail' || key === 'password') {
+                form.setFieldError(key, fieldErrors[0]);
               }
-            });
-          }
-          
-          if (detailMessages.length > 0) {
-            validationMessage = detailMessages[0]; // Use first error message
-          }
+              detailMessages.push(fieldErrors[0]);
+            }
+          });
+        }
+        
+        if (detailMessages.length > 0) {
+          validationMessage = detailMessages[0]; // Use first error message
         }
         
         notifications.show({
