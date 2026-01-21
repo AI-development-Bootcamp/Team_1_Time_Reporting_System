@@ -30,6 +30,7 @@ vi.mock('@images/RightArrowIcon.png', () => ({ default: 'right-arrow.png' }));
 vi.mock('@images/EditIcon.png', () => ({ default: 'edit-icon.png' }));
 vi.mock('@images/WorkDayLogo.png', () => ({ default: 'work-day-logo.png' }));
 vi.mock('@images/CalendarNotWorkIcon.png', () => ({ default: 'calendar-not-work-icon.png' }));
+vi.mock('@images/HalfDayOffandWorkLogo.png', () => ({ default: 'half-day-work-logo.png' }));
 vi.mock('@images/empty_list.png', () => ({ default: 'empty-list.png' }));
 vi.mock('@images/next_month_background.png', () => ({ default: 'next-month-bg.png' }));
 vi.mock('@images/Oops! 404 Error with a broken robot-pana 1.png', () => ({ default: 'error-image.png' }));

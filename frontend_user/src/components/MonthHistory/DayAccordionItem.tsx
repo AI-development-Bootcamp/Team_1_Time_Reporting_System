@@ -11,6 +11,7 @@ import { formatDate, getHebrewDayName, isWorkday, calculateDurationMinutes } fro
 import { HEBREW_STRINGS } from '../../utils/constants';
 import workDayIcon from '@images/WorkDayLogo.png';
 import notWorkIcon from '@images/CalendarNotWorkIcon.png';
+import halfDayWorkIcon from '@images/HalfDayOffandWorkLogo.png';
 import classes from './DayAccordionItem.module.css';
 
 interface DayAccordionItemProps {
@@ -87,9 +88,31 @@ export function DayAccordionItem({
     attendances.some((a) => a.status === 'work');
 
   // Determine which calendar icon to show
-  const calendarIcon = primaryStatus === 'work' || (isWorkingDay && !isMissing && hasAttendances)
-    ? workDayIcon
-    : notWorkIcon;
+  const getCalendarIcon = () => {
+    // HalfDayOff + Work combined
+    if (hasBothHalfDayAndWork) {
+      return halfDayWorkIcon;
+    }
+    
+    // Non-work statuses: dayOff, sickness, reserves, halfDayOff only
+    const hasNonWorkStatus = attendances.some((a) =>
+      ['dayOff', 'sickness', 'reserves', 'halfDayOff'].includes(a.status)
+    );
+    if (hasNonWorkStatus) {
+      return notWorkIcon;
+    }
+    
+    // For workdays (Sunday-Thursday), show work icon
+    // This includes missing days on workdays
+    if (isWorkingDay) {
+      return workDayIcon;
+    }
+    
+    // Weekend or other non-workdays
+    return notWorkIcon;
+  };
+  
+  const calendarIcon = getCalendarIcon();
 
   const handleAddReport = () => {
     onAddReport?.(date);
