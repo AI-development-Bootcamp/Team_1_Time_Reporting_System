@@ -1,0 +1,63 @@
+.fieldRoot {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 12px 80px 12px 16px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.fieldValue {
+  text-align: left;
+  font-size: 16px;
+}
+
+.fieldLabel {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666666;
+  font-weight: 500;
+}
+
+.pickerGroup {
+  position: relative;
+  height: 160px;
+}
+
+.highlightBand {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: 36px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.scrollColumn {
+  height: 100%;
+  width: 60px;
+}
+
+.scrollItem {
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.timeValue {
+  font-size: 18px;
+  color: #888888;
+  font-weight: 400;
+}
+
+.timeValueSelected {
+  font-size: 18px;
+  color: #000000;
+  font-weight: 600;
+}
+
+

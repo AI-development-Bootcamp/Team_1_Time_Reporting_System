@@ -1,0 +1,19 @@
+.root {
+  cursor: pointer;
+  width: 100%;
+}
+
+.plusCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #228be6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+

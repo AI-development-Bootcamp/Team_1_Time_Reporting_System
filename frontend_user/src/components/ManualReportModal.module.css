@@ -1,0 +1,63 @@
+.modalContent {
+  border-radius: 16px;
+  max-width: 480px;
+  width: 92vw;
+  height: 92vh;
+  max-height: 92vh;
+  margin-top: 8vh;
+  margin-bottom: 0;
+  margin-inline: auto;
+  background-color: #ffffff;
+}
+
+.modalBody {
+  padding: 0;
+}
+
+.modalHeader {
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.modalOverlay {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.headerRow {
+  width: 100%;
+}
+
+.closeButton {
+  background-color: #e0e0e0;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+}
+
+.closeButtonIcon {
+  line-height: 1;
+}
+
+.modalTitle {
+  flex: 1;
+  text-align: center;
+}
+
+.modalTitleSpacer {
+  width: 48px;
+}
+
+.contentStack {
+  padding: 0 24px 24px;
+  height: 100%;
+}
+
+.dateText {
+  text-align: right;
+}
+
+.saveButton {
+  background-color: #141e3e;
+}
+
+
