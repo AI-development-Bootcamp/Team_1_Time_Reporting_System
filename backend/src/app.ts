@@ -19,9 +19,9 @@ export const createApp = () => {
   const deployOrigins = process.env.DEPLOY_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
   const corsOrigins = [...localOrigins, ...deployOrigins];
 
-  // In non-development environments, require explicit CORS origins
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  if (!isDevelopment && corsOrigins.length === 0) {
+  // In non-development/non-test environments, require explicit CORS origins
+  const isDevOrTest = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+  if (!isDevOrTest && corsOrigins.length === 0) {
     throw new Error(
       'CORS origins must be configured in non-development environments. ' +
       'Set LOCAL_CORS_ORIGINS and/or DEPLOY_CORS_ORIGINS environment variables.'
