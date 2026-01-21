@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { Modal, Tabs, CloseButton, Text } from '@mantine/core';
 import { DailyReportTab } from '../../types/dailyReport';
+import { WorkReportTab } from './WorkReportTab';
 import classes from './DailyReportModal.module.css';
 
 interface DailyReportModalProps {
@@ -95,17 +96,12 @@ export function DailyReportModal({
         </Tabs.List>
 
         <Tabs.Panel value="work">
-          {/* TODO: Replace with WorkReportTab component (TASK-M2-020-FE-011) */}
-          <div className={classes.tabContent}>
-            <Text c="dimmed" ta="center" mt="xl">
-              WorkReportTab component will be implemented in the next task
-            </Text>
-            <Text size="xs" c="dimmed" ta="center" mt="xs">
-              Mode: {mode}
-              {existingAttendanceId && ` | ID: ${existingAttendanceId}`}
-              {defaultDate && ` | Date: ${defaultDate}`}
-            </Text>
-          </div>
+          <WorkReportTab
+            mode={mode}
+            existingAttendanceId={existingAttendanceId}
+            defaultDate={defaultDate}
+            onSuccess={onClose}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="absence">

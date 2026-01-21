@@ -1375,17 +1375,17 @@ backend/src/
   - [x] Create `DailyReportModal.module.css` (mobile styling, RTL support)
 
 **Frontend - Work Report Tab:**
-- [ ] TASK-M2-020-FE-011: Create WorkReportTab component
-  - [ ] Create `components/DailyReport/WorkReportTab.tsx`:
-    - [ ] Date selector (default: today, opens DatePickerModal)
-    - [ ] Entrance time input (opens TimePickerModal)
-    - [ ] Exit time input (opens TimePickerModal)
-    - [ ] ProjectReportsList component
-    - [ ] ProgressTracker component (shows X/Y hours + visual bar)
-    - [ ] Save button (enabled when valid, shows loading state)
-    - [ ] Use `useDailyReportForm` hook for state management
-    - [ ] Handle validation errors and show appropriate toasts/modals
-  - [ ] Create `WorkReportTab.module.css`
+- [x] TASK-M2-020-FE-011: Create WorkReportTab component
+  - [x] Create `components/DailyReport/WorkReportTab.tsx`:
+    - [x] Date selector (default: today, opens DatePickerModal)
+    - [x] Entrance time input (opens TimePickerModal)
+    - [x] Exit time input (opens TimePickerModal)
+    - [x] ProjectReportsList component
+    - [x] ProgressTracker component (shows X/Y hours + visual bar)
+    - [x] Save button (enabled when valid, shows loading state)
+    - [x] Use `useDailyReportForm` hook for state management
+    - [x] Handle validation errors and show appropriate toasts/modals
+  - [x] Create `WorkReportTab.module.css`
 
 - [ ] TASK-M2-020-FE-012: Create TimePickerModal component
   - [ ] Create `components/DailyReport/TimePickerModal.tsx`:

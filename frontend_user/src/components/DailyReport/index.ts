@@ -4,3 +4,4 @@
  */
 
 export { DailyReportModal } from './DailyReportModal';
+export { WorkReportTab } from './WorkReportTab';

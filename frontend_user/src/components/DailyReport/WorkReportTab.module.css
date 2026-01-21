@@ -1,0 +1,251 @@
+/**
+ * WorkReportTab Styles
+ * RTL-supported, mobile-first form layout
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  padding: 1.5rem 1.25rem;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Sections
+ * ============================================================================ */
+
+.section {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  color: #212529;
+  text-align: right;
+}
+
+/* ============================================================================
+ * Inputs
+ * ============================================================================ */
+
+.input {
+  text-align: left;
+}
+
+.input input {
+  text-align: left;
+  font-family: monospace;
+}
+
+/* ============================================================================
+ * Add Button
+ * ============================================================================ */
+
+.addButton {
+  width: 100%;
+  border: 2px dashed #228be6;
+  background: white;
+  color: #228be6;
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background: #e7f5ff;
+  border-color: #1971c2;
+}
+
+/* ============================================================================
+ * Project Reports List
+ * ============================================================================ */
+
+.projectsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.projectItem {
+  padding: 0.875rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-right: 3px solid #228be6;
+}
+
+.projectItem:hover {
+  background: #e9ecef;
+}
+
+/* ============================================================================
+ * Progress Tracker
+ * ============================================================================ */
+
+.progressContainer {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 24px;
+  background: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* ============================================================================
+ * Save Button
+ * ============================================================================ */
+
+.saveButton {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #228be6;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #1971c2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.3);
+}
+
+.saveButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.saveButton:disabled {
+  background: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+ * Debug Info
+ * ============================================================================ */
+
+.debug {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f1f3f5;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.debug summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #495057;
+  user-select: none;
+}
+
+.debug summary:hover {
+  color: #212529;
+}
+
+.debug pre {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.7rem;
+  direction: ltr;
+  text-align: left;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .container {
+    padding: 2rem 1.5rem;
+  }
+
+  .section {
+    padding: 1.25rem;
+  }
+
+  .saveButton {
+    height: 52px;
+    font-size: 1.0625rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container {
+    padding: 2.5rem 2rem;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .saveButton {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.input:focus-within {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+.addButton:focus-visible,
+.saveButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.projectItem {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================================
+ * Loading State
+ * ============================================================================ */
+
+.saveButton:disabled {
+  pointer-events: none;
+}
