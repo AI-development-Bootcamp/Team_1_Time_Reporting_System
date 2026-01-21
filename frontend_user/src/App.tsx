@@ -43,7 +43,6 @@ function App() {
 
   return (
     <div style={{ 
-      paddingBottom: '80px',
       overflow: 'hidden',
       maxWidth: '100vw',
       minHeight: '100vh'
