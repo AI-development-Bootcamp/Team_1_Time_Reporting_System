@@ -1,0 +1,288 @@
+/**
+ * DatePickerModal Styles
+ * RTL-supported, mobile-first calendar picker
+ */
+
+/* ============================================================================
+ * Modal Container
+ * ============================================================================ */
+
+.modalRoot {
+  direction: rtl;
+}
+
+.modalContent {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 0;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+/* ============================================================================
+ * Header with Month/Year Navigation
+ * ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.navButton {
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.navButton:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+/* ============================================================================
+ * Day Names Header
+ * ============================================================================ */
+
+.dayNamesGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.dayName {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #868e96;
+  padding: 0.5rem 0;
+}
+
+/* ============================================================================
+ * Calendar Grid
+ * ============================================================================ */
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.emptyCell {
+  /* Empty cell before first day of month */
+  min-height: 40px;
+}
+
+.dateCell {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #212529;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+.dateCell:hover:not(.disabled) {
+  background: #e7f5ff;
+  color: #228be6;
+}
+
+/* Selected date - blue circle */
+.selected {
+  background: #228be6 !important;
+  color: white !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(34, 139, 230, 0.3);
+}
+
+.selected:hover {
+  background: #1971c2 !important;
+}
+
+/* Today's date - subtle border */
+.today:not(.selected) {
+  border: 2px solid #228be6;
+  color: #228be6;
+  font-weight: 600;
+}
+
+/* Disabled (future dates) */
+.disabled {
+  color: #ced4da;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Dates from other months */
+.otherMonth {
+  color: #adb5bd;
+}
+
+/* ============================================================================
+ * Selected Date Display
+ * ============================================================================ */
+
+.display {
+  padding: 0.75rem;
+  background: #e7f5ff;
+  border-radius: 8px;
+  border: 2px solid #228be6;
+  margin-top: 0.5rem;
+}
+
+/* ============================================================================
+ * Buttons
+ * ============================================================================ */
+
+/* Button styles are handled by Mantine, but we can add custom tweaks */
+.modalBody button {
+  height: 44px;
+  font-weight: 600;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .modalBody {
+    padding: 2rem;
+  }
+
+  .dateCell {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .emptyCell {
+    min-height: 44px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .dateCell {
+    min-height: 48px;
+    font-size: 1.0625rem;
+  }
+
+  .emptyCell {
+    min-height: 48px;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.dateCell:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+.navButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.dateCell {
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .dateCell {
+    min-height: 48px;
+  }
+
+  .navButton {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+/* Calendar grid reads right-to-left in Hebrew context */
+.calendarGrid {
+  direction: rtl;
+}
+
+.dayNamesGrid {
+  direction: rtl;
+}
+
+/* Navigation arrows - swap for RTL */
+/* In RTL, left arrow goes to next month, right arrow goes to previous month */
+/* This is handled in the component by using IconChevronRight for previous
+   and IconChevronLeft for next, which auto-swaps in RTL */
+
+/* ============================================================================
+ * Visual Enhancements
+ * ============================================================================ */
+
+/* Add subtle shadow to selected date */
+.selected::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 139, 230, 0.2);
+  pointer-events: none;
+}
+
+/* Pulse animation for today's date */
+.today:not(.selected)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #228be6;
+  animation: pulse 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}

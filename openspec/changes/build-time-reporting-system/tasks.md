@@ -1395,15 +1395,15 @@ backend/src/
     - [x] Props: `isOpen`, `onClose`, `value`, `onChange`, `label`
   - [x] Create `TimePickerModal.module.css`
 
-- [ ] TASK-M2-020-FE-013: Create DatePickerModal component
-  - [ ] Create `components/DailyReport/DatePickerModal.tsx`:
-    - [ ] Calendar view (month/year navigation with arrows)
-    - [ ] Hebrew day names from constants
-    - [ ] Highlight selected date (blue circle)
-    - [ ] Disable future dates (can't report future work)
-    - [ ] "שמירה" and "נקה" buttons
-    - [ ] Props: `isOpen`, `onClose`, `value`, `onChange`
-  - [ ] Create `DatePickerModal.module.css`
+- [x] TASK-M2-020-FE-013: Create DatePickerModal component
+  - [x] Create `components/DailyReport/DatePickerModal.tsx`:
+    - [x] Calendar view (month/year navigation with arrows)
+    - [x] Hebrew day names from constants
+    - [x] Highlight selected date (blue circle)
+    - [x] Disable future dates (can't report future work)
+    - [x] "שמירה" and "נקה" buttons
+    - [x] Props: `isOpen`, `onClose`, `value`, `onChange`
+  - [x] Create `DatePickerModal.module.css`
 
 - [ ] TASK-M2-020-FE-014: Create ProjectReportsList component
   - [ ] Create `components/DailyReport/ProjectReportsList.tsx`:

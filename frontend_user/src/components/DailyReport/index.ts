@@ -6,3 +6,4 @@
 export { DailyReportModal } from './DailyReportModal';
 export { WorkReportTab } from './WorkReportTab';
 export { TimePickerModal } from './TimePickerModal';
+export { DatePickerModal } from './DatePickerModal';
