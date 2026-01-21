@@ -1353,16 +1353,16 @@ backend/src/
     - [x] Handle success/error notifications
   - [x] Add tests (≥70% coverage)
 
-- [ ] TASK-M2-020-FE-009: Create useDailyReportForm hook
-  - [ ] Create `hooks/useDailyReportForm.ts`:
-    - [ ] Manage form state: date, entranceTime, exitTime, projectReports[]
-    - [ ] `addProjectReport()` - append new empty project report
-    - [ ] `updateProjectReport(index, data)` - update existing report at index
-    - [ ] `removeProjectReport(index)` - delete report (with confirmation)
-    - [ ] `calculateProgress()` - sum durations vs (exit - entrance)
-    - [ ] `validateForm()` - run all validation rules, return errors
-    - [ ] Return: `{ formData, handlers, progress, errors, isValid }`
-  - [ ] Add tests (≥70% coverage)
+- [x] TASK-M2-020-FE-009: Create useDailyReportForm hook
+  - [x] Create `hooks/useDailyReportForm.ts`:
+    - [x] Manage form state: date, entranceTime, exitTime, projectReports[]
+    - [x] `addProjectReport()` - append new empty project report
+    - [x] `updateProjectReport(index, data)` - update existing report at index
+    - [x] `removeProjectReport(index)` - delete report (with confirmation)
+    - [x] `calculateProgress()` - sum durations vs (exit - entrance)
+    - [x] `validateForm()` - run all validation rules, return errors
+    - [x] Return: `{ formData, handlers, progress, errors, isValid }`
+  - [x] Add tests (≥70% coverage)
 
 **Frontend - Modal Structure:**
 - [ ] TASK-M2-020-FE-010: Create DailyReportModal component
