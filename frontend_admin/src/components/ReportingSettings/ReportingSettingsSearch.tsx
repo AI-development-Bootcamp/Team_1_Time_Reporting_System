@@ -1,4 +1,4 @@
-import { TextInput } from '@mantine/core';
+import { TextInput, Box } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useState, useEffect } from 'react';
 
@@ -40,18 +40,22 @@ export function ReportingSettingsSearch({
       placeholder={placeholder}
       value={searchValue}
       onChange={(event) => setSearchValue(event.currentTarget.value)}
-      leftSection={<span style={{ opacity: 0.5 }}>🔍</span>}
+      leftSection={
+        <Box component="span" style={{ opacity: 0.5 }}>
+          🔍
+        </Box>
+      }
       styles={{
         root: {
           width: '100%',
         },
         input: {
-          textAlign: 'left',
-          direction: 'ltr',
+          textAlign: 'right',
+          direction: 'rtl',
           height: 40,
           borderRadius: 8,
           borderWidth: 1,
-          padding: '12px 12px 12px 40px',
+          padding: '12px 40px 12px 12px',
           fontFamily: 'SimplerPro, sans-serif',
         },
       }}

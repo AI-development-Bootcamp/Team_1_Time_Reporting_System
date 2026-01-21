@@ -56,11 +56,24 @@ export function ReportingSettingsTable({
           backgroundColor: 'white',
         }}
       >
-        <Table striped style={{ tableLayout: 'fixed' }}>
-          <Table.Thead style={{ backgroundColor: '#141e3e' }}>
+        <Table 
+          striped 
+          style={{ tableLayout: 'fixed' }}
+          styles={{
+            thead: {
+              backgroundColor: '#141e3e',
+            },
+          }}
+        >
+          <Table.Thead>
             <Table.Tr style={{ height: 36 }}>
               <Table.Th style={{ textAlign: 'right', height: 36, padding: '6px 12px' }}>
-                <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>
+                <Text 
+                  fw={600} 
+                  size="sm" 
+                  c="white" 
+                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                >
                   שם לקוח
                 </Text>
               </Table.Th>
@@ -72,7 +85,12 @@ export function ReportingSettingsTable({
                   borderInlineStart: HEADER_COLUMN_BORDER,
                 }}
               >
-                <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>
+                <Text 
+                  fw={600} 
+                  size="sm" 
+                  c="white" 
+                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                >
                   שם פרויקט
                 </Text>
               </Table.Th>
@@ -84,7 +102,12 @@ export function ReportingSettingsTable({
                   borderInlineStart: HEADER_COLUMN_BORDER,
                 }}
               >
-                <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>
+                <Text 
+                  fw={600} 
+                  size="sm" 
+                  c="white" 
+                  style={{ fontFamily: 'SimplerPro, sans-serif' }}
+                >
                   סוג הדיווח
                 </Text>
               </Table.Th>
@@ -94,7 +117,10 @@ export function ReportingSettingsTable({
 
         <Center style={{ flex: 1, padding: 24 }}>
           <Stack align="center" gap={16}>
-            <Text fw={700} style={{ fontFamily: 'SimplerPro, sans-serif', fontSize: 18 }}>
+            <Text 
+              fw={700} 
+              style={{ fontFamily: 'SimplerPro, sans-serif', fontSize: 18 }}
+            >
               אין מידע קיים עד כה
             </Text>
             <Image src={emptyListImage} alt="אין מידע" w={420} fit="contain" />
@@ -123,11 +149,23 @@ export function ReportingSettingsTable({
         <Table 
           striped 
           style={{ tableLayout: 'fixed' }}
+          styles={{
+            thead: {
+              backgroundColor: '#141e3e',
+            },
+          }}
         >
-        <Table.Thead style={{ backgroundColor: '#141e3e' }}>
+        <Table.Thead>
           <Table.Tr style={{ height: 36 }}>
             <Table.Th style={{ textAlign: 'right', height: 36, padding: '6px 12px' }}>
-              <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>שם לקוח</Text>
+              <Text 
+                fw={600} 
+                size="sm" 
+                c="white" 
+                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+              >
+                שם לקוח
+              </Text>
             </Table.Th>
             <Table.Th
               style={{
@@ -137,7 +175,14 @@ export function ReportingSettingsTable({
                 borderInlineStart: HEADER_COLUMN_BORDER,
               }}
             >
-              <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>שם פרויקט</Text>
+              <Text 
+                fw={600} 
+                size="sm" 
+                c="white" 
+                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+              >
+                שם פרויקט
+              </Text>
             </Table.Th>
             <Table.Th
               style={{
@@ -147,7 +192,14 @@ export function ReportingSettingsTable({
                 borderInlineStart: HEADER_COLUMN_BORDER,
               }}
             >
-              <Text fw={600} size="sm" c="white" style={{ fontFamily: 'SimplerPro, sans-serif' }}>סוג הדיווח</Text>
+              <Text 
+                fw={600} 
+                size="sm" 
+                c="white" 
+                style={{ fontFamily: 'SimplerPro, sans-serif' }}
+              >
+                סוג הדיווח
+              </Text>
             </Table.Th>
           </Table.Tr>
         </Table.Thead>

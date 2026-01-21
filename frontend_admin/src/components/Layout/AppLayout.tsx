@@ -34,7 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       dir="rtl"
     >
       <AppShell.Navbar 
-        style={{ 
+        style={{
           backgroundColor: '#141e3e',
           borderRight: 'none',
           right: 0,

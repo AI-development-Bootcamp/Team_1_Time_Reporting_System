@@ -113,7 +113,12 @@ function ReportingSettingsPage() {
             </Title>
             
             {/* Page Subtitle */}
-            <Text c="dimmed" size="sm" ta="right" style={{ marginTop: 0, fontFamily: 'SimplerPro, sans-serif' }}>
+            <Text 
+              c="dimmed" 
+              size="sm" 
+              ta="right" 
+              style={{ marginTop: 0, fontFamily: 'SimplerPro, sans-serif' }}
+            >
               כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים.
             </Text>
           </Box>
