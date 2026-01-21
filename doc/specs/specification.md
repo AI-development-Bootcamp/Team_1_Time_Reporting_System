@@ -192,16 +192,30 @@ Login and receive JWT (24h expiry).
   "success": true,
   "data": {
     "token": "jwt...",
-    "expiresInHours": 24,
-    "user": {
-      "id": 1,
-      "name": "Dor",
-      "mail": "user@example.com",
-      "userType": "admin",
-      "active": true,
-      "createdAt": "2026-01-14T10:00:00.000Z",
-      "updatedAt": "2026-01-14T10:00:00.000Z"
-    }
+    "expiresInHours": 24
+  }
+}
+```
+
+**Note:** User data is encoded in the JWT token payload. Decode the token on the frontend or use the `GET /api/auth/me` endpoint to retrieve user information.
+
+**GET `/api/auth/me`**
+Get current user data from JWT token.
+
+**Auth:** Required
+
+**200 OK Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Dor",
+    "mail": "user@example.com",
+    "userType": "admin",
+    "active": true,
+    "createdAt": "2026-01-14T10:00:00.000Z",
+    "updatedAt": "2026-01-14T10:00:00.000Z"
   }
 }
 ```

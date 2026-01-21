@@ -10,12 +10,19 @@ export interface ErrorResponse {
   error: {
     code: string;
     message: string;
+    target?: string;
     details?: any;
   };
 }
 
 export class ApiResponse {
   static success<T>(res: Response, data: T, statusCode: number = 200): void {
+    // For 204 No Content, send empty response body (REST convention)
+    if (statusCode === 204) {
+      res.status(204).send();
+      return;
+    }
+
     const response: SuccessResponse<T> = {
       success: true,
       data,
@@ -28,13 +35,15 @@ export class ApiResponse {
     code: string,
     message: string,
     statusCode: number = 400,
-    details?: any
+    details?: any,
+    target?: string
   ): void {
     const response: ErrorResponse = {
       success: false,
       error: {
         code,
         message,
+        ...(target && { target }),
         ...(details && { details }),
       },
     };

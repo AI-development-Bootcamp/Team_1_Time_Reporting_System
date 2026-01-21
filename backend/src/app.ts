@@ -1,0 +1,43 @@
+import express from 'express';
+import cors from 'cors';
+import { errorHandler } from './middleware/ErrorHandler';
+import authRoutes from './routes/auth.routes';
+import adminUsersRoutes from './routes/admin/Users';
+import assignmentsRoutes from './routes/admin/Assignments';
+
+/**
+ * Create and configure Express app
+ * This is exported for testing purposes
+ */
+
+
+export const createApp = () => {
+  const app = express();
+
+  // Parse CORS origins from environment variables
+  const localOrigins = process.env.LOCAL_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
+  const deployOrigins = process.env.DEPLOY_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
+  const corsOrigins = [...localOrigins, ...deployOrigins];
+
+  app.use(
+    cors({
+      origin: corsOrigins.length > 0 ? corsOrigins : true, // Allow all if not configured (dev fallback)
+      credentials: true,
+    })
+  );
+  app.use(express.json());
+
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
+  // Mount API routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/admin', adminUsersRoutes);
+  app.use('/api/admin', assignmentsRoutes);
+
+  // Error handler must be last
+  app.use(errorHandler);
+
+  return app;
+};
