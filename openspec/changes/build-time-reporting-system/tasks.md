@@ -1285,13 +1285,13 @@ backend/src/
   - [x] Add tests for upload/delete endpoints
 
 **Frontend - Types & Utilities:**
-- [ ] TASK-M2-020-FE-001: Create daily report types
-  - [ ] Create `types/dailyReport.ts`:
-    - [ ] `DailyReportFormData` (date, entranceTime, exitTime, projectReports[])
-    - [ ] `ProjectReportItem` (project, task, location, duration/startEnd, description)
-    - [ ] `AbsenceReportFormData` (date, absenceType, document, dateRange)
-    - [ ] `ValidationErrors` (field-level error messages)
-  - [ ] Export from `types/index.ts`
+- [x] TASK-M2-020-FE-001: Create daily report types
+  - [x] Create `types/dailyReport.ts`:
+    - [x] `DailyReportFormData` (date, entranceTime, exitTime, projectReports[])
+    - [x] `ProjectReportItem` (project, task, location, duration/startEnd, description)
+    - [x] `AbsenceReportFormData` (date, absenceType, document, dateRange)
+    - [x] `ValidationErrors` (field-level error messages)
+  - [x] Export from `types/index.ts`
 
 - [ ] TASK-M2-020-FE-002: Create validation utilities
   - [ ] Create `utils/validation.ts`:

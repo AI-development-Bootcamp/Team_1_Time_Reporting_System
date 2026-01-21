@@ -5,3 +5,4 @@
 export * from './attendance';
 export * from './timeLog';
 export * from './projectSelector';
+export * from './dailyReport';
