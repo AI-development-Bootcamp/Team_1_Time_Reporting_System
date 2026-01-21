@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
+import { CreateProjectInput } from '../types/Project';
 
 export interface Project {
   id: string;
@@ -13,15 +14,6 @@ export interface Project {
   active: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CreateProjectInput {
-  name: string;
-  clientId: string;
-  projectManagerId: string;
-  startDate: string;
-  endDate?: string;
-  description?: string;
 }
 
 const PROJECTS_QUERY_KEY = ['projects'];

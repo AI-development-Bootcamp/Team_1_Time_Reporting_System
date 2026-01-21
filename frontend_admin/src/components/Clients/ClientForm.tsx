@@ -28,7 +28,7 @@ export const ClientForm: FC<ClientFormProps> = ({
       description: '',
     },
     validate: {
-      name: (value) => (value.trim().length === 0 ? 'Name is required' : null),
+      name: (value) => (value.trim().length === 0 ? 'שם הוא שדה חובה' : null),
     },
   });
 

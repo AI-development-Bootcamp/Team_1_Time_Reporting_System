@@ -12,7 +12,9 @@ import {
   Center,
 } from '@mantine/core';
 import { IconX, IconPlus } from '@tabler/icons-react';
-import { useAssignments, Assignment } from '../../hooks/useAssignments';
+import { useForm } from '@mantine/form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAssignments, ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
 import { useTasks, Task } from '../../hooks/useTasks';
 import '../../styles/components/EmployeeAssignmentForm.css';
 import '../../styles/components/ProjectForm.css';
@@ -34,18 +36,48 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
   submitting = false,
 }) => {
   const { assignmentsQuery } = useAssignments();
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const { tasksQuery } = useTasks('all');
   const [task, setTask] = useState<Task | null>(null);
   const [users, setUsers] = useState<Array<{ id: string; name: string }>>([]);
+
+  const form = useForm<{
+    userIds: string[];
+  }>({
+    initialValues: {
+      userIds: [],
+    },
+  });
+
+  const queryClient = useQueryClient();
+
+  const addAssignmentMutation = useMutation({
+    mutationFn: async ({ taskId, userId }: { taskId: string; userId: string }) => {
+      await apiClient.post('/admin/assignments', {
+        taskId,
+        userId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSIGNMENTS_QUERY_KEY });
+    },
+  });
+
+  const removeAssignmentMutation = useMutation({
+    mutationFn: async ({ taskId, userId }: { taskId: string; userId: string }) => {
+      await apiClient.delete(`/admin/assignments/${taskId}:${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSIGNMENTS_QUERY_KEY });
+    },
+  });
 
   // Load task data and users
   useEffect(() => {
     if (taskId && opened) {
-      apiClient.get(`/admin/tasks?projectId=all`).then((res) => {
-        const tasks = res.data as Task[];
-        const foundTask = tasks.find((t) => t.id === taskId);
+      if (tasksQuery.data) {
+        const foundTask = tasksQuery.data.find((t) => t.id === taskId);
         setTask(foundTask || null);
-      });
+      }
       // Load users from assignments
       if (assignmentsQuery.data) {
         const uniqueUsers = new Map<string, { id: string; name: string }>();
@@ -60,7 +92,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
         setUsers(Array.from(uniqueUsers.values()));
       }
     }
-  }, [taskId, opened, assignmentsQuery.data]);
+  }, [taskId, opened, assignmentsQuery.data, tasksQuery.data]);
 
   // Load current assignments for this task
   useEffect(() => {
@@ -68,7 +100,10 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
       const taskAssignments = assignmentsQuery.data.filter(
         (assignment) => assignment.taskId === taskId
       );
-      setSelectedUserIds(taskAssignments.map((a) => a.userId));
+      form.setFieldValue(
+        'userIds',
+        taskAssignments.map((a) => a.userId)
+      );
     }
   }, [taskId, opened, assignmentsQuery.data]);
 
@@ -81,23 +116,35 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
     const currentAssignments = assignments.filter((a) => a.taskId === taskId);
     const currentUserIds = currentAssignments.map((a) => a.userId);
 
+    const selectedUserIds = form.values.userIds;
+
     // Find users to add
     const usersToAdd = selectedUserIds.filter((id) => !currentUserIds.includes(id));
     // Find users to remove
     const usersToRemove = currentUserIds.filter((id) => !selectedUserIds.includes(id));
 
     // Add new assignments
-    for (const userId of usersToAdd) {
-      await apiClient.post('/admin/assignments', {
-        taskId: taskId,
-        userId: userId,
-      });
-    }
+    await Promise.all(
+      usersToAdd.map((userId) =>
+        addAssignmentMutation.mutateAsync({
+          taskId,
+          userId,
+        })
+      )
+    );
 
     // Remove old assignments
-    for (const userId of usersToRemove) {
-      await apiClient.delete(`/admin/assignments/${taskId}:${userId}`);
-    }
+    await Promise.all(
+      usersToRemove.map((userId) =>
+        removeAssignmentMutation.mutateAsync({
+          taskId,
+          userId,
+        })
+      )
+    );
+
+    // Ensure assignments are refreshed after all mutations complete
+    await assignmentsQuery.refetch();
 
     onSubmit();
   };
@@ -151,6 +198,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
                 size="lg"
                 radius="xl"
                 className="project-form-icon-button"
+                aria-hidden="true"
               >
                 <IconPlus size={20} />
               </ActionIcon>
@@ -168,6 +216,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
               onClick={onClose}
               size="lg"
               className="project-form-close-button"
+              aria-label="Close"
             >
               <IconX size={20} />
             </ActionIcon>
@@ -178,14 +227,13 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
               label="עובדים"
               placeholder="בחר עובדים"
               data={users.map((user) => ({ value: user.id, label: user.name }))}
-              value={selectedUserIds}
-              onChange={setSelectedUserIds}
               searchable
               className="project-form-field"
               classNames={{
                 label: 'project-form-field-label',
                 input: 'project-form-field-input',
               }}
+              {...form.getInputProps('userIds')}
             />
           </Stack>
 

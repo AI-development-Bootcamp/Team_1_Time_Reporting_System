@@ -18,7 +18,7 @@ import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
 import { useAssignments } from '../../hooks/useAssignments';
 import { ClientForm } from './ClientForm';
-import { ProjectForm, CreateProjectInput } from '../Projects/ProjectForm';
+import { ProjectForm } from '../Projects/ProjectForm';
 import { TaskForm, CreateTaskInput } from '../Tasks/TaskForm';
 import { EmployeeAssignmentForm } from '../Assignments/EmployeeAssignmentForm';
 import { DeleteConfirmationModal } from '../Common/DeleteConfirmationModal';
@@ -27,6 +27,7 @@ import styles from '../../styles/components/ClientsTable.module.css';
 import { useQueries } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
 import { useTasks } from '../../hooks/useTasks';
+import { CreateProjectInput } from '../../types/Project';
 
 interface TableRowData {
   clientId: string;
@@ -165,7 +166,7 @@ export function ClientsTable() {
     useClients();
   const { createProjectMutation, updateProjectMutation, deleteProjectMutation } = useProjects();
   const { createTaskMutation, updateTaskMutation, deleteTaskMutation } = useTasks();
-  const { assignmentsQuery } = useAssignments();
+  const { assignmentsQuery, deleteAssignmentsMutation } = useAssignments();
 
   const [formOpened, setFormOpened] = useState(false);
   const [projectFormOpened, setProjectFormOpened] = useState(false);
@@ -335,6 +336,7 @@ export function ClientsTable() {
   };
 
   const openCreateProject = () => {
+    setSelectedProjectId(null);
     setProjectFormOpened(true);
   };
 
@@ -483,10 +485,10 @@ export function ClientsTable() {
   const handleDeleteAssignment = async (selectedUserIds: string[]) => {
     if (pendingDeleteAssignmentTaskId && selectedUserIds.length > 0) {
       const taskId = pendingDeleteAssignmentTaskId;
-      for (const userId of selectedUserIds) {
-        await apiClient.delete(`/admin/assignments/${taskId}:${userId}`);
-      }
-      assignmentsQuery.refetch();
+      await deleteAssignmentsMutation.mutateAsync({
+        taskId,
+        userIds: selectedUserIds,
+      });
       setDeleteAssignmentModalOpened(false);
       setPendingDeleteAssignmentTaskId(null);
     }

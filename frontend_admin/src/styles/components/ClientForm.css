@@ -21,11 +21,15 @@
 .client-form-icon-button {
   background-color: #0C69FF;
   color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .client-form-icon-button:hover {
-  background-color: #0C69FF;
+  background-color: #0a57d4;
   color: white;
+  box-shadow: 0 2px 6px rgba(12, 105, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .client-form-close-button {

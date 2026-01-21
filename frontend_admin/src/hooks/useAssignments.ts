@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
 
 export interface Assignment {
@@ -26,9 +26,11 @@ export interface Assignment {
   };
 }
 
-const ASSIGNMENTS_QUERY_KEY = ['assignments'];
+export const ASSIGNMENTS_QUERY_KEY = ['assignments'];
 
 export function useAssignments() {
+  const queryClient = useQueryClient();
+
   const assignmentsQuery = useQuery({
     queryKey: ASSIGNMENTS_QUERY_KEY,
     queryFn: async () => {
@@ -37,8 +39,22 @@ export function useAssignments() {
     },
   });
 
+  const deleteAssignmentsMutation = useMutation({
+    mutationFn: async ({ taskId, userIds }: { taskId: string; userIds: string[] }) => {
+      await Promise.all(
+        userIds.map((userId) =>
+          apiClient.delete(`/admin/assignments/${taskId}:${userId}`)
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSIGNMENTS_QUERY_KEY });
+    },
+  });
+
   return {
     assignmentsQuery,
+    deleteAssignmentsMutation,
   };
 }
 

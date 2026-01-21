@@ -17,16 +17,8 @@ import { IconX, IconPlus } from '@tabler/icons-react';
 import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
 import '../../styles/components/ProjectForm.css';
-import { apiClient } from '@shared/utils/ApiClient';
-
-export interface CreateProjectInput {
-  name: string;
-  clientId: string;
-  projectManagerId: string;
-  startDate: string; // YYYY-MM-DD
-  endDate?: string; // YYYY-MM-DD
-  description?: string;
-}
+import { CreateProjectInput } from '../../types/Project';
+import dayjs from 'dayjs';
 
 interface ProjectFormProps {
   opened: boolean;
@@ -48,6 +40,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({
   const { clientsQuery } = useClients();
   // TODO: Add useUsers hook when backend endpoint is available
   const [project, setProject] = useState<Project | null>(null);
+  const { projectsQuery } = useProjects();
 
   const form = useForm({
     initialValues: {
@@ -68,27 +61,28 @@ export const ProjectForm: FC<ProjectFormProps> = ({
 
   // Load project data for edit mode
   useEffect(() => {
-    if (mode === 'edit' && initialProjectId && opened) {
-      apiClient.get(`/admin/projects`).then((res) => {
-        const projects = res.data as Project[];
-        const foundProject = projects.find((p) => p.id === initialProjectId);
-        if (foundProject) {
-          setProject(foundProject);
-          form.setValues({
-            name: foundProject.name ?? '',
-            clientId: foundProject.clientId ?? '',
-            projectManagerId: foundProject.projectManagerId ?? '',
-            startDate: foundProject.startDate ?? '',
-            endDate: foundProject.endDate ?? '',
-            description: foundProject.description ?? '',
-          });
-        }
-      });
+    if (mode === 'edit' && initialProjectId && opened && projectsQuery.data) {
+      const foundProject = projectsQuery.data.find((p) => p.id === initialProjectId);
+      if (foundProject) {
+        setProject(foundProject);
+        form.setValues({
+          name: foundProject.name ?? '',
+          clientId: foundProject.clientId ?? '',
+          projectManagerId: foundProject.projectManagerId ?? '',
+          startDate: foundProject.startDate
+            ? dayjs(foundProject.startDate).format('YYYY-MM-DD')
+            : '',
+          endDate: foundProject.endDate
+            ? dayjs(foundProject.endDate).format('YYYY-MM-DD')
+            : '',
+          description: foundProject.description ?? '',
+        });
+      }
     } else if (!opened) {
       form.reset();
       setProject(null);
     }
-  }, [mode, initialProjectId, opened]);
+  }, [mode, initialProjectId, opened, projectsQuery.data]);
 
   const handleSubmit = form.onSubmit((values) => {
     onSubmit({
