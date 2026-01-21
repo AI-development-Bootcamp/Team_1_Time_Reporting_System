@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@test/utils';
+import dayjs from 'dayjs';
 import { ReportingSettingsTable } from './ReportingSettingsTable';
 import type { ProjectWithClient } from '../../../hooks/useReportingSettings';
 
@@ -8,10 +9,13 @@ const mockProjects: ProjectWithClient[] = [
     id: 1,
     name: 'Project 1',
     clientId: 1,
+    projectManagerId: 1,
+    startDate: dayjs('2024-01-01').toISOString(),
+    endDate: null,
     reportingType: 'startEnd',
     active: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    createdAt: dayjs('2024-01-01').toISOString(),
+    updatedAt: dayjs('2024-01-01').toISOString(),
     client: {
       id: 1,
       name: 'Client 1',
@@ -21,10 +25,13 @@ const mockProjects: ProjectWithClient[] = [
     id: 2,
     name: 'Project 2',
     clientId: 2,
+    projectManagerId: 2,
+    startDate: dayjs('2024-01-02').toISOString(),
+    endDate: null,
     reportingType: 'duration',
     active: true,
-    createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
+    createdAt: dayjs('2024-01-02').toISOString(),
+    updatedAt: dayjs('2024-01-02').toISOString(),
     client: {
       id: 2,
       name: 'Client 2',

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { useReportingSettings } from './useReportingSettings';
 import { projectService } from '../services/ProjectService';
 import { clientService } from '../services/ClientService';
@@ -19,19 +20,25 @@ const mockProjects: Project[] = [
     id: 1,
     name: 'Project 1',
     clientId: 1,
+    projectManagerId: 1,
+    startDate: dayjs('2024-01-01').toISOString(),
+    endDate: null,
     reportingType: 'startEnd',
     active: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    createdAt: dayjs('2024-01-01').toISOString(),
+    updatedAt: dayjs('2024-01-01').toISOString(),
   },
   {
     id: 2,
     name: 'Project 2',
     clientId: 2,
+    projectManagerId: 2,
+    startDate: dayjs('2024-01-02').toISOString(),
+    endDate: null,
     reportingType: 'duration',
     active: true,
-    createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
+    createdAt: dayjs('2024-01-02').toISOString(),
+    updatedAt: dayjs('2024-01-02').toISOString(),
   },
 ];
 
@@ -40,15 +47,15 @@ const mockClients: Client[] = [
     id: 1,
     name: 'Client 1',
     active: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    createdAt: dayjs('2024-01-01').toISOString(),
+    updatedAt: dayjs('2024-01-01').toISOString(),
   },
   {
     id: 2,
     name: 'Client 2',
     active: true,
-    createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
+    createdAt: dayjs('2024-01-02').toISOString(),
+    updatedAt: dayjs('2024-01-02').toISOString(),
   },
 ];
 
