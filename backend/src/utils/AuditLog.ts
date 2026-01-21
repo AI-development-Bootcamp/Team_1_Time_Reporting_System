@@ -6,7 +6,9 @@ export type AuditAction =
   | 'CREATE_COMBINED_ATTENDANCE'
   | 'CREATE_TIME_LOG'
   | 'UPDATE_TIME_LOG'
-  | 'DELETE_TIME_LOG';
+  | 'DELETE_TIME_LOG'
+  | 'UPLOAD_DOCUMENT'
+  | 'DELETE_DOCUMENT';
 
 export interface AuditLogParams {
   action: AuditAction;

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AttendanceController } from '../controllers/AttendanceController';
+import { documentUpload } from '../utils/FileUpload';
 // import { authMiddleware } from '../middleware/AuthMiddleware'; // Uncomment when auth ready
 
 const router = Router();
@@ -30,5 +31,18 @@ router.get('/month-history', AttendanceController.getMonthHistory);
  * Update an existing attendance record
  */
 router.put('/:id', AttendanceController.update);
+
+/**
+ * POST /api/attendance/:id/document
+ * Upload document to attendance record (for sickness/reserves)
+ * Uses multer middleware to handle multipart/form-data
+ */
+router.post('/:id/document', documentUpload.single('document'), AttendanceController.uploadDocument);
+
+/**
+ * DELETE /api/attendance/:id/document
+ * Delete document from attendance record
+ */
+router.delete('/:id/document', AttendanceController.deleteDocument);
 
 export default router;

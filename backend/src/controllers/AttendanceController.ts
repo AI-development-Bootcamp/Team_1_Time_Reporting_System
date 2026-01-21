@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
 import { logAudit } from '../utils/AuditLog';
 import { parseBigIntParam } from '../utils/paramValidation';
+import { validateUploadedFile } from '../utils/FileUpload';
 import {
   createAttendanceSchema,
   updateAttendanceSchema,
@@ -157,6 +158,77 @@ export class AttendanceController {
       });
 
       ApiResponse.success(res, result, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/attendance/:id/document
+   * Upload document to an attendance record (for sickness/reserves)
+   */
+  static async uploadDocument(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseBigIntParam(req.params.id, 'id');
+
+      // Validate file upload
+      validateUploadedFile(req.file);
+
+      const file = req.file!; // Safe after validation
+
+      // Upload document to database
+      await AttendanceService.uploadDocument(id, file.buffer);
+
+      // Audit log
+      const attendance = await AttendanceService.getAttendanceById(id);
+      logAudit({
+        action: 'UPLOAD_DOCUMENT',
+        userId: attendance.userId,
+        entity: 'DailyAttendance',
+        entityId: id,
+        payload: {
+          fileName: file.originalname,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+        },
+        req,
+      });
+
+      ApiResponse.success(res, {
+        uploaded: true,
+        fileName: file.originalname,
+        fileSize: file.size,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * DELETE /api/attendance/:id/document
+   * Delete document from an attendance record
+   */
+  static async deleteDocument(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseBigIntParam(req.params.id, 'id');
+
+      // Get attendance for audit log
+      const attendance = await AttendanceService.getAttendanceById(id);
+
+      // Delete document from database
+      await AttendanceService.deleteDocument(id);
+
+      // Audit log
+      logAudit({
+        action: 'DELETE_DOCUMENT',
+        userId: attendance.userId,
+        entity: 'DailyAttendance',
+        entityId: id,
+        payload: {},
+        req,
+      });
+
+      ApiResponse.success(res, { deleted: true });
     } catch (error) {
       next(error);
     }

@@ -510,4 +510,70 @@ export class AttendanceService {
       throw new AppError('FORBIDDEN', 'Access denied', 403);
     }
   }
+
+  /**
+   * Upload document to attendance record
+   * Used for sickness/reserves documentation
+   * 
+   * @param id - Attendance record ID
+   * @param fileBuffer - File data as Buffer
+   * @returns void
+   */
+  static async uploadDocument(id: bigint, fileBuffer: Buffer): Promise<void> {
+    // Check if attendance exists
+    const attendance = await prisma.dailyAttendance.findUnique({
+      where: { id },
+    });
+
+    if (!attendance) {
+      throw new AppError('NOT_FOUND', 'Attendance record not found', 404);
+    }
+
+    // Only allow document upload for non-work statuses
+    if (attendance.status === 'work') {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        'Cannot upload document for work status. Documents are only for sickness, reserves, dayOff, or halfDayOff',
+        400
+      );
+    }
+
+    // Update attendance with document
+    await prisma.dailyAttendance.update({
+      where: { id },
+      data: {
+        document: fileBuffer,
+      },
+    });
+  }
+
+  /**
+   * Delete document from attendance record
+   * 
+   * @param id - Attendance record ID
+   * @returns void
+   */
+  static async deleteDocument(id: bigint): Promise<void> {
+    // Check if attendance exists
+    const attendance = await prisma.dailyAttendance.findUnique({
+      where: { id },
+    });
+
+    if (!attendance) {
+      throw new AppError('NOT_FOUND', 'Attendance record not found', 404);
+    }
+
+    // Check if document exists
+    if (!attendance.document) {
+      throw new AppError('NOT_FOUND', 'No document found for this attendance record', 404);
+    }
+
+    // Remove document
+    await prisma.dailyAttendance.update({
+      where: { id },
+      data: {
+        document: null,
+      },
+    });
+  }
 }

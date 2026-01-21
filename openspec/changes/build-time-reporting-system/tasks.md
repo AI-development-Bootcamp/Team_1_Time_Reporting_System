@@ -1268,58 +1268,373 @@ backend/src/
 - **Status**: ✅ Core implementation COMPLETED - 242 tests passing. Auth integration pending TASK-M1-010. Cache removed to always return newest data.
 
 #### TASK-M2-020: Daily Report Entry UI (User App)
-- [ ] Create `frontend_user/src/components/DailyReport/DailyReportEntry.tsx`
-- [ ] Match mobile Figma layout and spacing for daily report
-- [ ] Build header + date picker (default today via Day.js)
-- [ ] Add daily attendance time inputs (entrance/exit)
-- [ ] Add "save" disabled state when no project reports
-- [ ] Create `components/DailyReport/ProjectReport.tsx` layout
-- [ ] Add required location selector (office/client/home)
-- [ ] Add time inputs for project report (start/end time)
-- [ ] Add description input (optional)
-- [ ] Add "Add Project" to append report rows
-- [ ] Add edit flow for existing report row (no delete)
-- [ ] Implement client+project+task selector modal flow:
-  - [ ] Project list grouped by client (matches UI)
-  - [ ] Task list filtered by project
-  - [ ] Location modal
-- [ ] Add error and empty states for selector fetch (per UI)
-- [ ] Add validation rules:
-  - [ ] Daily endTime > startTime
-  - [ ] Each project report has required fields
-  - [ ] Sum of project durations >= daily attendance duration
-- [ ] Implement save flow (single action):
-  - [ ] Run all validations (overlap + duration + required)
-  - [ ] Create DailyAttendance first and use returned id
-  - [ ] Create ProjectTimeLogs for that attendance
-  - [ ] If any step fails, show error state and do not partially save
-- [ ] Create `hooks/useCreateAttendance.ts`:
-  - [ ] `useMutation` for POST /api/attendance
-  - [ ] `useMutation` for POST /api/time-logs
-  - [ ] Invalidate queries after success
-- [ ] Add success/error notifications (per UI)
-- [ ] Tests (frontend):
-  - [ ] Unit: validation logic (required, duration sum, overlap client-side)
-  - [ ] Component: save flow triggers attendance then logs
-  - [ ] Component: error states render correctly
-- **Coverage Target**: ≥60% for DailyReport components + hooks
-- **Validation**: User can submit daily report with project logs
 
-#### TASK-M2-021: Project Selector UI (User App)
-- [ ] Create `frontend_user/src/components/ProjectSelector/SmartProjectSelector.tsx`
-- [ ] Match mobile Figma layout and modal flows
-- [ ] Create `hooks/useProjectSelector.ts` with `useQuery`
-- [ ] Render grouped modal list (client headers, projects list)
-- [ ] Render tasks modal for selected project
-- [ ] Render location modal (office/home/client)
-- [ ] Add loading skeletons and error state screen
-- [ ] Add empty state when user has no assignments
-- [ ] Tests (frontend):
-  - [ ] Component: grouped list renders by client
-  - [ ] Component: task modal filters by project
-  - [ ] Component: loading/error/empty states
-- **Coverage Target**: ≥60% for ProjectSelector components + hooks
-- **Validation**: Selector matches Figma flow and states
+**Backend Prerequisites (Already Complete):**
+- [x] POST /api/attendance/combined endpoint (CombinedAttendanceService)
+- [x] PUT /api/attendance/:id endpoint (update attendance)
+- [x] Validators: combinedAttendanceSchema, updateAttendanceSchema
+- [x] Transaction handling for atomic attendance + time logs creation
+- [x] Time validation utils (TimeValidation.ts)
+
+**Backend - Document Upload (NEW):**
+- [x] TASK-M2-020-BE-001: Add document upload endpoints
+  - [x] POST /api/attendance/:id/document (multipart/form-data)
+  - [x] DELETE /api/attendance/:id/document
+  - [x] Validate file type (JPG/PNG/PDF only) and size (max 5MB)
+  - [x] Store binary data in DailyAttendance.document field
+  - [x] Add tests for upload/delete endpoints
+
+**Frontend - Types & Utilities:**
+- [ ] TASK-M2-020-FE-001: Create daily report types
+  - [ ] Create `types/dailyReport.ts`:
+    - [ ] `DailyReportFormData` (date, entranceTime, exitTime, projectReports[])
+    - [ ] `ProjectReportItem` (project, task, location, duration/startEnd, description)
+    - [ ] `AbsenceReportFormData` (date, absenceType, document, dateRange)
+    - [ ] `ValidationErrors` (field-level error messages)
+  - [ ] Export from `types/index.ts`
+
+- [ ] TASK-M2-020-FE-002: Create validation utilities
+  - [ ] Create `utils/validation.ts`:
+    - [ ] `validateTimeRange(start, end)` - ensure end > start
+    - [ ] `validateDuration(hhMM)` - max 23:59, valid format
+    - [ ] `validateRequiredFields(projectReport)` - check project/task/location
+    - [ ] `calculateTotalDuration(projectReports[])` - sum durations in minutes
+    - [ ] `validateTrackerComplete(total, target)` - check total >= target
+  - [ ] Add unit tests (≥80% coverage)
+
+- [ ] TASK-M2-020-FE-003: Create time formatting utilities
+  - [ ] Create `utils/timeUtils.ts`:
+    - [ ] `formatDurationInput(minutes)` - convert to hh:mm display
+    - [ ] `parseDurationInput(hhMM)` - convert to minutes
+    - [ ] `formatTimeForPicker(time)` - format HH:mm for time picker
+    - [ ] `parseTimeFromPicker(time)` - parse picker value
+  - [ ] Add unit tests (≥80% coverage)
+
+**Frontend - API Services:**
+- [ ] TASK-M2-020-FE-004: Extend attendance API service
+  - [ ] Update `services/attendanceApi.ts`:
+    - [ ] `createCombinedAttendance(data)` - POST /api/attendance/combined
+    - [ ] `updateAttendance(id, data)` - PUT /api/attendance/:id
+    - [ ] `uploadDocument(attendanceId, file)` - POST /api/attendance/:id/document
+    - [ ] `deleteDocument(attendanceId)` - DELETE /api/attendance/:id/document
+  - [ ] Add proper TypeScript types and error handling
+
+- [ ] TASK-M2-020-FE-005: Create project selector API service
+  - [ ] Create `services/projectSelectorApi.ts`:
+    - [ ] `getProjectSelector(userId)` - GET /api/projects/selector
+    - [ ] `buildTaskLookupMap(data)` - flatten hierarchy for quick lookup
+    - [ ] Use existing ProjectSelectorResponse type
+  - [ ] Export from `services/index.ts`
+
+**Frontend - Custom Hooks:**
+- [ ] TASK-M2-020-FE-006: Create useProjectSelector hook
+  - [ ] Create `hooks/useProjectSelector.ts`:
+    - [ ] Use TanStack Query `useQuery` for project selector data
+    - [ ] Cache key: QUERY_KEYS.projectSelector
+    - [ ] Stale time: 5 minutes
+    - [ ] Memoize task lookup map for performance
+    - [ ] Return: `{ data, clients, taskLookup, isLoading, error }`
+  - [ ] Add tests (≥70% coverage)
+
+- [ ] TASK-M2-020-FE-007: Create useCreateDailyReport hook
+  - [ ] Create `hooks/useCreateDailyReport.ts`:
+    - [ ] Use `useMutation` for combined attendance creation
+    - [ ] Invalidate `monthHistory` query on success
+    - [ ] Show green success toast: "דיווח שעות הושלם"
+    - [ ] Show red error toast on failure
+    - [ ] Return: `{ mutate, mutateAsync, isLoading, error }`
+  - [ ] Add tests (≥70% coverage)
+
+- [ ] TASK-M2-020-FE-008: Create useUpdateDailyReport hook
+  - [ ] Create `hooks/useUpdateDailyReport.ts`:
+    - [ ] Use `useMutation` for updating attendance
+    - [ ] Separate mutations for time logs (create/update/delete via API)
+    - [ ] Invalidate queries on success
+    - [ ] Handle success/error notifications
+  - [ ] Add tests (≥70% coverage)
+
+- [ ] TASK-M2-020-FE-009: Create useDailyReportForm hook
+  - [ ] Create `hooks/useDailyReportForm.ts`:
+    - [ ] Manage form state: date, entranceTime, exitTime, projectReports[]
+    - [ ] `addProjectReport()` - append new empty project report
+    - [ ] `updateProjectReport(index, data)` - update existing report at index
+    - [ ] `removeProjectReport(index)` - delete report (with confirmation)
+    - [ ] `calculateProgress()` - sum durations vs (exit - entrance)
+    - [ ] `validateForm()` - run all validation rules, return errors
+    - [ ] Return: `{ formData, handlers, progress, errors, isValid }`
+  - [ ] Add tests (≥70% coverage)
+
+**Frontend - Modal Structure:**
+- [ ] TASK-M2-020-FE-010: Create DailyReportModal component
+  - [ ] Create `components/DailyReport/DailyReportModal.tsx`:
+    - [ ] Full-screen modal (mobile-first, RTL)
+    - [ ] Header: "דיווח ידני" + close button (X)
+    - [ ] Two tabs: "דיווח עבודה" (default) / "דיווח היעדרות"
+    - [ ] Tab content: render WorkReportTab or AbsenceReportTab
+    - [ ] Props: `isOpen`, `onClose`, `mode: 'create' | 'edit'`, `existingAttendanceId?`, `defaultDate?`
+  - [ ] Create `DailyReportModal.module.css` (mobile styling, RTL support)
+
+**Frontend - Work Report Tab:**
+- [ ] TASK-M2-020-FE-011: Create WorkReportTab component
+  - [ ] Create `components/DailyReport/WorkReportTab.tsx`:
+    - [ ] Date selector (default: today, opens DatePickerModal)
+    - [ ] Entrance time input (opens TimePickerModal)
+    - [ ] Exit time input (opens TimePickerModal)
+    - [ ] ProjectReportsList component
+    - [ ] ProgressTracker component (shows X/Y hours + visual bar)
+    - [ ] Save button (enabled when valid, shows loading state)
+    - [ ] Use `useDailyReportForm` hook for state management
+    - [ ] Handle validation errors and show appropriate toasts/modals
+  - [ ] Create `WorkReportTab.module.css`
+
+- [ ] TASK-M2-020-FE-012: Create TimePickerModal component
+  - [ ] Create `components/DailyReport/TimePickerModal.tsx`:
+    - [ ] Scrollable time picker (hours 00-23, minutes 00-59 in 5min increments)
+    - [ ] Current selection highlighted
+    - [ ] "שמירה" (save) and "נקה" (clear) buttons
+    - [ ] Props: `isOpen`, `onClose`, `value`, `onChange`, `label`
+  - [ ] Create `TimePickerModal.module.css`
+
+- [ ] TASK-M2-020-FE-013: Create DatePickerModal component
+  - [ ] Create `components/DailyReport/DatePickerModal.tsx`:
+    - [ ] Calendar view (month/year navigation with arrows)
+    - [ ] Hebrew day names from constants
+    - [ ] Highlight selected date (blue circle)
+    - [ ] Disable future dates (can't report future work)
+    - [ ] "שמירה" and "נקה" buttons
+    - [ ] Props: `isOpen`, `onClose`, `value`, `onChange`
+  - [ ] Create `DatePickerModal.module.css`
+
+- [ ] TASK-M2-020-FE-014: Create ProjectReportsList component
+  - [ ] Create `components/DailyReport/ProjectReportsList.tsx`:
+    - [ ] Section title: "דיווח פרויקטים"
+    - [ ] Render list of ProjectReportCard components
+    - [ ] "הוספת פרויקט" button (blue link with + icon)
+    - [ ] Empty state: show only "הוספת פרויקט" button
+    - [ ] Props: `reports[]`, `onAdd`, `onEdit`, `onDelete`
+  - [ ] Create `ProjectReportsList.module.css`
+
+- [ ] TASK-M2-020-FE-015: Create ProjectReportCard component
+  - [ ] Create `components/DailyReport/ProjectReportCard.tsx`:
+    - [ ] **Collapsed view**: Project name + duration (e.g., "Globaly 05:30 ש'")
+    - [ ] **Expanded view**: Show all fields:
+      - [ ] פרויקט* (required) - opens ProjectSelectorModal
+      - [ ] משימה* (required) - opens TaskListStep
+      - [ ] מיקום* (required) - opens LocationListStep
+      - [ ] Time entry based on project reportingType:
+        - [ ] Duration: Single input hh:mm (max 23:59)
+        - [ ] StartEnd: Start time + End time inputs
+      - [ ] Description (optional, multiline text)
+    - [ ] "מחיקת פרויקט" link (red) - opens DeleteProjectConfirmModal
+    - [ ] Expandable accordion behavior (click to toggle)
+    - [ ] Props: `report`, `index`, `onUpdate`, `onDelete`, `taskLookup`
+  - [ ] Create `ProjectReportCard.module.css`
+
+- [ ] TASK-M2-020-FE-016: Create ProgressTracker component
+  - [ ] Create `components/DailyReport/ProgressTracker.tsx`:
+    - [ ] Display current/target: "X מתוך Y שעות"
+    - [ ] Display missing: "חסרות Z שעות לדיווח" (if incomplete)
+    - [ ] Visual progress bar (fills orange, 100% when complete)
+    - [ ] Props: `current` (minutes), `target` (minutes)
+  - [ ] Create `ProgressTracker.module.css`
+
+**Frontend - Absence Report Tab:**
+- [ ] TASK-M2-020-FE-017: Create AbsenceReportTab component
+  - [ ] Create `components/DailyReport/AbsenceReportTab.tsx`:
+    - [ ] Date selector (same as WorkReportTab)
+    - [ ] Absence type dropdown (default: מחלה):
+      - [ ] Options: חופשה - חצי יום, חופשה - יום מלא, מחלה 😷, מילואים 🪖
+    - [ ] FileUpload component (for sickness/reserves documentation)
+    - [ ] "לדווח על היעדרות יותר מיום אחד" button → DateRangePickerModal
+    - [ ] Save button (always enabled, no validation required)
+    - [ ] Use `useMutation` for POST /api/attendance (non-work status)
+  - [ ] Create `AbsenceReportTab.module.css`
+
+- [ ] TASK-M2-020-FE-018: Create FileUpload component
+  - [ ] Create `components/DailyReport/FileUpload.tsx`:
+    - [ ] Drag & drop zone with blue folder icon
+    - [ ] "לחץ כאן להעלאת הקובץ" link
+    - [ ] Show accepted formats: JPG / PNG / PDF
+    - [ ] Validate file size (max 5MB) and type before upload
+    - [ ] After upload: show file name + badge (PDF/JPG/PNG) + delete icon
+    - [ ] Props: `file`, `onUpload`, `onDelete`
+  - [ ] Create `FileUpload.module.css`
+
+- [ ] TASK-M2-020-FE-019: Create DateRangePickerModal component
+  - [ ] Create `components/DailyReport/DateRangePickerModal.tsx`:
+    - [ ] Title: "דיווח היעדרות לפי טווח"
+    - [ ] Two date fields: "תאריך התחלה" + "תאריך סיום" (each opens calendar)
+    - [ ] Calculate and show: "סה"כ ימי דיווח: X ימים" (in blue)
+    - [ ] Validate: endDate >= startDate
+    - [ ] "שמירה" and "נקה" buttons
+    - [ ] Props: `isOpen`, `onClose`, `onSave`
+  - [ ] Create `DateRangePickerModal.module.css`
+
+**Frontend - Project Selector (3-Step Modal):**
+- [ ] TASK-M2-020-FE-020: Create ProjectSelectorModal component
+  - [ ] Create `components/ProjectSelector/ProjectSelectorModal.tsx`:
+    - [ ] **Three-step wizard flow**:
+      1. Project selection (grouped by client)
+      2. Task selection (filtered by selected project)
+      3. Location selection (משרד / בית / בית לקוח)
+    - [ ] Dynamic title: "בחר פרויקט" / "בחר משימה" / "בחר מיקום"
+    - [ ] Back button (visible after step 1, returns to previous step)
+    - [ ] Bottom button text changes: "המשך ובחר משימה" / "המשך ובחר מיקום" / "המשך"
+    - [ ] Props: `isOpen`, `onClose`, `onSelect`, `userId`, `initialSelection?`
+  - [ ] Create `ProjectSelectorModal.module.css`
+
+- [ ] TASK-M2-020-FE-021: Create ProjectListStep component
+  - [ ] Create `components/ProjectSelector/ProjectListStep.tsx`:
+    - [ ] Grouped list by client (client names as section headers)
+    - [ ] Project names as clickable list items
+    - [ ] Selected project shows blue checkmark icon
+    - [ ] Loading skeleton while fetching
+    - [ ] Use data from `useProjectSelector` hook
+    - [ ] Props: `projects[]`, `selectedId`, `onSelect`
+  - [ ] Create `ProjectListStep.module.css`
+
+- [ ] TASK-M2-020-FE-022: Create TaskListStep component
+  - [ ] Create `components/ProjectSelector/TaskListStep.tsx`:
+    - [ ] Context subtitle: "בחר משימה - מצב: עריכה" (or other context)
+    - [ ] Filtered task list for selected project
+    - [ ] Selected task shows blue checkmark
+    - [ ] Props: `tasks[]`, `selectedId`, `onSelect`, `projectName`
+  - [ ] Create `TaskListStep.module.css`
+
+- [ ] TASK-M2-020-FE-023: Create LocationListStep component
+  - [ ] Create `components/ProjectSelector/LocationListStep.tsx`:
+    - [ ] Three options with icons:
+      - [ ] משרד (office)
+      - [ ] בית (home)
+      - [ ] בית לקוח (client site)
+    - [ ] Selected location shows blue checkmark
+    - [ ] Props: `selectedLocation`, `onSelect`
+  - [ ] Create `LocationListStep.module.css`
+
+- [ ] TASK-M2-020-FE-024: Create SelectorErrorState component
+  - [ ] Create `components/ProjectSelector/SelectorErrorState.tsx`:
+    - [ ] Robot image (broken robot from shared/image_components)
+    - [ ] "אופססס... 😅"
+    - [ ] "אין מידע זמין כרגע, נסה שוב מאוחר יותר"
+    - [ ] "או פנה למנהל ישיר"
+    - [ ] "חזור למסך ראשי" link
+    - [ ] "המשך ובחר מיקום" button (disabled/greyed)
+  - [ ] Create `SelectorErrorState.module.css`
+
+**Frontend - Confirmation Modals & Toasts:**
+- [ ] TASK-M2-020-FE-025: Configure toast notifications
+  - [ ] Use Mantine notifications (already installed)
+  - [ ] Configure RTL and Hebrew support
+  - [ ] **Blue info toast**: Hierarchy validation errors
+    - [ ] Message: "בחר {field} קודם" (e.g., "בחר פרויקט קודם")
+    - [ ] Trigger: When clicking Task before Project, etc.
+  - [ ] **Red error toast**: Missing required fields
+    - [ ] Message: "חסר לנו פרטים אה ענינים"
+    - [ ] Trigger: Save clicked with incomplete project reports
+  - [ ] **Green success toast**: Successful save
+    - [ ] Title: "דיווח שעות הושלם"
+    - [ ] Message: "דיווח השעות שלך נשמרו בהצלחה בסיבכת 🙂"
+
+- [ ] TASK-M2-020-FE-026: Create IncompleteHoursModal component
+  - [ ] Create `components/DailyReport/IncompleteHoursModal.tsx`:
+    - [ ] Yellow warning icon (⚠️)
+    - [ ] Title: "יום העבודה שלך טרם הושלם"
+    - [ ] Message: "חסרות {X} שעות לדיווח. האם אתה בטוח שהרצת להמשיך?"
+    - [ ] Two buttons:
+      - [ ] "מעדיף שלא למחוק" (cancel, light grey)
+      - [ ] "צא בכל זאת" (confirm save partial, navy blue)
+    - [ ] Props: `isOpen`, `onClose`, `onConfirm`, `missingHours`
+  - [ ] Create `IncompleteHoursModal.module.css`
+
+- [ ] TASK-M2-020-FE-027: Create DeleteProjectConfirmModal component
+  - [ ] Create `components/DailyReport/DeleteProjectConfirmModal.tsx`:
+    - [ ] Yellow warning icon
+    - [ ] Title: "למחוק את פרויקט זה מהדוווח?"
+    - [ ] Message: "הפעולה תסיר את כל השיוכים של הפרויקט מזה תדווח השעות. האם אתה בטוח שהרצת להמשיך?"
+    - [ ] Two buttons:
+      - [ ] "מעדיף שלא למחוק" (cancel)
+      - [ ] "מחק את הפרויקט" (confirm delete, navy blue)
+    - [ ] Props: `isOpen`, `onClose`, `onConfirm`, `projectName`
+  - [ ] Create `DeleteProjectConfirmModal.module.css`
+
+**Frontend - Integration:**
+- [ ] TASK-M2-020-FE-028: Integrate modal with MonthHistory
+  - [ ] Update `components/MonthHistory/MonthHistoryPage.tsx`:
+    - [ ] Add state: `isDailyReportModalOpen`, `modalMode`, `editAttendanceId`
+    - [ ] Open modal on "דיווח ידני" button click (create mode)
+    - [ ] Open modal on "הוספת דיווח" click (create mode, pre-fill date from card)
+    - [ ] Open modal on edit icon click (edit mode, fetch and pre-fill existing data)
+    - [ ] Refresh month history after successful save
+  - [ ] Update `components/BottomBar/BottomBar.tsx`:
+    - [ ] Remove ComingSoonModal trigger
+    - [ ] Call `onManualReportClick` prop to open DailyReportModal
+
+- [ ] TASK-M2-020-FE-029: Implement form validation flow
+  - [ ] In `WorkReportTab.tsx`, on save click:
+    - [ ] Run `validateForm()` from useDailyReportForm
+    - [ ] Show blue toast if hierarchy errors (selecting out of order)
+    - [ ] Show red toast if required fields missing
+    - [ ] Show IncompleteHoursModal if tracker < 100%
+    - [ ] If all validations pass:
+      - [ ] Call `createCombinedAttendance` mutation
+      - [ ] Show loading state on save button
+      - [ ] On success: close modal, show green toast, refresh data
+      - [ ] On error: show red toast with error message
+
+- [ ] TASK-M2-020-FE-030: Implement edit mode data pre-filling
+  - [ ] In `DailyReportModal.tsx`, when `mode === 'edit'`:
+    - [ ] Fetch existing attendance by ID (use getAttendanceById API)
+    - [ ] Pre-fill date (read-only in edit mode)
+    - [ ] Pre-fill entranceTime, exitTime
+    - [ ] Pre-fill status → determine which tab to show
+    - [ ] Pre-fill projectReports[] from projectTimeLogs
+    - [ ] Handle project type changes:
+      - [ ] If task's project changed from duration → startEnd, show 00:00 for times
+    - [ ] Show loading skeleton while fetching
+
+**Testing:**
+- [ ] TASK-M2-020-TEST-001: Unit tests for utils
+  - [ ] Test `validation.ts` functions (all edge cases)
+  - [ ] Test `timeUtils.ts` functions (parsing, formatting)
+  - [ ] Coverage target: ≥80%
+
+- [ ] TASK-M2-020-TEST-002: Unit tests for hooks
+  - [ ] Test `useDailyReportForm` state management
+  - [ ] Test `useCreateDailyReport` mutation behavior
+  - [ ] Test `useUpdateDailyReport` mutation behavior
+  - [ ] Test `useProjectSelector` data fetching and transformation
+  - [ ] Coverage target: ≥70%
+
+- [ ] TASK-M2-020-TEST-003: Component tests
+  - [ ] Test `WorkReportTab` renders correctly
+  - [ ] Test project report add/edit/delete flows
+  - [ ] Test validation error displays (toasts, modals)
+  - [ ] Test save button enable/disable logic
+  - [ ] Test time picker, date picker modals
+  - [ ] Coverage target: ≥60%
+
+- [ ] TASK-M2-020-TEST-004: Integration tests
+  - [ ] Test full create flow (open modal → fill form → save → close)
+  - [ ] Test full edit flow (open → update data → save)
+  - [ ] Test validation scenarios (missing fields, incomplete hours, hierarchy errors)
+  - [ ] Test project selector 3-step flow
+  - [ ] Test absence report flow with file upload
+  - [ ] Coverage target: ≥60%
+
+**Final Validation:**
+- [ ] TASK-M2-020-FINAL: Design & UX validation
+  - [ ] All components match Figma mobile design
+  - [ ] RTL layout correct for all Hebrew text
+  - [ ] Colors match specification (BADGE_COLORS from constants)
+  - [ ] Loading states visible during async operations
+  - [ ] Error states display correctly with proper messaging
+  - [ ] Success flow: toast → modal close → month history refresh
+  - [ ] Animations smooth (accordion expand, modal open/close)
+  - [ ] Accessibility: keyboard navigation, screen reader support
+  - [ ] Overall test coverage: ≥60%
+
+**Coverage Target**: ≥60% for DailyReport components + hooks  
+**Validation**: User can create/edit daily reports with multiple project time logs
 
 #### TASK-M2-022: Month History UI (User App)
 
