@@ -127,18 +127,16 @@ export function DayAccordionItem({
             />
           ))}
 
-          {/* Add report button */}
-          {!isWeekendDay && (
-            <Button
-              variant="subtle"
-              color="blue"
-              size="sm"
-              onClick={handleAddReport}
-              className={classes.addButton}
-            >
-              {HEBREW_STRINGS.addReport}
-            </Button>
-          )}
+          {/* Add report button - now available on all days including weekends */}
+          <Button
+            variant="subtle"
+            color="blue"
+            size="sm"
+            onClick={handleAddReport}
+            className={classes.addButton}
+          >
+            {HEBREW_STRINGS.addReport}
+          </Button>
         </Stack>
       </Accordion.Panel>
     </Accordion.Item>

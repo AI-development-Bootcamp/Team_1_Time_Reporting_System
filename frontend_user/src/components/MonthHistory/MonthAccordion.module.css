@@ -8,4 +8,6 @@
   gap: 8px;
   width: 100%;
   align-items: center;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
