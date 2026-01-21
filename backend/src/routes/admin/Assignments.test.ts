@@ -23,13 +23,10 @@ const { mockPrisma } = vi.hoisted(() => {
   return { mockPrisma: mockPrismaInstance };
 });
 
-vi.mock('@prisma/client', async () => {
-  const actual = await vi.importActual('@prisma/client');
-  return {
-    ...actual,
-    PrismaClient: vi.fn(() => mockPrisma),
-  };
-});
+// Mock the prisma singleton instance directly
+vi.mock('../../utils/prisma', () => ({
+  prisma: mockPrisma,
+}));
 
 // Create a test app
 const createTestApp = () => {
