@@ -36,10 +36,11 @@
   padding: 4px;
   border-radius: 4px;
   transition: opacity 0.2s;
+  opacity: 1;
 }
 
 .navButton:hover:not([data-disabled]) {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .navButton[data-disabled] {

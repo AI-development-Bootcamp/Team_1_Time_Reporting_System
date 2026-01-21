@@ -3,12 +3,24 @@
  * Displays page title and month navigation
  */
 
-import { Group, Title, Text, UnstyledButton, Image } from '@mantine/core';
+import { Group, Title, Text, UnstyledButton } from '@mantine/core';
 import { HEBREW_STRINGS } from '../../utils/constants';
 import { getHebrewMonthName } from '../../utils/dateUtils';
-import leftArrowIcon from '@images/LeftArrowIcon.png';
-import rightArrowIcon from '@images/RightArrowIcon.png';
 import classes from './MonthHeader.module.css';
+
+// Chevron Left Arrow Icon
+const ChevronLeft = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+);
+
+// Chevron Right Arrow Icon
+const ChevronRight = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+);
 
 interface MonthHeaderProps {
   /** Current month (1-12) */
@@ -46,7 +58,7 @@ export function MonthHeader({
           className={classes.navButton}
           data-disabled={isNextDisabled || undefined}
         >
-          <Image src={leftArrowIcon} alt="Next month" w={24} h={24} />
+          <ChevronLeft />
         </UnstyledButton>
 
         <Text size="md" fw={500} className={classes.monthName}>
@@ -60,7 +72,7 @@ export function MonthHeader({
           className={classes.navButton}
           data-disabled={isPreviousDisabled || undefined}
         >
-          <Image src={rightArrowIcon} alt="Previous month" w={24} h={24} />
+          <ChevronRight />
         </UnstyledButton>
       </Group>
 
