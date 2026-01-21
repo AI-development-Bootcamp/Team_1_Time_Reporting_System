@@ -18,7 +18,7 @@ import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
 import { useAssignments } from '../../hooks/useAssignments';
 import { ClientForm } from './ClientForm';
-import { ProjectForm } from '../Projects/ProjectForm';
+import { ProjectForm, CreateProjectInput } from '../Projects/ProjectForm';
 import { TaskForm, CreateTaskInput } from '../Tasks/TaskForm';
 import { EmployeeAssignmentForm } from '../Assignments/EmployeeAssignmentForm';
 import { DeleteConfirmationModal } from '../Common/DeleteConfirmationModal';
@@ -167,6 +167,7 @@ export function ClientsTable() {
   const { createProjectMutation, updateProjectMutation, deleteProjectMutation } = useProjects();
   const { createTaskMutation, updateTaskMutation, deleteTaskMutation } = useTasks();
   const { assignmentsQuery, deleteAssignmentsMutation } = useAssignments();
+  const { assignmentsQuery } = useAssignments();
 
   const [formOpened, setFormOpened] = useState(false);
   const [projectFormOpened, setProjectFormOpened] = useState(false);
@@ -489,6 +490,10 @@ export function ClientsTable() {
         taskId,
         userIds: selectedUserIds,
       });
+      for (const userId of selectedUserIds) {
+        await apiClient.delete(`/admin/assignments/${taskId}:${userId}`);
+      }
+      assignmentsQuery.refetch();
       setDeleteAssignmentModalOpened(false);
       setPendingDeleteAssignmentTaskId(null);
     }
