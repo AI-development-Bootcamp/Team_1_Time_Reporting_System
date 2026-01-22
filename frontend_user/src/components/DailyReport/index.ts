@@ -13,3 +13,4 @@ export { ProjectReportsList } from './ProjectReportsList';
 export { ProjectReportCard } from './ProjectReportCard';
 export { ProgressTracker } from './ProgressTracker';
 export { FileUpload } from './FileUpload';
+export { IncompleteHoursModal } from './IncompleteHoursModal';

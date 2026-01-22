@@ -1533,16 +1533,16 @@ backend/src/
     - [x] Title: "דיווח שעות הושלם"
     - [x] Message: "דיווח השעות שלך נשמרו בהצלחה בסיבכת 🙂"
 
-- [ ] TASK-M2-020-FE-026: Create IncompleteHoursModal component
-  - [ ] Create `components/DailyReport/IncompleteHoursModal.tsx`:
-    - [ ] Yellow warning icon (⚠️)
-    - [ ] Title: "יום העבודה שלך טרם הושלם"
-    - [ ] Message: "חסרות {X} שעות לדיווח. האם אתה בטוח שהרצת להמשיך?"
-    - [ ] Two buttons:
-      - [ ] "מעדיף שלא למחוק" (cancel, light grey)
-      - [ ] "צא בכל זאת" (confirm save partial, navy blue)
-    - [ ] Props: `isOpen`, `onClose`, `onConfirm`, `missingHours`
-  - [ ] Create `IncompleteHoursModal.module.css`
+- [x] TASK-M2-020-FE-026: Create IncompleteHoursModal component
+  - [x] Create `components/DailyReport/IncompleteHoursModal.tsx`:
+    - [x] Yellow warning icon (⚠️)
+    - [x] Title: "יום העבודה שלך טרם הושלם"
+    - [x] Message: "חסרות {X} שעות לדיווח. האם אתה בטוח שהרצת להמשיך?"
+    - [x] Two buttons:
+      - [x] "מעדיף שלא למחוק" (cancel, light grey)
+      - [x] "צא בכל זאת" (confirm save partial, navy blue)
+    - [x] Props: `isOpen`, `onClose`, `onConfirm`, `missingHours`
+  - [x] Create `IncompleteHoursModal.module.css`
 
 - [ ] TASK-M2-020-FE-027: Create DeleteProjectConfirmModal component
   - [ ] Create `components/DailyReport/DeleteProjectConfirmModal.tsx`:
