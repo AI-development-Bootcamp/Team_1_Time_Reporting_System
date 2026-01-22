@@ -4,19 +4,24 @@ import { errorHandler } from './middleware/ErrorHandler';
 import authRoutes from './routes/auth.routes';
 import adminUsersRoutes from './routes/admin/Users';
 import assignmentsRoutes from './routes/admin/Assignments';
+import projectsRouter from './routes/admin/Projects';
+import clientsRouter from './routes/admin/Clients';
+import tasksRouter from './routes/admin/Tasks';
 import attendanceRoutes from './routes/attendance.routes';
 import timeLogsRoutes from './routes/timeLogs.routes';
 import projectsRoutes from './routes/projects.routes';
-
 
 /**
  * Create and configure Express app
  * This is exported for testing purposes
  */
-
-
 export const createApp = () => {
   const app = express();
+
+  // Trust proxy for Render and other hosting platforms
+  // This is required for rate limiting and IP detection to work correctly
+  // Set to 1 to trust only the first proxy (Render's load balancer)
+  app.set('trust proxy', 1);
 
   // Parse CORS origins from environment variables
   const localOrigins = process.env.LOCAL_CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
@@ -47,7 +52,10 @@ export const createApp = () => {
   // Mount API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/admin', adminUsersRoutes);
-  app.use('/api/admin', assignmentsRoutes);
+  app.use('/api/admin/assignments', assignmentsRoutes);
+  app.use('/api/admin/projects', projectsRouter);
+  app.use('/api/admin/clients', clientsRouter);
+  app.use('/api/admin/tasks', tasksRouter);
   app.use('/api/attendance', attendanceRoutes);
   app.use('/api/time-logs', timeLogsRoutes);
   app.use('/api/projects', projectsRoutes);

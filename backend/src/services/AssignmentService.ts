@@ -1,47 +1,175 @@
 import { prisma } from '../utils/prismaClient';
 import { AppError } from '../middleware/ErrorHandler';
+import { serializeData } from '../utils/routeUtils';
+import type { z } from 'zod';
+import type { createAssignmentSchema } from '../validators/assignment.schema';
 
-/**
- * AssignmentService - Handles task worker assignment operations
- */
+type CreateAssignmentInput = z.infer<typeof createAssignmentSchema>;
+
 export class AssignmentService {
-    /**
-     * Get all active workers assigned to a specific task
-     */
-    static async getTaskWorkers(taskId: bigint) {
-        // Check if task exists
-        const task = await prisma.task.findUnique({
-            where: { id: taskId },
-        });
-
-        if (!task) {
-            throw new AppError('NOT_FOUND', 'Task not found', 404);
-        }
-
-        // Get all workers assigned to this task (only active users)
-        const assignments = await prisma.taskWorker.findMany({
-            where: {
-                taskId: taskId,
-            },
+  static async createAssignment(data: CreateAssignmentInput) {
+    // Validate that task and user exist before creating assignment
+    // Include project and client to check their active status
+    const [task, user] = await Promise.all([
+      prisma.task.findUnique({
+        where: { id: data.taskId },
+        include: {
+          project: {
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        active: true,
-                    },
-                },
+              client: true,
             },
-        });
+          },
+        },
+      }),
+      prisma.user.findUnique({ where: { id: data.userId } }),
+    ]);
 
-        // Filter only active users and format response
-        const workers = assignments
-            .filter((assignment) => assignment.user.active)
-            .map((assignment) => ({
-                id: Number(assignment.user.id),
-                name: assignment.user.name,
-            }));
-
-        return workers;
+    if (!task) {
+      throw new AppError('NOT_FOUND', 'Task not found', 404);
     }
+
+    if (!user) {
+      throw new AppError('NOT_FOUND', 'User not found', 404);
+    }
+
+    // Prevent assignment to closed task
+    if (task.status === 'closed') {
+      throw new AppError('CONFLICT', 'Cannot assign user to a closed task', 409);
+    }
+
+    // Prevent assignment to task in inactive project
+    if (!task.project.active) {
+      throw new AppError('CONFLICT', 'Cannot assign user to a task in an inactive project', 409);
+    }
+
+    // Prevent assignment to task for inactive client
+    if (!task.project.client.active) {
+      throw new AppError('CONFLICT', 'Cannot assign user to a task for an inactive client', 409);
+    }
+
+    // Prevent duplicate assignment for same user-task pair
+    const existing = await prisma.taskWorker.findUnique({
+      where: {
+        taskId_userId: {
+          taskId: data.taskId,
+          userId: data.userId,
+        },
+      },
+    });
+
+    if (existing) {
+      throw new AppError('CONFLICT', 'Assignment already exists', 409);
+    }
+
+    try {
+      const created = await prisma.taskWorker.create({
+        data: {
+          taskId: data.taskId,
+          userId: data.userId,
+        },
+      });
+
+      return serializeData({
+        id: `${created.taskId}:${created.userId}`,
+        taskId: created.taskId,
+        userId: created.userId,
+      });
+    } catch (err: any) {
+      // Extra safety: map foreign key errors to a clean NOT_FOUND response
+      if (err.code === 'P2003') {
+        throw new AppError(
+          'NOT_FOUND',
+          'Task or user not found for assignment',
+          404,
+        );
+      }
+      throw err;
+    }
+  }
+
+  static async getAssignments() {
+    const records = await prisma.taskWorker.findMany({
+      include: {
+        user: true,
+        task: {
+          include: {
+            project: {
+              include: {
+                client: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return serializeData(records);
+  }
+
+  static async deleteAssignment(taskId: bigint, userId: bigint) {
+    // Ensure assignment exists
+    const existing = await prisma.taskWorker.findUnique({
+      where: {
+        taskId_userId: {
+          taskId,
+          userId,
+        },
+      },
+    });
+
+    if (!existing) {
+      throw new AppError('NOT_FOUND', 'Assignment not found', 404);
+    }
+
+    await prisma.taskWorker.delete({
+      where: {
+        taskId_userId: {
+          taskId,
+          userId,
+        },
+      },
+    });
+
+    return serializeData({ deleted: true });
+  }
+
+  /**
+   * Get all active workers assigned to a specific task
+   */
+  static async getTaskWorkers(taskId: bigint) {
+    // Check if task exists
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+    });
+
+    if (!task) {
+      throw new AppError('NOT_FOUND', 'Task not found', 404);
+    }
+
+    // Get all workers assigned to this task (only active users)
+    const assignments = await prisma.taskWorker.findMany({
+      where: {
+        taskId: taskId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            active: true,
+          },
+        },
+      },
+    });
+
+    // Filter only active users and format response
+    const workers = assignments
+      .filter((assignment) => assignment.user.active)
+      .map((assignment) => ({
+        id: String(assignment.user.id),
+        name: assignment.user.name,
+      }));
+
+    return serializeData(workers);
+  }
 }

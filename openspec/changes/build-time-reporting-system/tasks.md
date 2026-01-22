@@ -130,16 +130,16 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] 409 `CONFLICT` if mail already exists
   - [x] Throw `AppError` instead of using try/catch
 - [x] Implement `PUT /api/admin/users/:id`:
-  - [x] Zod schema: `{ name?, mail?, userType?, active? }` (password NOT allowed - use reset-password endpoint)
+  - [x] Zod schema: `{ name?, mail?, userType?, isActive? }` (password NOT allowed - use reset-password endpoint)
   - [x] Return: `{ success: true, data: { updated: true } }`
 - [x] Implement `DELETE /api/admin/users/:id`:
-  - [x] Soft delete: set `active = false`
+  - [x] Soft delete: set `isActive = false`
   - [x] Return: `{ success: true, data: { deleted: true } }`
 - [x] Implement `POST /api/admin/users/:id/reset-password`:
   - [x] Zod schema: `{ newPassword }` with password validation
   - [x] Hash and update password
   - [x] Return: `{ success: true, data: { updated: true } }`
-- [x] **Validation**: All CRUD works, soft delete filters correctly
+- [x] **Validation**: All CRUD works, soft delete filters correctly (filtering on `isActive: true`)
 - [x] **Tests**: Integration tests for all CRUD operations (`backend/tests/integration/users.test.ts`)
 
 #### TASK-M1-020: Login UI (Both Apps - Shared Components)
@@ -147,10 +147,10 @@ Current `backend/prisma/schema.prisma` issues:
 - [x] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
 - [x] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
 - [x] Create **shared** `shared/src/context/AuthContext.tsx`:
-  - [ ] Store JWT token in HTTP-Only Cookie (Secure, SameSite) - ✅ SECURE
-  - [ ] Store user info in client state/memory (minimal profile in localStorage allowed if non-sensitive)
+  - [x] Store JWT token in localStorage (Bearer token approach)
+  - [x] Decode user info from token on mount (user is decoded from token, not stored separately)
   - [x] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
-  - [x] Load user from localStorage on mount
+  - [x] Load user from token on mount
   - [x] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)
 - [x] Create **shared** `shared/src/hooks/useLogin.ts`:
   - [x] Uses `useMutation` from TanStack Query
@@ -184,7 +184,7 @@ Current `backend/prisma/schema.prisma` issues:
     - [x] User app: `/month-history` - protected route (placeholder page for now)
     - [x] Admin app: `/client-management` - protected route with `requireAdmin=true` (placeholder page for now)
   - [x] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
-- [x] **Note**: `ApiClient.ts` already includes `Authorization: Bearer <token>` header (shared)
+- [x] **Note**: `ApiClient.ts` includes `Authorization: Bearer <token>` header (shared) - token stored in localStorage
 - **Validation**: Users can login, token persists on refresh, protected routes work, redirects to correct pages after login
 - [x] **Tests**: Unit tests for AuthContext, ProtectedRoute, ApiClient logic
 
@@ -1474,51 +1474,51 @@ backend/src/
 **Feature Owner**: Clients, Projects, Tasks, Assignments CRUD (full-stack)
 
 #### TASK-M3-010: Clients Backend (Per `doc/api/API.md` Section 3)
-- [ ] Create `backend/src/routes/admin/Clients.ts`
-- [ ] Implement `GET /api/admin/clients`:
-  - [ ] Return all clients (filter active by default)
-- [ ] Implement `POST /api/admin/clients`:
-  - [ ] Zod schema: `{ name, description? }`
-  - [ ] Return: `{ success: true, data: { id } }`
-- [ ] Implement `PUT /api/admin/clients/:id`:
-  - [ ] Zod schema: `{ name?, description?, active? }`
-- [ ] Implement `DELETE /api/admin/clients/:id`:
-  - [ ] Soft delete: set `active = false`
+- [x] Create `backend/src/routes/admin/Clients.ts`
+- [x] Implement `GET /api/admin/clients`:
+  - [x] Return all clients (filter active by default)
+- [x] Implement `POST /api/admin/clients`:
+  - [x] Zod schema: `{ name, description? }`
+  - [x] Return: `{ success: true, data: { id } }`
+- [x] Implement `PUT /api/admin/clients/:id`:
+  - [x] Zod schema: `{ name?, description?, active? }`
+- [x] Implement `DELETE /api/admin/clients/:id`:
+  - [x] Soft delete: set `active = false`
 - **Validation**: Clients CRUD works
 
 #### TASK-M3-011: Projects Backend (Per `doc/api/API.md` Section 4)
-- [ ] Create `backend/src/routes/admin/Projects.ts`
-- [ ] Implement `GET /api/admin/projects`:
-  - [ ] Query param: `clientId` (optional filter)
-- [ ] Implement `POST /api/admin/projects`:
-  - [ ] Zod schema: `{ name, clientId, projectManagerId, startDate, endDate?, description? }`
-- [ ] Implement `PUT /api/admin/projects/:id`
-- [ ] Implement `DELETE /api/admin/projects/:id`:
-  - [ ] Soft delete
+- [x] Create `backend/src/routes/admin/Projects.ts`
+- [x] Implement `GET /api/admin/projects`:
+  - [x] Query param: `clientId` (optional filter)
+- [x] Implement `POST /api/admin/projects`:
+  - [x] Zod schema: `{ name, clientId, projectManagerId, startDate, endDate?, description? }`
+- [x] Implement `PUT /api/admin/projects/:id`
+- [x] Implement `DELETE /api/admin/projects/:id`:
+  - [x] Soft delete
 - **Validation**: Projects CRUD works, filtering by client works
 
 #### TASK-M3-012: Tasks Backend (Per `doc/api/API.md` Section 5)
-- [ ] Create `backend/src/routes/admin/Tasks.ts`
-- [ ] Implement `GET /api/admin/tasks`:
-  - [ ] Query param: `projectId` (optional filter)
-- [ ] Implement `POST /api/admin/tasks`:
-  - [ ] Zod schema: `{ name, projectId, startDate?, endDate?, description?, status }`
-- [ ] Implement `PUT /api/admin/tasks/:id`
-- [ ] Implement `DELETE /api/admin/tasks/:id`:
-  - [ ] Soft delete (hide inactive by default)
+- [x] Create `backend/src/routes/admin/Tasks.ts`
+- [x] Implement `GET /api/admin/tasks`:
+  - [x] Query param: `projectId` (optional filter)
+- [x] Implement `POST /api/admin/tasks`:
+  - [x] Zod schema: `{ name, projectId, startDate?, endDate?, description?, status }`
+- [x] Implement `PUT /api/admin/tasks/:id`
+- [x] Implement `DELETE /api/admin/tasks/:id`:
+  - [x] Soft delete (hide inactive by default)
 - **Validation**: Tasks CRUD works, filtering by project works
 
 #### TASK-M3-013: Assignments Backend (Per `doc/api/API.md` Section 6)
-- [ ] Create `backend/src/routes/admin/Assignments.ts`
-- [ ] Implement `POST /api/admin/assignments`:
-  - [ ] Zod schema: `{ userId, taskId }`
-  - [ ] Create TaskWorker record
-  - [ ] Return: `{ success: true, data: { id, taskId, userId } }`
-  - [ ] Trigger cache refresh for project selector
-- [ ] Implement `GET /api/admin/assignments`:
-  - [ ] Return all assignments
-- [ ] Implement `DELETE /api/admin/assignments/:id`:
-  - [ ] Delete TaskWorker record
+- [x] Create `backend/src/routes/admin/Assignments.ts`
+- [x] Implement `POST /api/admin/assignments`:
+  - [x] Zod schema: `{ userId, taskId }`
+  - [x] Create TaskWorker record
+  - [x] Return: `{ success: true, data: { id, taskId, userId } }`
+  - [x] Trigger cache refresh for project selector
+- [x] Implement `GET /api/admin/assignments`:
+  - [x] Return all assignments
+- [x] Implement `DELETE /api/admin/assignments/:id`:
+  - [x] Delete TaskWorker record
 - **Validation**: Assignments CRUD works
 
 #### TASK-M3-020: Clients UI (Admin App)
@@ -1635,6 +1635,131 @@ backend/src/
   - [ ] File type/size validation on frontend
 - [ ] Integrate with DailyAttendance creation
 - **Validation**: Absence with document upload works
+
+#### TASK-M4-030: Reporting Settings UI - "הגדרת דיווחי שעות" (Admin App)
+
+> **Dependency**: Member 3 must add `reportingType` field to Project model and implement `PATCH /api/admin/projects/:id` endpoint first.  
+> **Coordination Doc**: See `COORDINATION_MEMBER_3.md`
+
+**Purpose**: Allow admins to configure how workers report time per project - either via Start/End times (כניסה/יציאה) or Total Duration (סכום שעות).
+
+##### Frontend Types & Utilities
+- [x] 30.1 Update/Create shared types in `frontend_admin/src/types/Project.ts`:
+  - [x] Add `ReportingType` type: `'duration' | 'startEnd'`
+  - [x] Update `Project` interface to include `reportingType` field
+- [x] 30.2 Extend API client in `frontend_admin/src/utils/ApiClient.ts`:
+  - [x] Add `patchProjectReportingType(projectId: number, reportingType: ReportingType)` method
+
+##### Page & Layout
+- [x] 30.3 Create `frontend_admin/src/pages/ReportingSettingsPage.tsx`:
+  - [x] Page container with RTL layout
+  - [x] Page title: "הגדרת דיווחי שעות"
+  - [x] Page subtitle: "כאן תוכל להגדיר את סוג דיווחי השעות של העובדים בפרויקטים השונים"
+  - [x] Integrate search bar component (placeholder - will be implemented in 30.8)
+  - [x] Integrate settings table component (placeholder - will be implemented in 30.6)
+  - [x] Integrate pagination component (placeholder - will be implemented in 30.10)
+- [x] 30.4 Add route `/settings/reporting` in React Router config
+
+##### Data Fetching Hook
+- [x] 30.5 Create `frontend_admin/src/hooks/useReportingSettings.ts`:
+  - [x] `useQuery` for `GET /api/admin/projects` (with Client data joined)
+  - [x] `useMutation` for `PATCH /api/admin/projects/:id` (reportingType update)
+  - [x] Optimistic update: update local state immediately on radio change
+  - [x] Rollback on error
+  - [x] Invalidate queries on success
+
+##### Table Component
+- [x] 30.6 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsTable.tsx`:
+  - [x] Mantine Table component with RTL support
+  - [x] Columns:
+    - [x] שם לקוח (Client Name)
+    - [x] שם פרויקט (Project Name)
+    - [x] סוג הדיווח (Reporting Type) - Radio buttons
+  - [x] Display Client name by joining Project → Client data
+  - [x] Row styling per design
+
+##### Radio Button Toggle Component
+- [x] 30.7 Create `frontend_admin/src/components/ReportingSettings/ReportingTypeToggle.tsx`:
+  - [x] Mantine Radio.Group component
+  - [x] Two options:
+    - [x] "סכום שעות" (duration) - Total Hours
+    - [x] "כניסה / יציאה" (startEnd) - Start/End Times (Default)
+  - [x] `onChange` handler triggers immediate API call
+  - [x] Visual indicator for selected state (filled vs empty circle per UI)
+  - [x] Disabled state while saving
+
+##### Search & Filter
+- [x] 30.8 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsSearch.tsx`:
+  - [x] Mantine TextInput with search icon
+  - [x] Placeholder: "חיפוש לפי שם לקוח/פרויקט"
+  - [x] Debounced input (300ms)
+- [x] 30.9 Implement filter logic in page component:
+  - [x] Filter by Client name OR Project name (case-insensitive)
+  - [x] Use `useMemo` for filtered results
+
+##### Pagination
+image.png- [x] 30.10 Create `frontend_admin/src/components/ReportingSettings/ReportingSettingsPagination.tsx`:
+  - [x] Mantine Pagination component
+  - [x] Items per page: 10 (configurable)
+  - [x] Display: page numbers with arrows
+  - [x] RTL layout (arrows direction)
+- [x] 30.11 Implement pagination logic:
+  - [x] Calculate total pages from filtered results
+  - [x] Slice data for current page
+
+##### Loading & Error States
+- [x] 30.12 Add loading skeleton while fetching projects
+- [x] 30.13 Add error state with retry button
+- [x] 30.14 Add toast notification on successful save
+- [x] 30.15 Add toast notification on save error
+
+##### Navigation Integration
+- [x] 30.16 Add sidebar menu item "הגדרת דיווחי שעות" in Admin app navigation
+- [x] 30.17 Add icon for the menu item (clock/settings icon)
+
+##### UI Polish & Backend Integration
+- [x] 30.18 UI Polish and Refinement:
+  - [x] Styled sidebar with #141e3e background, proper dimensions (280px width)
+  - [x] Added abraLogo_inverted.png to sidebar header
+  - [x] Styled table with correct row heights (header: 36px, data rows: 48px)
+  - [x] Added column borders for visual separation
+  - [x] Implemented search bar with correct dimensions (350px width, 40px height)
+  - [x] Added empty state with web_empty_list.png image
+  - [x] Applied SimplerPro font family throughout all components
+  - [x] Added hover effects for navigation buttons (#4a6fa5)
+  - [x] Added admin profile section with bottom_logo.png and dynamic name from localStorage
+  - [x] Verified RTL layout works correctly in all states
+  - [x] Ensured page fits within 1080px height without vertical scrolling
+  - [x] Removed hover effect from table rows
+  - [x] Configured toast notifications to auto-close after 3 seconds
+
+- [x] 30.19 Remove Mock Data and Connect Real Backend:
+  - [x] **Prerequisite**: Member 3 completes `GET /api/admin/projects` endpoint (Task M3-011)
+  - [x] **Prerequisite**: Member 3 completes `PATCH /api/admin/projects/:id` endpoint
+  - [x] **Prerequisite**: Member 3 completes `GET /api/admin/clients` endpoint
+  - [x] Created `frontend_admin/src/types/Client.ts` with Client interface
+  - [x] In `frontend_admin/src/hooks/useReportingSettings.ts`:
+    - [x] Removed mock data array from queryFn
+    - [x] Implemented real API calls to fetch both projects and clients in parallel
+    - [x] Joined projects with clients on frontend using clientId
+    - [x] Backend returns only active projects (no frontend filtering needed)
+    - [x] Removed mock mutation function
+    - [x] Implemented real API call: `apiClient.patchProjectReportingType(projectId, reportingType)`
+    - [x] Uncommented imports for apiClient and sharedApiClient
+    - [x] Uncommented `queryClient.invalidateQueries({ queryKey })` in onSuccess
+    - [x] Removed console.log statements from mock code
+  - [ ] Test end-to-end with real backend:
+    - [ ] Verify projects load from database
+    - [ ] Verify reporting type updates persist to database
+    - [ ] Verify optimistic updates still work correctly
+    - [ ] Verify error handling works with real API errors
+
+- **Validation**:
+  - Admin can view all projects with their current reporting type
+  - Admin can search by client or project name
+  - Clicking radio button immediately saves to database
+  - Pagination works correctly
+  - Error handling shows appropriate messages
 
 ---
 

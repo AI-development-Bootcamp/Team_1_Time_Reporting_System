@@ -1,0 +1,61 @@
+.delete-confirmation-modal-content {
+  border-radius: 12px;
+  width: calc((100vw - 320px) / 3);
+  max-width: 500px;
+  min-width: 400px;
+}
+
+.delete-confirmation-modal-inner {
+  padding-right: 320px;
+}
+
+.delete-confirmation-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  right: 320px;
+}
+
+.delete-confirmation-modal {
+  direction: rtl;
+}
+
+.delete-confirmation-header {
+  direction: rtl;
+}
+
+.delete-confirmation-icon {
+  background-color: #ff4444;
+  color: white;
+}
+
+.delete-confirmation-title {
+  text-align: right;
+}
+
+.delete-confirmation-message {
+  text-align: right;
+}
+
+.delete-confirmation-close-button {
+  color: #666;
+}
+
+.delete-confirmation-buttons-group {
+  width: 100%;
+}
+
+.delete-confirmation-delete-button {
+  background-color: #FF2F32;
+  color: white;
+  width: 40%;
+  flex-shrink: 0;
+  direction: rtl;
+}
+
+.delete-confirmation-cancel-button {
+  background-color: #8190A9;
+  color: white;
+  width: 40%;
+  flex-shrink: 0;
+  direction: rtl;
+}
+

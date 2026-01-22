@@ -1,0 +1,88 @@
+.clientsTableContainer {
+  direction: rtl;
+}
+
+.clientsTableHeader {
+  background-color: #141E3E;
+  color: white;
+}
+
+.clientsTableHeaderCell {
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: right;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.clientsTableHeaderCellCenter {
+  text-align: center;
+}
+
+.clientsTableRow {
+  background-color: white;
+}
+
+.clientsTableCell {
+  padding: 12px 16px;
+  text-align: right;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+}
+
+.clientsTableCellCenter {
+  text-align: center;
+}
+
+.clientsTable {
+  border-collapse: collapse;
+  direction: rtl;
+}
+
+.employeeNameBadge {
+  background-color: #ECECEC;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.createButton {
+  direction: rtl;
+  background-color: #0C69FF;
+}
+
+.searchInput {
+  max-width: 400px;
+}
+
+.paginationContainer {
+  direction: rtl;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Pagination styles - remove borders from all controls */
+.paginationContainer .mantine-Pagination-control,
+.paginationContainer .mantine-Pagination-control[data-active="true"],
+.paginationContainer .mantine-Pagination-control:not([data-active="true"]) {
+  border: none !important;
+}
+
+/* Active page background */
+.paginationContainer .mantine-Pagination-control[data-active="true"] {
+  background-color: #8190A9 !important;
+  color: white;
+}
+
+/* Non-active pages - transparent background */
+.paginationContainer .mantine-Pagination-control:not([data-active="true"]) {
+  background-color: transparent;
+}
+
+.paginationControl {
+  border: none !important;
+}
+
+

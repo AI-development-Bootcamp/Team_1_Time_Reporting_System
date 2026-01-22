@@ -1,0 +1,44 @@
+.paginationContainer {
+  direction: rtl;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.paginationContainer .mantine-Pagination-control,
+.paginationContainer .mantine-Pagination-control[data-active="true"],
+.paginationContainer .mantine-Pagination-control:not([data-active="true"]) {
+  border: none !important;
+}
+
+.paginationContainer .mantine-Pagination-control[data-active="true"] {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+}
+
+.paginationContainer .mantine-Pagination-control:not([data-active="true"]) {
+  background-color: transparent !important;
+  color: #4b5563 !important;
+}
+
+.paginationControl {
+  border: none !important;
+  font-family: 'SimplerPro', sans-serif;
+  color: #4b5563;
+}
+
+.paginationControl[data-active="true"] {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+}
+
+.paginationControl:not([data-active="true"]) {
+  background-color: transparent !important;
+  color: #4b5563 !important;
+}
+
+.paginationControl:hover:not([data-active="true"]) {
+  background-color: transparent !important;
+  color: #4b5563 !important;
+}
+

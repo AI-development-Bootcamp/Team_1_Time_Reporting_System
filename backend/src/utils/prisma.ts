@@ -6,3 +6,4 @@ import { PrismaClient } from '@prisma/client';
  * across all route handlers instead of creating new instances in each router
  */
 export const prisma = new PrismaClient();
+

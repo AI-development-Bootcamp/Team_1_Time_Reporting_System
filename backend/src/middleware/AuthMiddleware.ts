@@ -80,25 +80,22 @@ export const authMiddleware = async (
             throw new AppError('UNAUTHORIZED', 'Account is inactive', 401);
         }
 
-        req.userId = userId;
-        req.userType = decoded.userType;
-        // Map Prisma User to the request user structure if needed, or update AuthRequest type
-        // For now, keeping consistent with interface but using data from DB would be better
-        // However, interface expects a specific structure.
-        // Let's attach the minimal info or what was in token but verified.
-        // Actually, request said "load the user by id... if user is missing or active === false throw".
-        // It didn't explicitly say to REPLACE req.user with DB user, but it implies verification.
-        // I will assign the DB user to req.user? The interface might need adjustment if DB user has Dates etc.
-        // The interface defines strings for dates. Prisma DB user has Date objects.
-        // I'll stick to assigning what matches the interface or updating the interface.
-        // Review request: "convert decoded.userId to BigInt... query Prisma... set req.userId/req.userType/req.user"
-        // I'll populate req.user with the DB data, formatted to match the interface or update interface.
-        // Actually, existing interface uses strings.
+        // Use role from database instead of decoded token to prevent stale roles
+        const dbUserType = user.userType as 'admin' | 'worker';
+        
+        // Optionally enforce role mismatch if DB role doesn't match token role
+        if (decoded.userType !== dbUserType) {
+            throw new AppError('UNAUTHORIZED', 'Role mismatch', 401);
+        }
+
+        req.userId = user.id; // Set from DB user (BigInt)
+        req.userType = dbUserType; // Use DB role instead of decoded.userType
+        // Map Prisma User to the request user structure
         req.user = {
             id: Number(user.id),
             name: user.name,
             mail: user.mail,
-            userType: user.userType as 'admin' | 'worker',
+            userType: dbUserType,
             active: user.active,
             createdAt: user.createdAt.toISOString(),
             updatedAt: user.updatedAt.toISOString()

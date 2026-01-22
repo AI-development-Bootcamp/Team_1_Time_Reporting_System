@@ -18,8 +18,18 @@ describe('Rate Limiting - Auth Endpoints', () => {
     });
 
     afterEach(() => {
-        // Restore original env
-        process.env = { ...originalEnv };
+        // Fully restore environment by removing keys added during test and restoring original keys/values
+        const currentEnvKeys = Object.keys(process.env);
+        // Delete any keys that were added during the test (not in originalEnv)
+        currentEnvKeys.forEach((key) => {
+            if (!(key in originalEnv)) {
+                delete process.env[key];
+            }
+        });
+        // Restore all original keys/values
+        Object.keys(originalEnv).forEach((key) => {
+            process.env[key] = originalEnv[key];
+        });
     });
 
     it('should enforce rate limit on login endpoint', async () => {
