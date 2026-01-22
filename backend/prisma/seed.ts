@@ -26,7 +26,8 @@ async function main() {
   console.log('✅ Cleared existing data');
 
   // Hash password for all users
-  const hashedPassword = await bcrypt.hash('Password123', 10);
+  // Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  const hashedPassword = await bcrypt.hash('Password123!', 10);
 
   // Create Admin User
   const admin = await prisma.user.create({
