@@ -7,10 +7,12 @@ on:
       - 'dev'
       - 'main'
       - 'fix/*'
+      - 'bridge_to_dev'
   pull_request:
     branches:
       - 'dev'
       - 'main'
+      - 'bridge_to_dev'
 
 jobs:
   # 1. Unit Tests - Runs on feature branches, dev, and main
