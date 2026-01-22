@@ -1,0 +1,221 @@
+/**
+ * ProjectListStep Styles
+ * RTL-supported, mobile-first project list component
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Client Group
+ * ============================================================================ */
+
+.clientGroup {
+  margin-bottom: 1.5rem;
+}
+
+.clientGroup:last-child {
+  margin-bottom: 0;
+}
+
+.clientName {
+  color: #495057;
+  text-align: right;
+  padding-right: 0.5rem;
+  border-right: 3px solid #228be6;
+}
+
+/* ============================================================================
+ * Project Button
+ * ============================================================================ */
+
+.projectButton {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  direction: rtl;
+}
+
+.projectButton:hover {
+  background: #f8f9fa;
+  border-color: #228be6;
+}
+
+.projectButton.selected {
+  background: #e7f5ff;
+  border-color: #228be6;
+  border-width: 2px;
+}
+
+.projectContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  text-align: right;
+}
+
+.checkIcon {
+  color: #228be6;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+ * Empty State
+ * ============================================================================ */
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+}
+
+/* ============================================================================
+ * Loading Skeleton
+ * ============================================================================ */
+
+.skeletonGroup {
+  margin-bottom: 1.5rem;
+}
+
+.skeletonGroup:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .projectButton {
+    padding: 0.875rem;
+  }
+
+  .clientGroup {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .projectButton {
+    padding: 1rem;
+  }
+
+  .clientGroup {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .projectButton {
+    padding: 1.125rem;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.container {
+  direction: rtl;
+}
+
+.clientName,
+.projectContent {
+  text-align: right;
+}
+
+.projectButton {
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.projectButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .projectButton {
+    min-height: 56px;
+  }
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Selected state animation */
+.projectButton.selected {
+  animation: selectPulse 0.3s ease-out;
+}
+
+@keyframes selectPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Fade in animation */
+.container {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Disabled state */
+.projectButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

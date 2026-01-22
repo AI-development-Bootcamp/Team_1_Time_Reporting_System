@@ -1483,15 +1483,15 @@ backend/src/
     - [x] Props: `isOpen`, `onClose`, `onSelect`, `userId`, `initialSelection?`
   - [x] Create `ProjectSelectorModal.module.css`
 
-- [ ] TASK-M2-020-FE-021: Create ProjectListStep component
-  - [ ] Create `components/ProjectSelector/ProjectListStep.tsx`:
-    - [ ] Grouped list by client (client names as section headers)
-    - [ ] Project names as clickable list items
-    - [ ] Selected project shows blue checkmark icon
-    - [ ] Loading skeleton while fetching
-    - [ ] Use data from `useProjectSelector` hook
-    - [ ] Props: `projects[]`, `selectedId`, `onSelect`
-  - [ ] Create `ProjectListStep.module.css`
+- [x] TASK-M2-020-FE-021: Create ProjectListStep component
+  - [x] Create `components/ProjectSelector/ProjectListStep.tsx`:
+    - [x] Grouped list by client (client names as section headers)
+    - [x] Project names as clickable list items
+    - [x] Selected project shows blue checkmark icon
+    - [x] Loading skeleton while fetching
+    - [x] Use data from `useProjectSelector` hook
+    - [x] Props: `projects[]`, `selectedId`, `onSelect`
+  - [x] Create `ProjectListStep.module.css`
 
 - [ ] TASK-M2-020-FE-022: Create TaskListStep component
   - [ ] Create `components/ProjectSelector/TaskListStep.tsx`:

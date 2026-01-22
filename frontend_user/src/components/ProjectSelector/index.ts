@@ -4,3 +4,4 @@
  */
 
 export { ProjectSelectorModal } from './ProjectSelectorModal';
+export { ProjectListStep } from './ProjectListStep';
