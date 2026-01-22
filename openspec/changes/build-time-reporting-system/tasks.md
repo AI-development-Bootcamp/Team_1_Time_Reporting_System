@@ -130,16 +130,16 @@ Current `backend/prisma/schema.prisma` issues:
   - [x] 409 `CONFLICT` if mail already exists
   - [x] Throw `AppError` instead of using try/catch
 - [x] Implement `PUT /api/admin/users/:id`:
-  - [x] Zod schema: `{ name?, mail?, userType?, active? }` (password NOT allowed - use reset-password endpoint)
+  - [x] Zod schema: `{ name?, mail?, userType?, isActive? }` (password NOT allowed - use reset-password endpoint)
   - [x] Return: `{ success: true, data: { updated: true } }`
 - [x] Implement `DELETE /api/admin/users/:id`:
-  - [x] Soft delete: set `active = false`
+  - [x] Soft delete: set `isActive = false`
   - [x] Return: `{ success: true, data: { deleted: true } }`
 - [x] Implement `POST /api/admin/users/:id/reset-password`:
   - [x] Zod schema: `{ newPassword }` with password validation
   - [x] Hash and update password
   - [x] Return: `{ success: true, data: { updated: true } }`
-- [x] **Validation**: All CRUD works, soft delete filters correctly
+- [x] **Validation**: All CRUD works, soft delete filters correctly (filtering on `isActive: true`)
 - [x] **Tests**: Integration tests for all CRUD operations (`backend/tests/integration/users.test.ts`)
 
 #### TASK-M1-020: Login UI (Both Apps - Shared Components)
@@ -147,10 +147,10 @@ Current `backend/prisma/schema.prisma` issues:
 - [x] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
 - [x] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
 - [x] Create **shared** `shared/src/context/AuthContext.tsx`:
-  - [ ] Store JWT token in HTTP-Only Cookie (Secure, SameSite) - ✅ SECURE
-  - [ ] Store user info in client state/memory (minimal profile in localStorage allowed if non-sensitive)
+  - [x] Store JWT token in localStorage (Bearer token approach)
+  - [x] Decode user info from token on mount (user is decoded from token, not stored separately)
   - [x] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
-  - [x] Load user from localStorage on mount
+  - [x] Load user from token on mount
   - [x] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)
 - [x] Create **shared** `shared/src/hooks/useLogin.ts`:
   - [x] Uses `useMutation` from TanStack Query
@@ -184,7 +184,7 @@ Current `backend/prisma/schema.prisma` issues:
     - [x] User app: `/month-history` - protected route (placeholder page for now)
     - [x] Admin app: `/client-management` - protected route with `requireAdmin=true` (placeholder page for now)
   - [x] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
-- [x] **Note**: `ApiClient.ts` already includes `Authorization: Bearer <token>` header (shared)
+- [x] **Note**: `ApiClient.ts` includes `Authorization: Bearer <token>` header (shared) - token stored in localStorage
 - **Validation**: Users can login, token persists on refresh, protected routes work, redirects to correct pages after login
 - [x] **Tests**: Unit tests for AuthContext, ProtectedRoute, ApiClient logic
 

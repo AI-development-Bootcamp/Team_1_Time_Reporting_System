@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { useAuth, AuthContextProvider } from '../context/AuthContext';
+import dayjs from 'dayjs';
 
 // Mock JWT decoder to return a valid user
 vi.mock('../utils/JwtDecoder', () => ({
@@ -25,7 +26,8 @@ describe('useAuth', () => {
   // Create a mock valid token (not expired for 1 hour)
   const createMockToken = () => {
     const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+    // Use dayjs to compute exp in seconds (Unix timestamp)
+    const payload = btoa(JSON.stringify({ exp: dayjs().add(1, 'hour').unix() }));
     const signature = 'mock-signature';
     return `${header}.${payload}.${signature}`;
   };

@@ -5,7 +5,8 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const port = parseInt(env.FRONTEND_ADMIN_PORT || '5173', 10);
+  const parsedPort = parseInt(env.FRONTEND_ADMIN_PORT || '5173', 10);
+  const port = Number.isNaN(parsedPort) || !Number.isInteger(parsedPort) ? 5173 : parsedPort;
 
   return {
     plugins: [react()],

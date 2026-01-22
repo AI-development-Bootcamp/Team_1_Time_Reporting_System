@@ -624,7 +624,6 @@ Create a time log entry for a DailyAttendance.
 
 ## GET `/time-logs?dailyAttendanceId=701`
 List time logs for a specific day.
-a s
 ### 200 OK
 ```json
 {
