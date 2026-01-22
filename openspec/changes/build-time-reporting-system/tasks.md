@@ -1430,13 +1430,13 @@ backend/src/
     - [x] Props: `report`, `index`, `onUpdate`, `onDelete`, `taskLookup`
   - [x] Create `ProjectReportCard.module.css`
 
-- [ ] TASK-M2-020-FE-016: Create ProgressTracker component
-  - [ ] Create `components/DailyReport/ProgressTracker.tsx`:
-    - [ ] Display current/target: "X מתוך Y שעות"
-    - [ ] Display missing: "חסרות Z שעות לדיווח" (if incomplete)
-    - [ ] Visual progress bar (fills orange, 100% when complete)
-    - [ ] Props: `current` (minutes), `target` (minutes)
-  - [ ] Create `ProgressTracker.module.css`
+- [x] TASK-M2-020-FE-016: Create ProgressTracker component
+  - [x] Create `components/DailyReport/ProgressTracker.tsx`:
+    - [x] Display current/target: "X מתוך Y שעות"
+    - [x] Display missing: "חסרות Z שעות לדיווח" (if incomplete)
+    - [x] Visual progress bar (fills orange, 100% when complete)
+    - [x] Props: `current` (minutes), `target` (minutes)
+  - [x] Create `ProgressTracker.module.css`
 
 **Frontend - Absence Report Tab:**
 - [ ] TASK-M2-020-FE-017: Create AbsenceReportTab component

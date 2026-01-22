@@ -1,0 +1,194 @@
+/**
+ * ProgressTracker Styles
+ * RTL-supported, mobile-first progress indicator
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  direction: rtl;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* ============================================================================
+ * Header
+ * ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ============================================================================
+ * Percentage Display
+ * ============================================================================ */
+
+.percentageComplete {
+  color: #51cf66;
+}
+
+.percentageIncomplete {
+  color: #ffa94d;
+}
+
+/* ============================================================================
+ * Progress Bar
+ * ============================================================================ */
+
+.progressBar {
+  width: 100%;
+  height: 24px;
+  background: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Orange fill when incomplete */
+.fillIncomplete {
+  background: linear-gradient(90deg, #ffa94d 0%, #fd7e14 100%);
+}
+
+/* Green fill when complete */
+.fillComplete {
+  background: linear-gradient(90deg, #51cf66 0%, #37b24d 100%);
+}
+
+/* ============================================================================
+ * Missing Time Display
+ * ============================================================================ */
+
+.missingText {
+  text-align: center;
+  font-style: italic;
+}
+
+/* ============================================================================
+ * Complete Message
+ * ============================================================================ */
+
+.completeText {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .container {
+    padding: 1.25rem;
+  }
+
+  .progressBar {
+    height: 28px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .progressBar {
+    height: 32px;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.container:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.progressFill {
+  animation: fillAnimation 0.5s ease-out;
+}
+
+@keyframes fillAnimation {
+  from {
+    width: 0;
+  }
+}
+
+/* Pulse animation for complete state */
+.fillComplete {
+  animation: fillAnimation 0.5s ease-out, pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+/* Progress bar fills from right to left in RTL */
+.progressBar {
+  direction: ltr; /* Keep progress bar LTR for proper width animation */
+}
+
+.progressFill {
+  direction: ltr;
+}
+
+/* Text remains RTL */
+.header,
+.missingText,
+.completeText {
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Print Styles
+ * ============================================================================ */
+
+@media print {
+  .container {
+    border: 1px solid #000;
+    page-break-inside: avoid;
+  }
+
+  .progressBar {
+    border: 1px solid #000;
+  }
+
+  .progressFill {
+    background: #ccc !important;
+  }
+}

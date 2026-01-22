@@ -9,3 +9,4 @@ export { TimePickerModal } from './TimePickerModal';
 export { DatePickerModal } from './DatePickerModal';
 export { ProjectReportsList } from './ProjectReportsList';
 export { ProjectReportCard } from './ProjectReportCard';
+export { ProgressTracker } from './ProgressTracker';
