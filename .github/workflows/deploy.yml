@@ -89,8 +89,6 @@ jobs:
 
       - name: Run Integration Tests
         run: npm run test:integration
-        env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
 
   # 3. Deployment - Runs on merge/push to main after tests pass, or on fix branches for testing (deploy)
   deploy:
