@@ -1439,16 +1439,16 @@ backend/src/
   - [x] Create `ProgressTracker.module.css`
 
 **Frontend - Absence Report Tab:**
-- [ ] TASK-M2-020-FE-017: Create AbsenceReportTab component
-  - [ ] Create `components/DailyReport/AbsenceReportTab.tsx`:
-    - [ ] Date selector (same as WorkReportTab)
-    - [ ] Absence type dropdown (default: מחלה):
-      - [ ] Options: חופשה - חצי יום, חופשה - יום מלא, מחלה 😷, מילואים 🪖
-    - [ ] FileUpload component (for sickness/reserves documentation)
-    - [ ] "לדווח על היעדרות יותר מיום אחד" button → DateRangePickerModal
-    - [ ] Save button (always enabled, no validation required)
-    - [ ] Use `useMutation` for POST /api/attendance (non-work status)
-  - [ ] Create `AbsenceReportTab.module.css`
+- [x] TASK-M2-020-FE-017: Create AbsenceReportTab component
+  - [x] Create `components/DailyReport/AbsenceReportTab.tsx`:
+    - [x] Date selector (same as WorkReportTab)
+    - [x] Absence type dropdown (default: מחלה):
+      - [x] Options: חופשה - חצי יום, חופשה - יום מלא, מחלה 😷, מילואים 🪖
+    - [x] FileUpload component (for sickness/reserves documentation)
+    - [x] "לדווח על היעדרות יותר מיום אחד" button → DateRangePickerModal
+    - [x] Save button (always enabled, no validation required)
+    - [x] Use `useMutation` for POST /api/attendance (non-work status)
+  - [x] Create `AbsenceReportTab.module.css`
 
 - [ ] TASK-M2-020-FE-018: Create FileUpload component
   - [ ] Create `components/DailyReport/FileUpload.tsx`:
