@@ -43,9 +43,11 @@ jobs:
     name: Integration Tests
     needs: unit-tests
     if: |
-      (github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')) ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'push' && (contains(github.ref, '/feature/') || contains(github.ref, '/fix/')))
+      github.ref != 'refs/heads/bridge_to_dev' && (
+        (github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'push' && (contains(github.ref, '/feature/') || contains(github.ref, '/fix/')))
+      )
     runs-on: ubuntu-latest
     
     services:
