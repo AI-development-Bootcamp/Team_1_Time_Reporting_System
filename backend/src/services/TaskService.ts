@@ -9,7 +9,7 @@ type CreateTaskInput = z.infer<typeof createTaskSchema>;
 type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 
 export class TaskService {
-  static async getTasks(filters: { projectId?: bigint; status?: 'open' | 'closed' }) {
+  static async getTasks(filters: { projectId?: bigint; status?: 'open' | 'closed' | 'all' }) {
     let statusFilter: 'open' | 'closed' | undefined;
     if (filters.status === 'closed') {
       statusFilter = 'closed';
