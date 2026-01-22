@@ -1,0 +1,321 @@
+/**
+ * DeleteProjectConfirmModal Styles
+ * RTL-supported, mobile-first confirmation modal component
+ */
+
+/* ============================================================================
+ * Modal Container
+ * ============================================================================ */
+
+.modalContent {
+  direction: rtl;
+  border-radius: 12px;
+  padding: 0;
+}
+
+.modalBody {
+  padding: 2rem 1.5rem;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Warning Icon
+ * ============================================================================ */
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(250, 176, 5, 0.1); /* Light yellow background */
+  margin: 0 auto;
+}
+
+.warningIcon {
+  color: #fab005; /* Yellow warning color */
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================================================
+ * Text Content
+ * ============================================================================ */
+
+.title {
+  color: #212529;
+  direction: rtl;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.message {
+  color: #868e96;
+  direction: rtl;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+ * Project Badge
+ * ============================================================================ */
+
+.projectBadge {
+  background: #e7f5ff; /* Light blue background */
+  border: 1px solid #74c0fc; /* Blue border */
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  direction: rtl;
+  text-align: center;
+  max-width: 90%;
+  word-wrap: break-word;
+}
+
+.projectBadge > * {
+  color: #1864ab; /* Dark blue text */
+}
+
+/* ============================================================================
+ * Buttons
+ * ============================================================================ */
+
+.buttonGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Cancel Button - Light Grey */
+.cancelButton {
+  width: 100%;
+  background: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* Confirm Delete Button - Navy Blue */
+.confirmButton {
+  width: 100%;
+  background: #1c7ed6; /* Navy blue */
+  color: white;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.confirmButton:hover {
+  background: #1864ab; /* Darker navy blue */
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .modalBody {
+    padding: 1.5rem 1rem;
+  }
+
+  .iconContainer {
+    width: 80px;
+    height: 80px;
+  }
+
+  .warningIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+
+  .message {
+    font-size: 0.875rem;
+    max-width: 95%;
+  }
+
+  .projectBadge {
+    padding: 0.375rem 0.75rem;
+    max-width: 95%;
+  }
+
+  .projectBadge > * {
+    font-size: 0.875rem;
+  }
+
+  .buttonGroup {
+    gap: 0.625rem;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .modalBody {
+    padding: 2rem 1.5rem;
+  }
+
+  .buttonGroup {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    width: auto;
+    min-width: 160px;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .modalBody {
+    padding: 2.5rem 2rem;
+  }
+
+  .iconContainer {
+    width: 110px;
+    height: 110px;
+  }
+
+  .warningIcon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .message {
+    font-size: 1rem;
+  }
+
+  .projectBadge {
+    padding: 0.5rem 1rem;
+  }
+
+  .projectBadge > * {
+    font-size: 1rem;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    min-width: 180px;
+    padding: 0.875rem 1.75rem;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.modalContent,
+.modalBody,
+.title,
+.message,
+.projectBadge {
+  direction: rtl;
+  text-align: center;
+}
+
+.buttonGroup {
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.cancelButton:focus-visible,
+.confirmButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Fade in animation for modal content */
+.modalBody {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Project badge entrance animation */
+.projectBadge {
+  animation: slideIn 0.3s ease-out 0.1s backwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button press animation */
+.cancelButton:active,
+.confirmButton:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Disabled state */
+.cancelButton:disabled,
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelButton:disabled:hover,
+.confirmButton:disabled:hover {
+  background: inherit;
+}

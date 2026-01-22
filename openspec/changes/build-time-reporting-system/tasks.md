@@ -1544,16 +1544,16 @@ backend/src/
     - [x] Props: `isOpen`, `onClose`, `onConfirm`, `missingHours`
   - [x] Create `IncompleteHoursModal.module.css`
 
-- [ ] TASK-M2-020-FE-027: Create DeleteProjectConfirmModal component
-  - [ ] Create `components/DailyReport/DeleteProjectConfirmModal.tsx`:
-    - [ ] Yellow warning icon
-    - [ ] Title: "למחוק את פרויקט זה מהדוווח?"
-    - [ ] Message: "הפעולה תסיר את כל השיוכים של הפרויקט מזה תדווח השעות. האם אתה בטוח שהרצת להמשיך?"
-    - [ ] Two buttons:
-      - [ ] "מעדיף שלא למחוק" (cancel)
-      - [ ] "מחק את הפרויקט" (confirm delete, navy blue)
-    - [ ] Props: `isOpen`, `onClose`, `onConfirm`, `projectName`
-  - [ ] Create `DeleteProjectConfirmModal.module.css`
+- [x] TASK-M2-020-FE-027: Create DeleteProjectConfirmModal component
+  - [x] Create `components/DailyReport/DeleteProjectConfirmModal.tsx`:
+    - [x] Yellow warning icon
+    - [x] Title: "למחוק את פרויקט זה מהדוווח?"
+    - [x] Message: "הפעולה תסיר את כל השיוכים של הפרויקט מזה תדווח השעות. האם אתה בטוח שהרצת להמשיך?"
+    - [x] Two buttons:
+      - [x] "מעדיף שלא למחוק" (cancel)
+      - [x] "מחק את הפרויקט" (confirm delete, navy blue)
+    - [x] Props: `isOpen`, `onClose`, `onConfirm`, `projectName`
+  - [x] Create `DeleteProjectConfirmModal.module.css`
 
 **Frontend - Integration:**
 - [ ] TASK-M2-020-FE-028: Integrate modal with MonthHistory
