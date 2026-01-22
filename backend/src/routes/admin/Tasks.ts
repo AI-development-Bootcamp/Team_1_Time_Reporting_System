@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { TaskController } from '../../controllers/TaskController';
+import { authMiddleware } from '../../middleware/AuthMiddleware';
+import { adminMiddleware } from '../../middleware/Admin';
 
 const router = Router();
+
+// Apply auth and admin middleware to all routes
+router.use(authMiddleware);
+router.use(adminMiddleware);
 
 /**
  * GET /api/admin/tasks

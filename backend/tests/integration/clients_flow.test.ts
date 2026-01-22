@@ -4,6 +4,10 @@ import request from 'supertest';
 import { errorHandler } from '../../src/middleware/ErrorHandler';
 import clientsRouter from '../../src/routes/admin/Clients';
 import { prisma } from '../../src/utils/prisma';
+import { Bcrypt } from '../../src/utils/Bcrypt';
+import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
+
 const app = express();
 app.use(express.json());
 app.use('/api/admin/clients', clientsRouter);
@@ -11,10 +15,46 @@ app.use(errorHandler);
 
 describe('Clients API Integration Tests', () => {
   let createdClientIds: bigint[] = [];
+  let adminUser: User;
+  const originalSecret = process.env.JWT_SECRET;
+
+  // Helper to create admin token
+  const createAdminToken = (user: User) => {
+    return jwt.sign(
+      {
+        userId: user.id.toString(),
+        userType: 'admin',
+        user: {
+          id: Number(user.id),
+          name: user.name,
+          mail: user.mail,
+          userType: 'admin',
+          active: true,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        },
+      },
+      'test-secret-key',
+      { expiresIn: '24h' }
+    );
+  };
 
   beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-secret-key';
     // Ensure database connection
     await prisma.$connect();
+
+    // Create admin user for authentication
+    const adminPassword = await Bcrypt.hash('AdminPass123!');
+    adminUser = await prisma.user.create({
+      data: {
+        name: 'Admin Test User',
+        mail: `admin-clients-${Date.now()}@example.com`,
+        password: adminPassword,
+        userType: 'admin',
+        active: true,
+      },
+    });
   });
 
   afterAll(async () => {
@@ -26,7 +66,12 @@ describe('Clients API Integration Tests', () => {
         },
       });
     }
+    // Clean up admin user
+    if (adminUser) {
+      await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => {});
+    }
     await prisma.$disconnect();
+    process.env.JWT_SECRET = originalSecret;
   });
 
   beforeEach(() => {
@@ -37,8 +82,10 @@ describe('Clients API Integration Tests', () => {
   describe('Full CRUD Workflow', () => {
     it('should create, read, update, and soft delete a client', async () => {
       // CREATE
+      const token = createAdminToken(adminUser);
       const createResponse = await request(app)
         .post('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Integration Test Client ${Date.now()}`,
           description: 'Test client for integration testing',
@@ -61,6 +108,7 @@ describe('Clients API Integration Tests', () => {
       // READ - Get all clients (should include our new client)
       const listResponse = await request(app)
         .get('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(listResponse.body.success).toBe(true);
@@ -73,6 +121,7 @@ describe('Clients API Integration Tests', () => {
       // UPDATE
       const updateResponse = await request(app)
         .put(`/api/admin/clients/${clientId}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Updated Integration Test Client',
           description: 'Updated description',
@@ -91,6 +140,7 @@ describe('Clients API Integration Tests', () => {
       // SOFT DELETE
       const deleteResponse = await request(app)
         .delete(`/api/admin/clients/${clientId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(deleteResponse.body.success).toBe(true);
@@ -104,6 +154,7 @@ describe('Clients API Integration Tests', () => {
       // Verify client is hidden from default list
       const listAfterDeleteResponse = await request(app)
         .get('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       const hiddenClient = listAfterDeleteResponse.body.data.find(
@@ -113,11 +164,13 @@ describe('Clients API Integration Tests', () => {
     });
 
     it('should handle duplicate client name conflict', async () => {
+      const token = createAdminToken(adminUser);
       const clientName = `Duplicate Test Client ${Date.now()}`;
 
       // Create first client
       const firstResponse = await request(app)
         .post('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: clientName,
           description: 'First client',
@@ -130,6 +183,7 @@ describe('Clients API Integration Tests', () => {
       // Try to create duplicate
       const duplicateResponse = await request(app)
         .post('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: clientName,
           description: 'Duplicate client',
@@ -148,9 +202,11 @@ describe('Clients API Integration Tests', () => {
     });
 
     it('should filter clients by active status', async () => {
+      const token = createAdminToken(adminUser);
       // Create active client
       const activeResponse = await request(app)
         .post('/api/admin/clients')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Active Client ${Date.now()}`,
         })
@@ -162,11 +218,13 @@ describe('Clients API Integration Tests', () => {
       // Soft delete it
       await request(app)
         .delete(`/api/admin/clients/${activeClientId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       // Get active clients (should not include deleted one)
       const activeListResponse = await request(app)
         .get('/api/admin/clients?active=true')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       const foundInActive = activeListResponse.body.data.find(
