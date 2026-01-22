@@ -10,20 +10,25 @@ type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
 // Helper to convert a Project entity into a JSON-safe response object
 function mapProjectToResponse(project: Project) {
-  return {
-    // Keep IDs as strings (BigInt serialized) to match client ID representation
-    id: project.id.toString(),
-    name: project.name,
-    clientId: project.clientId.toString(),
-    projectManagerId: project.projectManagerId.toString(),
-    startDate: project.startDate ? project.startDate.toISOString().slice(0, 10) : null, // YYYY-MM-DD
-    endDate: project.endDate ? project.endDate.toISOString().slice(0, 10) : null,
-    description: project.description,
-    reportingType: project.reportingType as ReportingType,
-    active: project.active,
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
-  };
+  try {
+    return {
+      // Keep IDs as strings (BigInt serialized) to match client ID representation
+      id: project.id?.toString() || '',
+      name: project.name || '',
+      clientId: project.clientId?.toString() || '',
+      projectManagerId: project.projectManagerId?.toString() || '',
+      startDate: project.startDate ? project.startDate.toISOString().slice(0, 10) : null, // YYYY-MM-DD
+      endDate: project.endDate ? project.endDate.toISOString().slice(0, 10) : null,
+      description: project.description || null,
+      reportingType: (project.reportingType || 'startEnd') as ReportingType,
+      active: project.active ?? true,
+      createdAt: project.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: project.updatedAt?.toISOString() || new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Error mapping project to response:', error, project);
+    throw error;
+  }
 }
 
 export class ProjectService {
@@ -31,6 +36,7 @@ export class ProjectService {
     const activeFilter = filters.active !== undefined ? filters.active : true;
 
     try {
+      // Handle empty tables gracefully - return empty array if query fails due to missing table
       const projects = await prisma.project.findMany({
         where: {
           ...(filters.clientId && { clientId: filters.clientId }),
@@ -41,9 +47,25 @@ export class ProjectService {
         },
       });
 
+      // If no projects found, return empty array (this is valid)
+      if (!projects || projects.length === 0) {
+        return [];
+      }
+
+      // Map projects to response format
       return projects.map(mapProjectToResponse);
     } catch (error) {
       console.error('Error in ProjectService.getProjects:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        // Only return empty array if table doesn't exist (schema not migrated)
+        const errorMessage = error.message.toLowerCase();
+        if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
+          console.warn('Projects table does not exist - database may need migration');
+          return [];
+        }
+      }
       throw error;
     }
   }
