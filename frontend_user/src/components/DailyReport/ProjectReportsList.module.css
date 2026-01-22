@@ -1,0 +1,193 @@
+/**
+ * ProjectReportsList Styles
+ * RTL-supported, mobile-first list layout
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Header
+ * ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+/* ============================================================================
+ * Reports List
+ * ============================================================================ */
+
+.reportsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reportCard {
+  /* Placeholder for ProjectReportCard component */
+  width: 100%;
+}
+
+/* ============================================================================
+ * Placeholder Card (temporary until ProjectReportCard is implemented)
+ * ============================================================================ */
+
+.placeholder {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-right: 3px solid #228be6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.placeholder:hover {
+  background: #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.placeholderActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* ============================================================================
+ * Empty State
+ * ============================================================================ */
+
+.emptyState {
+  padding: 2rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ced4da;
+  text-align: center;
+}
+
+/* ============================================================================
+ * Add Button
+ * ============================================================================ */
+
+.addButton {
+  width: 100%;
+  height: 44px;
+  border: 2px dashed #228be6;
+  background: white;
+  color: #228be6;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background: #e7f5ff;
+  border-color: #1971c2;
+  border-style: solid;
+}
+
+.addButton:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .reportsList {
+    gap: 1rem;
+  }
+
+  .placeholder {
+    padding: 1.25rem;
+  }
+
+  .addButton {
+    height: 48px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .emptyState {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.addButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.reportCard {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+/* Ensure placeholder border is on the right in RTL */
+.placeholder {
+  border-right: 3px solid #228be6;
+  border-left: none;
+}
+
+/* RTL animation direction */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px); /* From right in RTL */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .addButton {
+    min-height: 48px;
+  }
+
+  .placeholderActions button {
+    min-height: 36px;
+    padding: 0.5rem 1rem;
+  }
+}

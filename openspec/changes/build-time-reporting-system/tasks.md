@@ -1405,14 +1405,14 @@ backend/src/
     - [x] Props: `isOpen`, `onClose`, `value`, `onChange`
   - [x] Create `DatePickerModal.module.css`
 
-- [ ] TASK-M2-020-FE-014: Create ProjectReportsList component
-  - [ ] Create `components/DailyReport/ProjectReportsList.tsx`:
-    - [ ] Section title: "דיווח פרויקטים"
-    - [ ] Render list of ProjectReportCard components
-    - [ ] "הוספת פרויקט" button (blue link with + icon)
-    - [ ] Empty state: show only "הוספת פרויקט" button
-    - [ ] Props: `reports[]`, `onAdd`, `onEdit`, `onDelete`
-  - [ ] Create `ProjectReportsList.module.css`
+- [x] TASK-M2-020-FE-014: Create ProjectReportsList component
+  - [x] Create `components/DailyReport/ProjectReportsList.tsx`:
+    - [x] Section title: "דיווח פרויקטים"
+    - [x] Render list of ProjectReportCard components
+    - [x] "הוספת פרויקט" button (blue link with + icon)
+    - [x] Empty state: show only "הוספת פרויקט" button
+    - [x] Props: `reports[]`, `onAdd`, `onEdit`, `onDelete`
+  - [x] Create `ProjectReportsList.module.css`
 
 - [ ] TASK-M2-020-FE-015: Create ProjectReportCard component
   - [ ] Create `components/DailyReport/ProjectReportCard.tsx`:
