@@ -11,13 +11,20 @@ export class TaskController {
       // For now, this endpoint is accessible without auth (will be secured by Member 1)
 
       // Query param: projectId (optional filter) - validate with Zod
+      // Special case: "all" means no filter (show tasks from all projects)
       let projectIdFilter: bigint | undefined;
       if (req.query.projectId) {
-        try {
-          const queryValidation = projectIdQuerySchema.parse({ projectId: req.query.projectId });
-          projectIdFilter = queryValidation.projectId;
-        } catch (error) {
-          throw new AppError('VALIDATION_ERROR', 'Invalid projectId parameter', 400);
+        const projectIdValue = String(req.query.projectId);
+        if (projectIdValue === 'all') {
+          // "all" means no filter - don't set projectIdFilter
+          projectIdFilter = undefined;
+        } else {
+          try {
+            const queryValidation = projectIdQuerySchema.parse({ projectId: req.query.projectId });
+            projectIdFilter = queryValidation.projectId;
+          } catch (error) {
+            throw new AppError('VALIDATION_ERROR', 'Invalid projectId parameter', 400);
+          }
         }
       }
 

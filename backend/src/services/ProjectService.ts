@@ -16,7 +16,7 @@ function mapProjectToResponse(project: Project) {
     name: project.name,
     clientId: project.clientId.toString(),
     projectManagerId: project.projectManagerId.toString(),
-    startDate: project.startDate.toISOString().slice(0, 10), // YYYY-MM-DD
+    startDate: project.startDate ? project.startDate.toISOString().slice(0, 10) : null, // YYYY-MM-DD
     endDate: project.endDate ? project.endDate.toISOString().slice(0, 10) : null,
     description: project.description,
     reportingType: project.reportingType as ReportingType,
@@ -30,17 +30,22 @@ export class ProjectService {
   static async getProjects(filters: { clientId?: bigint; active?: boolean }) {
     const activeFilter = filters.active !== undefined ? filters.active : true;
 
-    const projects = await prisma.project.findMany({
-      where: {
-        ...(filters.clientId && { clientId: filters.clientId }),
-        active: activeFilter,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    try {
+      const projects = await prisma.project.findMany({
+        where: {
+          ...(filters.clientId && { clientId: filters.clientId }),
+          active: activeFilter,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
 
-    return projects.map(mapProjectToResponse);
+      return projects.map(mapProjectToResponse);
+    } catch (error) {
+      console.error('Error in ProjectService.getProjects:', error);
+      throw error;
+    }
   }
 
   static async createProject(data: CreateProjectInput) {
