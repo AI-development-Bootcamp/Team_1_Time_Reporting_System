@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@components/ErrorBoundary';
 import { AppLayout } from '@components/Layout/AppLayout';
 import { ClientsPage } from '@pages/ClientsPage';
 import ReportingSettingsPage from '@pages/ReportingSettingsPage';
+import { UserManagementPage } from '@pages/UserManagementPage';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -35,6 +36,17 @@ const AppRoutes = () => {
           <ProtectedRoute requireAdmin>
             <AppLayout>
               <ReportingSettingsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/client-management/modify-user"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AppLayout>
+              <UserManagementPage />
             </AppLayout>
           </ProtectedRoute>
         }
