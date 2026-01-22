@@ -1460,15 +1460,15 @@ backend/src/
     - [x] Props: `file`, `onUpload`, `onDelete`
   - [x] Create `FileUpload.module.css`
 
-- [ ] TASK-M2-020-FE-019: Create DateRangePickerModal component
-  - [ ] Create `components/DailyReport/DateRangePickerModal.tsx`:
-    - [ ] Title: "דיווח היעדרות לפי טווח"
-    - [ ] Two date fields: "תאריך התחלה" + "תאריך סיום" (each opens calendar)
-    - [ ] Calculate and show: "סה"כ ימי דיווח: X ימים" (in blue)
-    - [ ] Validate: endDate >= startDate
-    - [ ] "שמירה" and "נקה" buttons
-    - [ ] Props: `isOpen`, `onClose`, `onSave`
-  - [ ] Create `DateRangePickerModal.module.css`
+- [x] TASK-M2-020-FE-019: Create DateRangePickerModal component
+  - [x] Create `components/DailyReport/DateRangePickerModal.tsx`:
+    - [x] Title: "דיווח היעדרות לפי טווח"
+    - [x] Two date fields: "תאריך התחלה" + "תאריך סיום" (each opens calendar)
+    - [x] Calculate and show: "סה"כ ימי דיווח: X ימים" (in blue)
+    - [x] Validate: endDate >= startDate
+    - [x] "שמירה" and "נקה" buttons
+    - [x] Props: `isOpen`, `onClose`, `onSave`
+  - [x] Create `DateRangePickerModal.module.css`
 
 **Frontend - Project Selector (3-Step Modal):**
 - [ ] TASK-M2-020-FE-020: Create ProjectSelectorModal component

@@ -8,6 +8,7 @@ export { WorkReportTab } from './WorkReportTab';
 export { AbsenceReportTab } from './AbsenceReportTab';
 export { TimePickerModal } from './TimePickerModal';
 export { DatePickerModal } from './DatePickerModal';
+export { DateRangePickerModal } from './DateRangePickerModal';
 export { ProjectReportsList } from './ProjectReportsList';
 export { ProjectReportCard } from './ProjectReportCard';
 export { ProgressTracker } from './ProgressTracker';
