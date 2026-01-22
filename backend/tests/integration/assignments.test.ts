@@ -285,8 +285,14 @@ describe('GET /api/admin/assignments/:taskId/users - Database Integration', () =
         expect(inactiveWorkers[0].id).toBe(inactiveWorkerUserId);
     });
 
-    it('should throw error if task does not exist', async () => {
-        const nonExistentTaskId = BigInt(999999);
+    it('should return null when querying non-existent task', async () => {
+        // Use a very large offset to ensure the task doesn't exist
+        // Find max task ID and add a large offset to guarantee non-existence
+        const maxTask = await prisma.task.findFirst({
+            orderBy: { id: 'desc' },
+            select: { id: true },
+        });
+        const nonExistentTaskId = maxTask ? maxTask.id + BigInt(999999) : BigInt(999999);
 
         const task = await prisma.task.findUnique({
             where: { id: nonExistentTaskId },

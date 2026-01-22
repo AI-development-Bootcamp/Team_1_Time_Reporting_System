@@ -272,14 +272,14 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
 
         expect(response.body.data).toEqual(
             expect.arrayContaining([
-                { id: Number(workerUserId1), name: 'Test Worker Alpha' },
-                { id: Number(workerUserId2), name: 'Test Worker Beta' },
+                { id: String(workerUserId1), name: 'Test Worker Alpha' },
+                { id: String(workerUserId2), name: 'Test Worker Beta' },
             ])
         );
 
         // Should not include inactive worker
         const inactiveWorkerInResponse = response.body.data.find(
-            (w: { id: number }) => w.id === Number(inactiveWorkerUserId)
+            (w: { id: string }) => w.id === String(inactiveWorkerUserId)
         );
         expect(inactiveWorkerInResponse).toBeUndefined();
     });
@@ -296,7 +296,12 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
     });
 
     it('should return 404 if task does not exist', async () => {
-        const nonExistentTaskId = 999999;
+        // Compute guaranteed-missing ID by finding max task ID and adding large offset
+        const maxTask = await prisma.task.findFirst({
+            orderBy: { id: 'desc' },
+            select: { id: true },
+        });
+        const nonExistentTaskId = maxTask ? maxTask.id + BigInt(999999) : BigInt(999999);
         const response = await request(app)
             .get(`/api/admin/assignments/${nonExistentTaskId}/users`)
             .set('Authorization', `Bearer ${adminToken}`);
@@ -328,7 +333,7 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
     });
 
     interface WorkerSummary {
-        id: number;
+        id: string;
         name: string;
     }
 
@@ -344,7 +349,7 @@ describe('GET /api/admin/assignments/:taskId/users - HTTP Integration', () => {
             expect(Object.keys(worker)).toEqual(['id', 'name']);
             expect(worker).toHaveProperty('id');
             expect(worker).toHaveProperty('name');
-            expect(typeof worker.id).toBe('number');
+            expect(typeof worker.id).toBe('string');
             expect(typeof worker.name).toBe('string');
         });
     });

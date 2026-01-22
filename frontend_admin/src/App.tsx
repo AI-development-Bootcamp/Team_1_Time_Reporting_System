@@ -11,7 +11,12 @@ import ReportingSettingsPage from '@pages/ReportingSettingsPage';
 import { UserManagementPage } from '@pages/UserManagementPage';
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth to load before making navigation decisions
+  if (isLoading) {
+    return null; // Or return a loading spinner component
+  }
 
   return (
     <Routes>

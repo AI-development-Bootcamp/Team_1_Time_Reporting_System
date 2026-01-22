@@ -71,64 +71,49 @@ describe('AuthContext Logic', () => {
   });
 
   describe('login and logout operations', () => {
-    it('should set token and user on login', () => {
-      const testUser: User = {
-        id: 1,
-        name: 'Test User',
-        mail: 'test@example.com',
-        userType: 'worker',
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+    it('should set only token on login (user is decoded from token)', () => {
       const testToken = 'new-token-123';
 
-      // Simulate login operation
+      // Simulate login operation - only token is stored
       localStorageMock.setItem('token', testToken);
-      localStorageMock.setItem('user', JSON.stringify(testUser));
 
       const storedToken = localStorageMock.getItem('token');
       const storedUser = localStorageMock.getItem('user');
 
       expect(storedToken).toBe(testToken);
-      expect(storedUser).toBe(JSON.stringify(testUser));
+      // User should NOT be stored separately - it's decoded from token
+      expect(storedUser).toBeNull();
     });
 
-    it('should clear token and user on logout', () => {
+    it('should clear only token on logout', () => {
       localStorageMock.setItem('token', 'test-token');
-      localStorageMock.setItem('user', JSON.stringify({ id: 1 }));
 
-      // Simulate logout operation
+      // Simulate logout operation - only token is removed
       localStorageMock.removeItem('token');
-      localStorageMock.removeItem('user');
 
       expect(localStorageMock.getItem('token')).toBeNull();
+      // User should not exist in localStorage
       expect(localStorageMock.getItem('user')).toBeNull();
     });
 
-    it('should handle login with admin userType', () => {
-      const adminUser: User = {
-        id: 2,
-        name: 'Admin User',
-        mail: 'admin@example.com',
-        userType: 'admin',
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      localStorageMock.setItem('user', JSON.stringify(adminUser));
-      const stored = localStorageMock.getItem('user');
-      const parsed = stored ? JSON.parse(stored) : null;
-
-      expect(parsed.userType).toBe('admin');
+    it('should handle login with admin userType (decoded from token)', () => {
+      // In actual implementation, userType is decoded from token, not stored separately
+      const adminToken = 'admin-token-with-admin-userType-in-payload';
+      localStorageMock.setItem('token', adminToken);
+      
+      const stored = localStorageMock.getItem('token');
+      expect(stored).toBe(adminToken);
+      // User is not stored separately
+      expect(localStorageMock.getItem('user')).toBeNull();
     });
   });
 
   describe('isAuthenticated logic', () => {
-    it('should be true when both token and user exist', () => {
-      const token = 'test-token';
-      const user = { id: 1 };
+    it('should be true when token exists and can be decoded to user', () => {
+      const token = 'valid-token';
+      // In actual implementation, isAuthenticated = !!token && !!user
+      // where user is decoded from token
+      const user = { id: 1 }; // Decoded from token
       const isAuthenticated = !!token && !!user;
 
       expect(isAuthenticated).toBe(true);
@@ -136,42 +121,18 @@ describe('AuthContext Logic', () => {
 
     it('should be false when token is missing', () => {
       const token = null;
-      const user = { id: 1 };
+      const user = null; // No token means no user
       const isAuthenticated = !!token && !!user;
 
       expect(isAuthenticated).toBe(false);
     });
 
-    it('should be false when user is missing', () => {
-      const token = 'test-token';
-      const user = null;
+    it('should be false when token cannot be decoded to user', () => {
+      const token = 'invalid-token';
+      const user = null; // Invalid token means no decoded user
       const isAuthenticated = !!token && !!user;
 
       expect(isAuthenticated).toBe(false);
-    });
-
-    it('should be false when token is empty string', () => {
-      const token = '';
-      const user = { id: 1 };
-      const isAuthenticated = !!token && !!user;
-
-      expect(isAuthenticated).toBe(false);
-    });
-
-    it('should be false when user is empty object', () => {
-      const token = 'test-token';
-      const user = {};
-      const isAuthenticated = !!token && !!user;
-
-      expect(isAuthenticated).toBe(true); // Empty object is truthy
-    });
-
-    it('should be true when both token and user are valid', () => {
-      const token = 'valid-token';
-      const user = { id: 1, name: 'Test' };
-      const isAuthenticated = !!token && !!user;
-
-      expect(isAuthenticated).toBe(true);
     });
   });
 

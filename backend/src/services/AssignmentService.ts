@@ -166,10 +166,10 @@ export class AssignmentService {
     const workers = assignments
       .filter((assignment) => assignment.user.active)
       .map((assignment) => ({
-        id: Number(assignment.user.id),
+        id: String(assignment.user.id),
         name: assignment.user.name,
       }));
 
-    return workers;
+    return serializeData(workers);
   }
 }
