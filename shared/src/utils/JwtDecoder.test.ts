@@ -31,6 +31,8 @@ describe('JwtDecoder', () => {
         });
 
         it('should return null for an expired token', () => {
+            const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
             const pastExp = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
             const payload = {
                 exp: pastExp,
@@ -47,6 +49,8 @@ describe('JwtDecoder', () => {
             const result = decodeJwtToken(token);
 
             expect(result).toBeNull();
+            expect(consoleSpy).toHaveBeenCalledWith('JWT token has expired');
+            consoleSpy.mockRestore();
         });
 
         it('should decode token without exp claim', () => {

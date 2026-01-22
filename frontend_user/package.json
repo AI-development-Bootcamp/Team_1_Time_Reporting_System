@@ -11,9 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@mantine/core": "^7.5.0",
-    "@mantine/form": "^7.5.0",
-    "@mantine/hooks": "^7.5.0",
+    "@mantine/core": "^7.17.8",
+    "@mantine/form": "^7.17.8",
+    "@mantine/hooks": "^7.17.8",
     "@mantine/notifications": "^7.17.8",
     "@tanstack/react-query": "^5.17.19",
     "@types/react-router-dom": "^5.3.3",

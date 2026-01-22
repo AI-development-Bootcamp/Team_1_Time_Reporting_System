@@ -70,4 +70,3 @@ export class ApiResponse {
     res.status(statusCode).json(response);
   }
 }
-

@@ -181,6 +181,20 @@ The system SHALL allow file uploads for absence documentation.
 
 ---
 
+### Requirement: Project Reporting Type Settings (Member 4)
+The system SHALL allow an admin to configure the reporting type per Project, and changes SHALL be saved immediately.
+
+#### Scenario: Default reporting type on new project
+- **GIVEN** an admin creates a new project
+- **WHEN** the project is persisted
+- **THEN** the project has `reportingType = "startEnd"` by default
+
+#### Scenario: Admin updates reporting type
+- **GIVEN** an admin is authenticated
+- **WHEN** PATCH `/api/admin/projects/:id` with `{ reportingType: "duration" }`
+- **THEN** the project reporting type is updated and persisted
+- **AND** the response indicates success
+
 ## Data Models Reference (Per `doc/models/data-models.md`)
 
 ```typescript

@@ -8,10 +8,13 @@ export default defineConfig({
     },
   },
   test: {
+    globals: true,
+    environment: 'node',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     testTimeout: 30000, // 30 seconds for HTTP integration tests
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'json', 'html'],
       include: [
         'src/controllers/**/*.ts',
         'src/services/**/*.ts',

@@ -4,22 +4,60 @@ import { AuthContextProvider } from '@shared/context/AuthContext';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute/ProtectedRoute';
 import { LoginPage } from '@shared/components/Login/LoginPage';
 import { useAuth } from '@shared/hooks/useAuth';
-import { ClientManagement } from '@pages/ClientManagement';
+import { ErrorBoundary } from '@components/ErrorBoundary';
+import { AppLayout } from '@components/Layout/AppLayout';
+import { ClientsPage } from '@pages/ClientsPage';
+import ReportingSettingsPage from '@pages/ReportingSettingsPage';
+import { UserManagementPage } from '@pages/UserManagementPage';
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth to load before making navigation decisions
+  if (isLoading) {
+    return null; // Or return a loading spinner component
+  }
 
   return (
     <Routes>
+      {/* Login route - redirect to /client-management if already authenticated */}
       <Route path="/login" element={isAuthenticated ? <Navigate to="/client-management" replace /> : <LoginPage appType="admin" />} />
+
+      {/* Protected admin routes */}
       <Route
         path="/client-management"
         element={
           <ProtectedRoute requireAdmin>
-            <ClientManagement />
+            <AppLayout>
+              <ClientsPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/client-management/reporting-setting"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AppLayout>
+              <ReportingSettingsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/client-management/modify-user"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AppLayout>
+              <UserManagementPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Root route - redirect to /login if not authenticated, otherwise to /client-management */}
       <Route path="/" element={<Navigate to={isAuthenticated ? '/client-management' : '/login'} replace />} />
     </Routes>
   );
@@ -27,20 +65,19 @@ const AppRoutes = () => {
 
 /**
  * Root component that initializes application routing and authentication context.
- *
  * Wraps the app's route tree with a router, RTL-configured MantineProvider, and the authentication provider.
- *
- * @returns The root JSX element containing the BrowserRouter, MantineProvider, AuthContextProvider, and AppRoutes
  */
 function App() {
   return (
     <DirectionProvider initialDirection="rtl">
       <MantineProvider>
-        <BrowserRouter>
-          <AuthContextProvider>
-            <AppRoutes />
-          </AuthContextProvider>
-        </BrowserRouter>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <AuthContextProvider>
+              <AppRoutes />
+            </AuthContextProvider>
+          </BrowserRouter>
+        </ErrorBoundary>
       </MantineProvider>
     </DirectionProvider>
   );

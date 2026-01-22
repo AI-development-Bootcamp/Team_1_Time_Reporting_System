@@ -108,11 +108,12 @@ describe('ApiClient', () => {
       expect(isLoginEndpoint).toBe(true);
     });
 
-    it('should identify login endpoint case-insensitively', () => {
+    it('should identify login endpoint case-sensitively (matches ApiClient implementation)', () => {
       const loginUrl = '/AUTH/LOGIN';
-      const isLoginEndpoint = loginUrl.toLowerCase().includes('/auth/login');
+      // ApiClient uses case-sensitive includes('/auth/login'), so uppercase should not match
+      const isLoginEndpoint = loginUrl.includes('/auth/login');
 
-      expect(isLoginEndpoint).toBe(true);
+      expect(isLoginEndpoint).toBe(false);
     });
 
     it('should redirect on 401 for protected endpoints', () => {

@@ -4,13 +4,14 @@ import { errorHandler } from './middleware/ErrorHandler';
 import authRoutes from './routes/auth.routes';
 import adminUsersRoutes from './routes/admin/Users';
 import assignmentsRoutes from './routes/admin/Assignments';
+import projectsRouter from './routes/admin/Projects';
+import clientsRouter from './routes/admin/Clients';
+import tasksRouter from './routes/admin/Tasks';
 
 /**
  * Create and configure Express app
  * This is exported for testing purposes
  */
-
-
 export const createApp = () => {
   const app = express();
 
@@ -43,7 +44,10 @@ export const createApp = () => {
   // Mount API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/admin', adminUsersRoutes);
-  app.use('/api/admin', assignmentsRoutes);
+  app.use('/api/admin/assignments', assignmentsRoutes);
+  app.use('/api/admin/projects', projectsRouter);
+  app.use('/api/admin/clients', clientsRouter);
+  app.use('/api/admin/tasks', tasksRouter);
 
   // Error handler must be last
   app.use(errorHandler);

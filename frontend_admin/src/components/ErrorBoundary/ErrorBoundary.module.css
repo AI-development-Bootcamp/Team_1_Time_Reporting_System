@@ -1,0 +1,12 @@
+.container {
+  margin-top: 100px;
+}
+
+.errorText {
+  font-family: monospace;
+}
+
+.errorStack {
+  font-family: monospace;
+  white-space: pre-wrap;
+}

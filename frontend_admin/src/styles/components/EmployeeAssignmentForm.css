@@ -1,0 +1,20 @@
+.employee-assignment-modal-content {
+  border-radius: 12px;
+  width: calc((100vw - 320px) / 3);
+  max-width: 600px;
+  min-width: 400px;
+}
+
+.employee-assignment-modal-inner {
+  padding-right: 320px;
+}
+
+.employee-assignment-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  right: 320px;
+}
+
+.project-form-table-cell-centered {
+  text-align: center;
+}
+
