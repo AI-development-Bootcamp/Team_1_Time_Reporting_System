@@ -1471,17 +1471,17 @@ backend/src/
   - [x] Create `DateRangePickerModal.module.css`
 
 **Frontend - Project Selector (3-Step Modal):**
-- [ ] TASK-M2-020-FE-020: Create ProjectSelectorModal component
-  - [ ] Create `components/ProjectSelector/ProjectSelectorModal.tsx`:
-    - [ ] **Three-step wizard flow**:
+- [x] TASK-M2-020-FE-020: Create ProjectSelectorModal component
+  - [x] Create `components/ProjectSelector/ProjectSelectorModal.tsx`:
+    - [x] **Three-step wizard flow**:
       1. Project selection (grouped by client)
       2. Task selection (filtered by selected project)
       3. Location selection (משרד / בית / בית לקוח)
-    - [ ] Dynamic title: "בחר פרויקט" / "בחר משימה" / "בחר מיקום"
-    - [ ] Back button (visible after step 1, returns to previous step)
-    - [ ] Bottom button text changes: "המשך ובחר משימה" / "המשך ובחר מיקום" / "המשך"
-    - [ ] Props: `isOpen`, `onClose`, `onSelect`, `userId`, `initialSelection?`
-  - [ ] Create `ProjectSelectorModal.module.css`
+    - [x] Dynamic title: "בחר פרויקט" / "בחר משימה" / "בחר מיקום"
+    - [x] Back button (visible after step 1, returns to previous step)
+    - [x] Bottom button text changes: "המשך ובחר משימה" / "המשך ובחר מיקום" / "המשך"
+    - [x] Props: `isOpen`, `onClose`, `onSelect`, `userId`, `initialSelection?`
+  - [x] Create `ProjectSelectorModal.module.css`
 
 - [ ] TASK-M2-020-FE-021: Create ProjectListStep component
   - [ ] Create `components/ProjectSelector/ProjectListStep.tsx`:

@@ -1,0 +1,339 @@
+/**
+ * ProjectSelectorModal Styles
+ * RTL-supported, mobile-first three-step wizard modal
+ */
+
+/* ============================================================================
+ * Modal Customization
+ * ============================================================================ */
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  direction: rtl;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  text-align: center;
+  width: 100%;
+}
+
+.modalBody {
+  padding: 1.5rem;
+  direction: rtl;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================================
+ * Content Container
+ * ============================================================================ */
+
+.contentContainer {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollArea {
+  flex: 1;
+  max-height: 400px;
+}
+
+/* ============================================================================
+ * Loading & Error States
+ * ============================================================================ */
+
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+/* ============================================================================
+ * Client Group (Step 1)
+ * ============================================================================ */
+
+.clientGroup {
+  margin-bottom: 1.5rem;
+}
+
+.clientName {
+  color: #495057;
+  text-align: right;
+  padding-right: 0.5rem;
+  border-right: 3px solid #228be6;
+}
+
+/* ============================================================================
+ * Item Button (Projects, Tasks, Locations)
+ * ============================================================================ */
+
+.itemButton {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  direction: rtl;
+}
+
+.itemButton:hover {
+  background: #f8f9fa;
+  border-color: #228be6;
+}
+
+.itemButton.selected {
+  background: #e7f5ff;
+  border-color: #228be6;
+  border-width: 2px;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  text-align: right;
+}
+
+.selectedIcon {
+  color: #228be6;
+  flex-shrink: 0;
+  transform: rotate(180deg); /* Flip for RTL */
+}
+
+/* ============================================================================
+ * Navigation Container
+ * ============================================================================ */
+
+.navigationContainer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  direction: rtl;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.backButton {
+  color: #495057;
+  transform: rotate(180deg); /* Flip arrow for RTL */
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f8f9fa;
+}
+
+.continueButton {
+  background: #228be6;
+  color: white;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.continueButton:hover:not(:disabled) {
+  background: #1971c2;
+  transform: translateY(-1px);
+}
+
+.continueButton:disabled {
+  background: #ced4da;
+  color: #868e96;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .modalHeader {
+    padding: 1rem;
+  }
+
+  .modalBody {
+    padding: 1rem;
+    min-height: 350px;
+  }
+
+  .modalTitle {
+    font-size: 1.125rem;
+  }
+
+  .itemButton {
+    padding: 0.875rem;
+  }
+
+  .scrollArea {
+    max-height: 300px;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .modalHeader {
+    padding: 1.75rem;
+  }
+
+  .modalBody {
+    padding: 1.75rem;
+    min-height: 450px;
+  }
+
+  .modalTitle {
+    font-size: 1.375rem;
+  }
+
+  .scrollArea {
+    max-height: 450px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .modalHeader {
+    padding: 2rem;
+  }
+
+  .modalBody {
+    padding: 2rem;
+    min-height: 500px;
+  }
+
+  .scrollArea {
+    max-height: 500px;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.modalHeader,
+.modalBody,
+.navigationContainer {
+  direction: rtl;
+}
+
+.clientName,
+.itemContent {
+  text-align: right;
+}
+
+.itemButton {
+  direction: rtl;
+}
+
+/* Arrow icons flip for RTL */
+.backButton {
+  transform: rotate(180deg);
+}
+
+.selectedIcon {
+  transform: rotate(180deg);
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.itemButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+.backButton:focus-visible,
+.continueButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .itemButton {
+    min-height: 56px;
+  }
+
+  .backButton {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .continueButton {
+    min-height: 48px;
+  }
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Fade in for content */
+.contentContainer {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Selected state animation */
+.itemButton.selected {
+  animation: selectPulse 0.3s ease-out;
+}
+
+@keyframes selectPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Disabled state */
+.itemButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
