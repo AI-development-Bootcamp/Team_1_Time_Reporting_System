@@ -1520,18 +1520,18 @@ backend/src/
   - [x] Create `SelectorErrorState.module.css`
 
 **Frontend - Confirmation Modals & Toasts:**
-- [ ] TASK-M2-020-FE-025: Configure toast notifications
-  - [ ] Use Mantine notifications (already installed)
-  - [ ] Configure RTL and Hebrew support
-  - [ ] **Blue info toast**: Hierarchy validation errors
-    - [ ] Message: "בחר {field} קודם" (e.g., "בחר פרויקט קודם")
-    - [ ] Trigger: When clicking Task before Project, etc.
-  - [ ] **Red error toast**: Missing required fields
-    - [ ] Message: "חסר לנו פרטים אה ענינים"
-    - [ ] Trigger: Save clicked with incomplete project reports
-  - [ ] **Green success toast**: Successful save
-    - [ ] Title: "דיווח שעות הושלם"
-    - [ ] Message: "דיווח השעות שלך נשמרו בהצלחה בסיבכת 🙂"
+- [x] TASK-M2-020-FE-025: Configure toast notifications
+  - [x] Use Mantine notifications (already installed)
+  - [x] Configure RTL and Hebrew support
+  - [x] **Blue info toast**: Hierarchy validation errors
+    - [x] Message: "בחר {field} קודם" (e.g., "בחר פרויקט קודם")
+    - [x] Trigger: When clicking Task before Project, etc.
+  - [x] **Red error toast**: Missing required fields
+    - [x] Message: "חסר לנו פרטים אה ענינים"
+    - [x] Trigger: Save clicked with incomplete project reports
+  - [x] **Green success toast**: Successful save
+    - [x] Title: "דיווח שעות הושלם"
+    - [x] Message: "דיווח השעות שלך נשמרו בהצלחה בסיבכת 🙂"
 
 - [ ] TASK-M2-020-FE-026: Create IncompleteHoursModal component
   - [ ] Create `components/DailyReport/IncompleteHoursModal.tsx`:
