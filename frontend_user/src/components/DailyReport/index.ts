@@ -8,3 +8,4 @@ export { WorkReportTab } from './WorkReportTab';
 export { TimePickerModal } from './TimePickerModal';
 export { DatePickerModal } from './DatePickerModal';
 export { ProjectReportsList } from './ProjectReportsList';
+export { ProjectReportCard } from './ProjectReportCard';

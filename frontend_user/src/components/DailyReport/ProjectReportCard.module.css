@@ -1,0 +1,286 @@
+/**
+ * ProjectReportCard Styles
+ * RTL-supported, mobile-first expandable card
+ */
+
+/* ============================================================================
+ * Card Container
+ * ============================================================================ */
+
+.card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  direction: rtl;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.expanded {
+  border-color: #228be6;
+  box-shadow: 0 2px 8px rgba(34, 139, 230, 0.15);
+}
+
+/* ============================================================================
+ * Header (Collapsed View)
+ * ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.header:hover {
+  background: #f8f9fa;
+}
+
+.expanded .header {
+  background: #e7f5ff;
+  border-bottom: 1px solid #228be6;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.headerIcon {
+  color: #868e96;
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.expanded .headerIcon {
+  color: #228be6;
+}
+
+/* ============================================================================
+ * Body (Expanded View)
+ * ============================================================================ */
+
+.body {
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+/* ============================================================================
+ * Form Fields
+ * ============================================================================ */
+
+.field {
+  width: 100%;
+}
+
+.required {
+  color: #fa5252;
+  margin-right: 2px;
+}
+
+.input input,
+.textarea textarea {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Left-to-right for time inputs */
+.input input[dir="ltr"] {
+  text-align: left;
+  direction: ltr;
+  font-family: monospace;
+}
+
+.input:has(input[readonly]) {
+  cursor: pointer;
+}
+
+.input input[readonly] {
+  cursor: pointer;
+  background: white;
+}
+
+.input input[readonly]:hover {
+  background: #f8f9fa;
+  border-color: #228be6;
+}
+
+.input input[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.textarea {
+  width: 100%;
+}
+
+/* ============================================================================
+ * Actions (Delete Button)
+ * ============================================================================ */
+
+.actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.deleteButton {
+  font-weight: 600;
+}
+
+.deleteButton:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .header {
+    padding: 1.125rem 1.25rem;
+  }
+
+  .body {
+    padding: 1.5rem;
+  }
+
+  .headerContent {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .body {
+    padding: 1.75rem 1.5rem;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.header:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: -2px;
+}
+
+.deleteButton:focus-visible {
+  outline: 2px solid #fa5252;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+/* Icon position in RTL */
+.headerIcon {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+/* Required asterisk positioning */
+.required {
+  margin-right: 0;
+  margin-left: 2px;
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Loading state (if needed in future) */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Error state */
+.error {
+  border-color: #fa5252;
+}
+
+.error .header {
+  background: #fff5f5;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .header {
+    padding: 1.25rem;
+    min-height: 60px;
+  }
+
+  .deleteButton {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ============================================================================
+ * Transitions
+ * ============================================================================ */
+
+.card * {
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* ============================================================================
+ * Print Styles
+ * ============================================================================ */
+
+@media print {
+  .card {
+    border: 1px solid #000;
+    page-break-inside: avoid;
+  }
+
+  .headerIcon {
+    display: none;
+  }
+
+  .deleteButton {
+    display: none;
+  }
+
+  .body {
+    display: block !important;
+  }
+}

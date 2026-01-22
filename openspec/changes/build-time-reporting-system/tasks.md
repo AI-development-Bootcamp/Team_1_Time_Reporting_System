@@ -1414,21 +1414,21 @@ backend/src/
     - [x] Props: `reports[]`, `onAdd`, `onEdit`, `onDelete`
   - [x] Create `ProjectReportsList.module.css`
 
-- [ ] TASK-M2-020-FE-015: Create ProjectReportCard component
-  - [ ] Create `components/DailyReport/ProjectReportCard.tsx`:
-    - [ ] **Collapsed view**: Project name + duration (e.g., "Globaly 05:30 ש'")
-    - [ ] **Expanded view**: Show all fields:
-      - [ ] פרויקט* (required) - opens ProjectSelectorModal
-      - [ ] משימה* (required) - opens TaskListStep
-      - [ ] מיקום* (required) - opens LocationListStep
-      - [ ] Time entry based on project reportingType:
-        - [ ] Duration: Single input hh:mm (max 23:59)
-        - [ ] StartEnd: Start time + End time inputs
-      - [ ] Description (optional, multiline text)
-    - [ ] "מחיקת פרויקט" link (red) - opens DeleteProjectConfirmModal
-    - [ ] Expandable accordion behavior (click to toggle)
-    - [ ] Props: `report`, `index`, `onUpdate`, `onDelete`, `taskLookup`
-  - [ ] Create `ProjectReportCard.module.css`
+- [x] TASK-M2-020-FE-015: Create ProjectReportCard component
+  - [x] Create `components/DailyReport/ProjectReportCard.tsx`:
+    - [x] **Collapsed view**: Project name + duration (e.g., "Globaly 05:30 ש'")
+    - [x] **Expanded view**: Show all fields:
+      - [x] פרויקט* (required) - opens ProjectSelectorModal
+      - [x] משימה* (required) - opens TaskListStep
+      - [x] מיקום* (required) - opens LocationListStep
+      - [x] Time entry based on project reportingType:
+        - [x] Duration: Single input hh:mm (max 23:59)
+        - [x] StartEnd: Start time + End time inputs
+      - [x] Description (optional, multiline text)
+    - [x] "מחיקת פרויקט" link (red) - opens DeleteProjectConfirmModal
+    - [x] Expandable accordion behavior (click to toggle)
+    - [x] Props: `report`, `index`, `onUpdate`, `onDelete`, `taskLookup`
+  - [x] Create `ProjectReportCard.module.css`
 
 - [ ] TASK-M2-020-FE-016: Create ProgressTracker component
   - [ ] Create `components/DailyReport/ProgressTracker.tsx`:
