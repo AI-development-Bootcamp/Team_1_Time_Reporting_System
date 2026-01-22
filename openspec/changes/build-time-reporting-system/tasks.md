@@ -1567,17 +1567,17 @@ backend/src/
     - [x] Remove ComingSoonModal trigger (already removed, none found)
     - [x] Call `onManualReportClick` prop to open DailyReportModal (already implemented)
 
-- [ ] TASK-M2-020-FE-029: Implement form validation flow
-  - [ ] In `WorkReportTab.tsx`, on save click:
-    - [ ] Run `validateForm()` from useDailyReportForm
-    - [ ] Show blue toast if hierarchy errors (selecting out of order)
-    - [ ] Show red toast if required fields missing
-    - [ ] Show IncompleteHoursModal if tracker < 100%
-    - [ ] If all validations pass:
-      - [ ] Call `createCombinedAttendance` mutation
-      - [ ] Show loading state on save button
-      - [ ] On success: close modal, show green toast, refresh data
-      - [ ] On error: show red toast with error message
+- [x] TASK-M2-020-FE-029: Implement form validation flow
+  - [x] In `WorkReportTab.tsx`, on save click:
+    - [x] Run `validateForm()` from useDailyReportForm
+    - [x] Show blue toast if hierarchy errors (selecting out of order)
+    - [x] Show red toast if required fields missing
+    - [x] Show IncompleteHoursModal if tracker < 100%
+    - [x] If all validations pass:
+      - [x] Call `createCombinedAttendance` mutation
+      - [x] Show loading state on save button
+      - [x] On success: close modal, show green toast, refresh data
+      - [x] On error: show red toast with error message
 
 - [ ] TASK-M2-020-FE-030: Implement edit mode data pre-filling
   - [ ] In `DailyReportModal.tsx`, when `mode === 'edit'`:

@@ -10,11 +10,13 @@
  * - Form validation and submission
  */
 
+import { useState } from 'react';
 import { TextInput, Button, Stack, Group, Text, Loader } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useDailyReportForm } from '../../hooks/useDailyReportForm';
 import { useCreateDailyReport } from '../../hooks/useCreateDailyReport';
+import { IncompleteHoursModal } from './IncompleteHoursModal';
 import { formatDurationHours } from '../../utils/dateUtils';
+import { showMissingFieldsError, showSaveSuccess, showError } from '../../utils/toast';
 import classes from './WorkReportTab.module.css';
 
 interface WorkReportTabProps {
@@ -63,42 +65,47 @@ export function WorkReportTab({
   // Mutation for creating report
   const { mutateAsync: createReport, isLoading } = useCreateDailyReport();
 
-  // Handle save
+  // Modal state for incomplete hours warning
+  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+
+  // Handle save with complete validation flow
   const handleSave = async () => {
-    // Validate form
-    if (!validateForm()) {
-      // Show validation errors
-      if (errors.general) {
-        notifications.show({
-          title: 'שגיאה',
-          message: errors.general,
-          color: 'blue',
-          autoClose: 3000,
-        });
+    // Step 1: Run validation
+    const validationResult = validateForm();
+    
+    if (!validationResult) {
+      // Show appropriate error toast based on validation type
+      // Check for missing required fields
+      if (errors.date || errors.entranceTime || errors.exitTime || formData.projectReports.length === 0) {
+        showMissingFieldsError();
+        return;
       }
+      
+      // For any other validation errors
+      if (errors.general) {
+        showError(errors.general);
+        return;
+      }
+      
       return;
     }
 
-    // Check if tracker is complete
-    if (!progress.isComplete) {
-      // Show warning modal (TODO: Replace with ConfirmationModal)
-      const confirmIncomplete = window.confirm(
-        `יום העבודה טרם הושלם\n\nחסרים ${formatDurationHours(progress.missingTime)} שעות.\nלהמשיך בכל זאת?`
-      );
-      
-      if (!confirmIncomplete) {
-        return;
-      }
+    // Step 2: Check if tracker is complete (< 100%)
+    if (!progress.isComplete && progress.missingTime > 0) {
+      // Show IncompleteHoursModal
+      setShowIncompleteModal(true);
+      return;
     }
 
+    // Step 3: If all validations pass, proceed with save
+    await performSave();
+  };
+
+  // Perform the actual save operation
+  const performSave = async () => {
     // TODO: Implement edit mode logic
     if (mode === 'edit') {
-      notifications.show({
-        title: 'מידע',
-        message: 'מצב עריכה יתווסף בעדכון הבא',
-        color: 'blue',
-        autoClose: 3000,
-      });
+      showError('מצב עריכה יתווסף בעדכון הבא');
       return;
     }
 
@@ -107,6 +114,7 @@ export function WorkReportTab({
     const userId = 'temp-user-id';
 
     try {
+      // Call createCombinedAttendance mutation
       await createReport({
         userId,
         date: formData.date,
@@ -123,12 +131,23 @@ export function WorkReportTab({
         })),
       });
 
-      // Call success callback after report is created
+      // Show success toast
+      showSaveSuccess();
+
+      // Call success callback (closes modal and refreshes data)
       onSuccess?.();
-    } catch (error) {
-      // Error is already handled by useCreateDailyReport hook
+    } catch (error: any) {
+      // Show error toast with error message
+      const errorMessage = error?.message || 'שגיאה בשמירת הדיווח';
+      showError(errorMessage);
       console.error('Failed to create report:', error);
     }
+  };
+
+  // Handle confirm from IncompleteHoursModal
+  const handleConfirmIncomplete = () => {
+    setShowIncompleteModal(false);
+    performSave();
   };
 
   return (
@@ -289,6 +308,14 @@ export function WorkReportTab({
           </details>
         )}
       </Stack>
+
+      {/* Incomplete Hours Modal */}
+      <IncompleteHoursModal
+        isOpen={showIncompleteModal}
+        onClose={() => setShowIncompleteModal(false)}
+        onConfirm={handleConfirmIncomplete}
+        missingHours={progress.missingTime}
+      />
     </div>
   );
 }
