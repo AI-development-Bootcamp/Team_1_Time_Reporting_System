@@ -31,6 +31,7 @@ import { apiClient } from '@shared/utils/ApiClient';
 import { useTasks } from '../../hooks/useTasks';
 import { CreateProjectInput } from '../../types/Project';
 import { ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
+import { notifications } from '@mantine/notifications';
 
 interface TableRowData {
   clientId: string;
@@ -439,18 +440,43 @@ export function ClientsTable() {
   };
 
   const handleSubmit = async (values: { name: string; description?: string }) => {
-    if (formMode === 'create') {
-      await createClientMutation.mutateAsync(values);
-    } else if (formMode === 'edit' && selectedClient) {
-      await updateClientMutation.mutateAsync({
-        id: String(selectedClient.id),
-        data: {
-          name: values.name,
-          description: values.description,
-        },
+    try {
+      if (formMode === 'create') {
+        await createClientMutation.mutateAsync(values);
+        notifications.show({
+          title: 'הצלחה',
+          message: 'הלקוח נוצר בהצלחה',
+          color: 'green',
+          autoClose: 3000,
+        });
+        setFormOpened(false);
+      } else if (formMode === 'edit' && selectedClient) {
+        await updateClientMutation.mutateAsync({
+          id: String(selectedClient.id),
+          data: {
+            name: values.name,
+            description: values.description,
+          },
+        });
+        notifications.show({
+          title: 'הצלחה',
+          message: 'הלקוח עודכן בהצלחה',
+          color: 'green',
+          autoClose: 3000,
+        });
+        setFormOpened(false);
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error?.message || 
+        (formMode === 'create' ? 'שגיאה ביצירת לקוח' : 'שגיאה בעדכון לקוח');
+      notifications.show({
+        title: 'שגיאה',
+        message: errorMessage,
+        color: 'red',
+        autoClose: 3000,
       });
+      // Keep the form open so user can fix the error
     }
-    setFormOpened(false);
   };
 
   const openDeleteClient = (clientId: string) => {
