@@ -62,11 +62,18 @@ export const errorHandler = (
 
   // Unknown errors
   console.error('Unhandled error:', err);
+  console.error('Error stack:', err.stack);
+  console.error('Error message:', err.message);
+  console.error('Error name:', err.name);
+  
+  // Include error details in response for debugging (in development)
+  const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
   ApiResponse.error(
     res,
     'INTERNAL_ERROR',
-    'An unexpected error occurred',
-    500
+    isDevelopment ? `An unexpected error occurred: ${err.message}` : 'An unexpected error occurred',
+    500,
+    isDevelopment ? { stack: err.stack, name: err.name } : undefined
   );
 };
 

@@ -30,7 +30,7 @@ export const DeleteConfirmationModal: FC<DeleteConfirmationModalProps> = ({
       size="md"
       withCloseButton={false}
       classNames={{
-        modal: styles.modal,
+        content: styles.modal,
         inner: styles.inner,
         overlay: styles.overlay,
       }}

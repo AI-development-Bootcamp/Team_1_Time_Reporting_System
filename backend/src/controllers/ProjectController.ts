@@ -7,7 +7,6 @@ import { createProjectSchema, updateProjectSchema, projectIdParamSchema, clientI
 export class ProjectController {
   static async getProjects(req: Request, res: Response, next: NextFunction) {
     try {
-
       // Query param: clientId (optional filter) - validate with Zod
       let clientIdFilter: bigint | undefined;
       if (req.query.clientId) {
@@ -32,6 +31,8 @@ export class ProjectController {
       });
       ApiResponse.success(res, projects);
     } catch (error) {
+      // Log error for debugging
+      console.error('Error in getProjects:', error);
       next(error);
     }
   }

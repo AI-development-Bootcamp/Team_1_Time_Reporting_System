@@ -1,5 +1,9 @@
 import { PrismaClient, UserType, TaskStatus, DailyAttendanceStatus, LocationStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const prisma = new PrismaClient();
 

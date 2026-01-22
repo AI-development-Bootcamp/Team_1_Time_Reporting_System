@@ -28,7 +28,7 @@ import tableStyles from '../Common/ReusableTable.module.css';
 import styles from '../../styles/components/ClientsTable.module.css';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
-import { useTasks } from '../../hooks/useTasks';
+import { useTasks, Task } from '../../hooks/useTasks';
 import { CreateProjectInput } from '../../types/Project';
 import { ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
 import { notifications } from '@mantine/notifications';
@@ -111,19 +111,19 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
               <Menu.Item onClick={() => onEditClient(rowData.clientId)}>
                 ערוך לקוח
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onEditProject(rowData.projectId)}
                 disabled={!rowData.projectId}
               >
                 ערוך פרויקט
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onEditTask(rowData.taskId)}
                 disabled={!rowData.taskId}
               >
                 ערוך משימה
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onEditAssignment(rowData.taskId)}
                 disabled={!rowData.taskId}
               >
@@ -145,19 +145,19 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
               <Menu.Item onClick={() => onDeleteClient(rowData.clientId)}>
                 מחק לקוח
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onDeleteProject(rowData.projectId)}
                 disabled={!rowData.projectId}
               >
                 מחק פרויקט
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onDeleteTask(rowData.taskId)}
                 disabled={!rowData.taskId}
               >
                 מחק משימה
               </Menu.Item>
-              <Menu.Item 
+              <Menu.Item
                 onClick={() => onDeleteAssignment(rowData.taskId)}
                 disabled={!rowData.taskId}
               >
@@ -216,8 +216,8 @@ export function ClientsTable() {
   });
 
   // Load all tasks for all projects
-  const allProjects = useMemo(() => {
-    return projectsQueries.flatMap((query) => query.data ?? []);
+  const allProjects = useMemo((): Project[] => {
+    return projectsQueries.flatMap((query) => (query.data ?? []) as Project[]);
   }, [projectsQueries]);
 
   const tasksQueries = useQueries({
@@ -232,8 +232,8 @@ export function ClientsTable() {
   });
 
   // Get all tasks
-  const allTasks = useMemo(() => {
-    return tasksQueries.flatMap((query) => query.data ?? []);
+  const allTasks = useMemo((): Task[] => {
+    return tasksQueries.flatMap((query) => (query.data ?? []) as Task[]);
   }, [tasksQueries]);
 
   // Build a map of clientId -> projects from the query results directly
@@ -292,7 +292,7 @@ export function ClientsTable() {
     clients.forEach((client) => {
       const clientId = String(client.id);
       const clientProjects = clientProjectsMap.get(clientId) ?? [];
-      
+
       // If client has no projects, show one row with client only
       if (clientProjects.length === 0) {
         rows.push({
@@ -311,7 +311,7 @@ export function ClientsTable() {
       clientProjects.forEach((project) => {
         const projectId = String(project.id);
         const projectTasks = projectTasksMap.get(projectId) ?? [];
-        
+
         // If project has no tasks, show one row with client + project
         if (projectTasks.length === 0) {
           rows.push({
@@ -467,7 +467,7 @@ export function ClientsTable() {
         setFormOpened(false);
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || 
+      const errorMessage = error.response?.data?.error?.message ||
         (formMode === 'create' ? 'שגיאה ביצירת לקוח' : 'שגיאה בעדכון לקוח');
       notifications.show({
         title: 'שגיאה',

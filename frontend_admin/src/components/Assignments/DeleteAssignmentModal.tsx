@@ -10,7 +10,7 @@ import {
   Stack,
 } from '@mantine/core';
 import { IconTrash, IconX } from '@tabler/icons-react';
-import { useAssignments, Assignment } from '../../hooks/useAssignments';
+import { useAssignments } from '../../hooks/useAssignments';
 import '../../styles/components/DeleteAssignmentModal.css';
 
 interface DeleteAssignmentModalProps {

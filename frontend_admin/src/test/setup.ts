@@ -29,20 +29,20 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
+(globalThis as any).IntersectionObserver = class IntersectionObserver {
+  constructor() { }
+  disconnect() { }
+  observe() { }
   takeRecords() {
     return [];
   }
-  unobserve() {}
+  unobserve() { }
 } as any;
 
 // Mock ResizeObserver (required by Mantine components in jsdom environment)
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+(globalThis as any).ResizeObserver = class ResizeObserver {
+  constructor() { }
+  disconnect() { }
+  observe() { }
+  unobserve() { }
 } as any;

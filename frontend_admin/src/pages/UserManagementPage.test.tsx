@@ -42,7 +42,7 @@ describe('UserManagementPage', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -76,7 +76,7 @@ describe('UserManagementPage', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,

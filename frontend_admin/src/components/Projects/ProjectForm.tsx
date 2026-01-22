@@ -40,7 +40,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({
 }) => {
   const { clientsQuery } = useClients();
   const { usersQuery } = useUsers();
-  const [project, setProject] = useState<Project | null>(null);
+  const [, setProject] = useState<Project | null>(null);
   const { projectsQuery } = useProjects();
 
   const form = useForm({
@@ -166,7 +166,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({
             <Select
               label="שם הלקוח"
               placeholder="מה שם הלקוח"
-              data={clients.map((client) => ({ value: client.id, label: client.name }))}
+              data={clients.map((client) => ({ value: String(client.id), label: client.name }))}
               {...form.getInputProps('clientId')}
               searchable
               className="project-form-field"

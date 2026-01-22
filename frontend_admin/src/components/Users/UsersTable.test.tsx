@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@test/utils';
+import { render, screen } from '@test/utils';
 import userEvent from '@testing-library/user-event';
 import { UsersTable } from './UsersTable';
 import { useUsers } from '../../hooks/useUsers';
@@ -52,7 +52,7 @@ describe('UsersTable', () => {
         isLoading: true,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -84,7 +84,7 @@ describe('UsersTable', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -123,7 +123,7 @@ describe('UsersTable', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -156,7 +156,7 @@ describe('UsersTable', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -193,7 +193,7 @@ describe('UsersTable', () => {
         isLoading: false,
         isError: true,
         error: new Error('Failed to load users'),
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
@@ -224,7 +224,7 @@ describe('UsersTable', () => {
         isLoading: false,
         isError: false,
         error: null,
-      },
+      } as any,
       createUserMutation: {
         mutateAsync: vi.fn(),
         isPending: false,
