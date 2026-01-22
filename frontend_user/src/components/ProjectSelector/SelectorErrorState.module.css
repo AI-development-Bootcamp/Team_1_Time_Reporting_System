@@ -1,0 +1,215 @@
+/**
+ * SelectorErrorState Styles
+ * RTL-supported, mobile-first error state component
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Error Message Image
+ * ============================================================================ */
+
+.errorMessageContainer {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.errorMessageImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================================
+ * Robot Image
+ * ============================================================================ */
+
+.robotContainer {
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+.robotImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================================
+ * Return Link
+ * ============================================================================ */
+
+.returnLink {
+  color: #228be6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.returnLink:hover {
+  color: #1971c2;
+}
+
+/* ============================================================================
+ * Disabled Button
+ * ============================================================================ */
+
+.disabledButton {
+  background: #ced4da;
+  color: #868e96;
+  cursor: not-allowed;
+  opacity: 0.6;
+  width: 100%;
+  max-width: 300px;
+}
+
+.disabledButton:disabled {
+  background: #ced4da;
+  color: #868e96;
+  opacity: 0.6;
+}
+
+/* ============================================================================
+ * Context Text
+ * ============================================================================ */
+
+.contextText {
+  margin-top: 0.5rem;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .container {
+    padding: 1.5rem 1rem;
+    min-height: 350px;
+  }
+
+  .errorMessageContainer {
+    max-width: 250px;
+  }
+
+  .robotContainer {
+    max-width: 200px;
+  }
+
+  .disabledButton {
+    max-width: 100%;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .container {
+    padding: 2rem 1.5rem;
+    min-height: 450px;
+  }
+
+  .errorMessageContainer {
+    max-width: 320px;
+  }
+
+  .robotContainer {
+    max-width: 280px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container {
+    padding: 2.5rem 2rem;
+    min-height: 500px;
+  }
+
+  .errorMessageContainer {
+    max-width: 350px;
+  }
+
+  .robotContainer {
+    max-width: 300px;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.container {
+  direction: rtl;
+}
+
+.contextText {
+  text-align: center;
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.returnLink:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Fade in animation */
+.container {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating animation for robot */
+.robotImage {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

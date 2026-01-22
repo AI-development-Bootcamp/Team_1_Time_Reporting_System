@@ -1511,13 +1511,13 @@ backend/src/
     - [x] Props: `selectedLocation`, `onSelect`
   - [x] Create `LocationListStep.module.css`
 
-- [ ] TASK-M2-020-FE-024: Create SelectorErrorState component
-  - [ ] Create `components/ProjectSelector/SelectorErrorState.tsx`:
-    - [ ] Use `error_message.png` from shared/image_components (contains Hebrew error text)
-    - [ ] Use `Oops! 404 Error with a broken robot-pana 1.png` from shared/image_components (broken robot illustration)
-    - [ ] "חזור למסך ראשי" link
-    - [ ] "המשך ובחר מיקום" button (disabled/greyed)
-  - [ ] Create `SelectorErrorState.module.css`
+- [x] TASK-M2-020-FE-024: Create SelectorErrorState component
+  - [x] Create `components/ProjectSelector/SelectorErrorState.tsx`:
+    - [x] Use `error_message.png` from shared/image_components (contains Hebrew error text)
+    - [x] Use `Oops! 404 Error with a broken robot-pana 1.png` from shared/image_components (broken robot illustration)
+    - [x] "חזור למסך ראשי" link
+    - [x] "המשך ובחר מיקום" button (disabled/greyed)
+  - [x] Create `SelectorErrorState.module.css`
 
 **Frontend - Confirmation Modals & Toasts:**
 - [ ] TASK-M2-020-FE-025: Configure toast notifications
