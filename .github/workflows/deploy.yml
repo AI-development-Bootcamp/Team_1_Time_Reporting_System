@@ -13,6 +13,7 @@ on:
       - 'dev'
       - 'main'
       - 'bridge_to_dev'
+      - 'feature/*'
 
 jobs:
   # 1. Unit Tests - Runs on feature branches, dev, and main
