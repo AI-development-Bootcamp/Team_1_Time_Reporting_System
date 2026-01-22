@@ -1556,16 +1556,16 @@ backend/src/
   - [x] Create `DeleteProjectConfirmModal.module.css`
 
 **Frontend - Integration:**
-- [ ] TASK-M2-020-FE-028: Integrate modal with MonthHistory
-  - [ ] Update `components/MonthHistory/MonthHistoryPage.tsx`:
-    - [ ] Add state: `isDailyReportModalOpen`, `modalMode`, `editAttendanceId`
-    - [ ] Open modal on "דיווח ידני" button click (create mode)
-    - [ ] Open modal on "הוספת דיווח" click (create mode, pre-fill date from card)
-    - [ ] Open modal on edit icon click (edit mode, fetch and pre-fill existing data)
-    - [ ] Refresh month history after successful save
-  - [ ] Update `components/BottomBar/BottomBar.tsx`:
-    - [ ] Remove ComingSoonModal trigger
-    - [ ] Call `onManualReportClick` prop to open DailyReportModal
+- [x] TASK-M2-020-FE-028: Integrate modal with MonthHistory
+  - [x] Update `components/MonthHistory/MonthHistoryPage.tsx`:
+    - [x] Add state: `isDailyReportModalOpen`, `modalMode`, `editAttendanceId`
+    - [x] Open modal on "דיווח ידני" button click (create mode)
+    - [x] Open modal on "הוספת דיווח" click (create mode, pre-fill date from card)
+    - [x] Open modal on edit icon click (edit mode, fetch and pre-fill existing data)
+    - [x] Refresh month history after successful save
+  - [x] Update `components/BottomBar/BottomBar.tsx`:
+    - [x] Remove ComingSoonModal trigger (already removed, none found)
+    - [x] Call `onManualReportClick` prop to open DailyReportModal (already implemented)
 
 - [ ] TASK-M2-020-FE-029: Implement form validation flow
   - [ ] In `WorkReportTab.tsx`, on save click:
