@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useMemo } from 'react';
 import {
   Button,
   Group,
@@ -7,16 +7,22 @@ import {
   Text,
   ActionIcon,
   Box,
-  MultiSelect,
   Loader,
   Center,
+  TextInput,
+  Table,
+  Checkbox,
 } from '@mantine/core';
-import { IconX, IconPlus } from '@tabler/icons-react';
+import { IconX, IconPlus, IconSearch } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { useAssignments, ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
 import { useTasks, Task } from '../../hooks/useTasks';
+import { useUsers } from '../../hooks/useUsers';
+import { useProjects } from '../../hooks/useProjects';
+import { ReusableTable } from '../Common/ReusableTable';
+import { ReusablePagination } from '../Common/ReusablePagination';
 import '../../styles/components/EmployeeAssignmentForm.css';
 import '../../styles/components/ProjectForm.css';
 import { apiClient } from '@shared/utils/ApiClient';
@@ -38,8 +44,12 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
 }) => {
   const { assignmentsQuery } = useAssignments();
   const { tasksQuery } = useTasks('all');
+  const { usersQuery } = useUsers();
+  const { projectsQuery } = useProjects();
   const [task, setTask] = useState<Task | null>(null);
-  const [users, setUsers] = useState<Array<{ id: string; name: string }>>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activePage, setActivePage] = useState(1);
+  const itemsPerPage = 10;
 
   const form = useForm<{
     userIds: string[];
@@ -72,41 +82,37 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
     },
   });
 
-  // Load task data and users
+  // Load task data
   useEffect(() => {
     if (taskId && opened) {
       if (tasksQuery.data) {
-        const foundTask = tasksQuery.data.find((t) => t.id === taskId);
+        const foundTask = tasksQuery.data.find((t) => String(t.id) === String(taskId));
         setTask(foundTask || null);
       }
-      // Load users from assignments
-      if (assignmentsQuery.data) {
-        const uniqueUsers = new Map<string, { id: string; name: string }>();
-        assignmentsQuery.data.forEach((assignment) => {
-          if (assignment.user) {
-            uniqueUsers.set(assignment.user.id, {
-              id: assignment.user.id,
-              name: assignment.user.name,
-            });
-          }
-        });
-        setUsers(Array.from(uniqueUsers.values()));
-      }
     }
-  }, [taskId, opened, assignmentsQuery.data, tasksQuery.data]);
+  }, [taskId, opened, tasksQuery.data]);
 
-  // Load current assignments for this task
+  // Load current assignments for this task when modal opens
   useEffect(() => {
     if (taskId && opened && assignmentsQuery.data) {
       const taskAssignments = assignmentsQuery.data.filter(
         (assignment) => assignment.taskId === taskId
       );
-      form.setFieldValue(
-        'userIds',
-        taskAssignments.map((a) => a.userId)
-      );
+      const currentUserIds = taskAssignments.map((a) => String(a.userId));
+      // Only update if the values are different to avoid unnecessary re-renders
+      const sortedCurrentUserIds = [...currentUserIds].sort();
+      const sortedFormUserIds = [...form.values.userIds].sort();
+      if (JSON.stringify(sortedCurrentUserIds) !== JSON.stringify(sortedFormUserIds)) {
+        form.setFieldValue('userIds', currentUserIds);
+      }
+    } else if (!opened) {
+      // Reset form when modal closes
+      form.reset();
+      setSearchQuery('');
+      setActivePage(1);
     }
-  }, [taskId, opened, assignmentsQuery.data, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId, opened, assignmentsQuery.data]);
 
   const assignments = assignmentsQuery.data ?? [];
 
@@ -115,7 +121,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
 
     // Get current assignments for this task
     const currentAssignments = assignments.filter((a) => a.taskId === taskId);
-    const currentUserIds = currentAssignments.map((a) => a.userId);
+    const currentUserIds = currentAssignments.map((a) => String(a.userId));
 
     const selectedUserIds = form.values.userIds;
 
@@ -145,7 +151,12 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
         )
       );
 
-      // Only call onSubmit on success
+      // Invalidate and refetch assignments to get updated data with user info
+      queryClient.invalidateQueries({ queryKey: ASSIGNMENTS_QUERY_KEY });
+      await assignmentsQuery.refetch();
+
+      // Call onSubmit to close modal and refresh parent component
+      // This will close the modal and refresh the data in ClientsTable
       onSubmit();
     } catch (error) {
       // Surface error feedback to user
@@ -155,13 +166,51 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
         color: 'red',
       });
       // Do NOT call onSubmit on failure
-    } finally {
-      // Always refresh assignments state
-      await assignmentsQuery.refetch();
     }
   };
 
-  if (assignmentsQuery.isLoading) {
+  const users = usersQuery.data ?? [];
+  const projects = projectsQuery.data ?? [];
+
+  // Get project name for subtitle
+  const projectName = useMemo(() => {
+    if (!task) return '';
+    const project = projects.find((p) => String(p.id) === String(task.projectId));
+    return project?.name || '';
+  }, [task, projects]);
+
+  // Filter users by search query
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery.trim()) return users;
+    const query = searchQuery.toLowerCase();
+    return users.filter((user) => user.name.toLowerCase().includes(query));
+  }, [users, searchQuery]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setActivePage(1);
+  }, [searchQuery]);
+
+  const handleUserToggle = (userId: string) => {
+    const currentUserIds = form.values.userIds;
+    if (currentUserIds.includes(userId)) {
+      form.setFieldValue(
+        'userIds',
+        currentUserIds.filter((id) => id !== userId)
+      );
+    } else {
+      form.setFieldValue('userIds', [...currentUserIds, userId]);
+    }
+  };
+
+
+  if (assignmentsQuery.isLoading || usersQuery.isLoading || projectsQuery.isLoading) {
     return (
       <Modal opened={opened} onClose={onClose} title={null} centered>
         <Center h={200}>
@@ -182,9 +231,9 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
       styles={{
         content: {
           borderRadius: '12px',
-          width: 'calc((100vw - 320px) / 3)',
-          maxWidth: '600px',
-          minWidth: '400px',
+          width: 'calc(100vw - 640px)',
+          maxWidth: '1200px',
+          minWidth: '800px',
         },
         inner: {
           paddingRight: '320px',
@@ -202,6 +251,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
         }}
       >
         <Stack gap="lg">
+          {/* Header */}
           <Group justify="space-between" align="flex-start" className="project-form-header">
             <Group gap="md">
               <ActionIcon
@@ -216,10 +266,12 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
               </ActionIcon>
               <Box>
                 <Text fw={700} size="xl" className="project-form-title">
-                  ערוך שיוך עובדים
+                  שיוך עובד חדש למשימה
                 </Text>
                 <Text size="sm" c="dimmed" mt={4} className="project-form-description">
-                  בחר את העובדים המשויכים למשימה
+                  {projectName
+                    ? `כאן תוכל לשייך עובד חדש מהמאגר לטובת ${projectName}`
+                    : 'כאן תוכל לשייך עובד חדש מהמאגר'}
                 </Text>
               </Box>
             </Group>
@@ -234,21 +286,69 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
             </ActionIcon>
           </Group>
 
-          <Stack gap="md">
-            <MultiSelect
-              label="עובדים"
-              placeholder="בחר עובדים"
-              data={users.map((user) => ({ value: user.id, label: user.name }))}
-              searchable
-              className="project-form-field"
-              classNames={{
-                label: 'project-form-field-label',
-                input: 'project-form-field-input',
-              }}
-              {...form.getInputProps('userIds')}
-            />
-          </Stack>
+          {/* Search Bar */}
+          <TextInput
+            placeholder="חיפוש לפי שם עובד"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            leftSection={<IconSearch size={16} />}
+            className="project-form-field"
+            classNames={{
+              input: 'project-form-field-input',
+            }}
+          />
 
+          {/* Users Table */}
+          <ReusableTable
+            columns={[
+              { label: '', align: 'center' },
+              { label: "מס' עובד" },
+              { label: 'שם מלא' },
+              { label: 'תפקיד' },
+            ]}
+            isEmpty={filteredUsers.length === 0}
+            emptyMessage="לא נמצאו עובדים"
+          >
+            {paginatedUsers.map((user) => {
+              const userId = String(user.id);
+              const isSelected = form.values.userIds.includes(userId);
+              return (
+                <Table.Tr key={user.id}>
+                  <Table.Td className="project-form-table-cell-centered">
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        handleUserToggle(userId);
+                      }}
+                    />
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{user.id}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{user.name}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">
+                      {user.userType === 'admin' ? 'מנהל' : 'עובד'}
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+          </ReusableTable>
+
+          {/* Pagination */}
+          {filteredUsers.length > 0 && (
+            <ReusablePagination
+              currentPage={activePage}
+              totalPages={totalPages}
+              onPageChange={setActivePage}
+            />
+          )}
+
+          {/* Submit Button */}
           <Group justify="center" mt="md">
             <Button
               type="submit"
@@ -258,7 +358,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
               fullWidth
               className="project-form-submit-button"
             >
-              שמור שינויים
+              שייך עובד למשימה
             </Button>
           </Group>
         </Stack>
