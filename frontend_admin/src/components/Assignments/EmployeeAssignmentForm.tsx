@@ -86,7 +86,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
   useEffect(() => {
     if (taskId && opened) {
       if (tasksQuery.data) {
-        const foundTask = tasksQuery.data.find((t) => t.id === taskId);
+        const foundTask = tasksQuery.data.find((t) => String(t.id) === String(taskId));
         setTask(foundTask || null);
       }
     }
@@ -100,7 +100,9 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
       );
       const currentUserIds = taskAssignments.map((a) => String(a.userId));
       // Only update if the values are different to avoid unnecessary re-renders
-      if (JSON.stringify(currentUserIds.sort()) !== JSON.stringify(form.values.userIds.sort())) {
+      const sortedCurrentUserIds = [...currentUserIds].sort();
+      const sortedFormUserIds = [...form.values.userIds].sort();
+      if (JSON.stringify(sortedCurrentUserIds) !== JSON.stringify(sortedFormUserIds)) {
         form.setFieldValue('userIds', currentUserIds);
       }
     } else if (!opened) {
@@ -173,7 +175,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
   // Get project name for subtitle
   const projectName = useMemo(() => {
     if (!task) return '';
-    const project = projects.find((p) => p.id === task.projectId);
+    const project = projects.find((p) => String(p.id) === String(task.projectId));
     return project?.name || '';
   }, [task, projects]);
 
@@ -312,7 +314,7 @@ export const EmployeeAssignmentForm: FC<EmployeeAssignmentFormProps> = ({
               const isSelected = form.values.userIds.includes(userId);
               return (
                 <Table.Tr key={user.id}>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td className="project-form-table-cell-centered">
                     <Checkbox
                       checked={isSelected}
                       onChange={(event) => {
