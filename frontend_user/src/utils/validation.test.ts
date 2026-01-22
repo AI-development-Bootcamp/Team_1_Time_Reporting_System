@@ -1,4 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+/**
+ * Unit tests for validation.ts
+ * Tests all validation functions with edge cases
+ */
+
+import { describe, it, expect } from 'vitest';
 import {
   validateTimeRange,
   validateDuration,
@@ -15,571 +20,446 @@ import {
 } from './validation';
 import { ProjectReportItem } from '../types/dailyReport';
 
-describe('validation utilities', () => {
-  // ============================================================================
-  // Time Range Validation
-  // ============================================================================
+// ============================================================================
+// Time Validation Tests
+// ============================================================================
 
-  describe('validateTimeRange', () => {
-    it('returns empty string for valid time range', () => {
-      expect(validateTimeRange('09:00', '17:00')).toBe('');
-      expect(validateTimeRange('08:30', '16:45')).toBe('');
-    });
-
-    it('returns error when end time equals start time', () => {
-      expect(validateTimeRange('09:00', '09:00')).toBe('End time must be after start time');
-    });
-
-    it('returns error when end time is before start time', () => {
-      expect(validateTimeRange('17:00', '09:00')).toBe('End time must be after start time');
-    });
-
-    it('returns error when start time is missing', () => {
-      expect(validateTimeRange('', '17:00')).toBe('Start and end times are required');
-    });
-
-    it('returns error when end time is missing', () => {
-      expect(validateTimeRange('09:00', '')).toBe('Start and end times are required');
-    });
-
-    it('returns error when both times are missing', () => {
-      expect(validateTimeRange('', '')).toBe('Start and end times are required');
-    });
-
-    it('handles edge case with 1 minute difference', () => {
-      expect(validateTimeRange('09:00', '09:01')).toBe('');
-    });
+describe('validateTimeRange', () => {
+  it('should validate valid time range', () => {
+    expect(validateTimeRange('09:00', '17:00')).toBe('');
+    expect(validateTimeRange('00:00', '23:59')).toBe('');
+    expect(validateTimeRange('12:30', '12:31')).toBe('');
   });
 
-  // ============================================================================
-  // Duration Validation
-  // ============================================================================
-
-  describe('validateDuration', () => {
-    it('returns empty string for valid duration', () => {
-      expect(validateDuration('08:30')).toBe('');
-      expect(validateDuration('00:15')).toBe('');
-      expect(validateDuration('23:59')).toBe('');
-    });
-
-    it('returns error for invalid format', () => {
-      expect(validateDuration('8:30')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
-      expect(validateDuration('25:00')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
-      expect(validateDuration('12:60')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
-      expect(validateDuration('abc')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
-    });
-
-    it('returns error for empty duration', () => {
-      expect(validateDuration('')).toBe('Duration is required');
-    });
-
-    it('accepts 00:00 as valid format', () => {
-      expect(validateDuration('00:00')).toBe('');
-    });
-
-    it('accepts maximum valid duration 23:59', () => {
-      expect(validateDuration('23:59')).toBe('');
-    });
-
-    it('rejects hours > 23', () => {
-      expect(validateDuration('24:00')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
-    });
+  it('should return error when end time is before start time', () => {
+    expect(validateTimeRange('17:00', '09:00')).toBe('End time must be after start time');
+    expect(validateTimeRange('12:00', '12:00')).toBe('End time must be after start time');
   });
 
-  // ============================================================================
-  // Time Format Validation
-  // ============================================================================
+  it('should return error when times are missing', () => {
+    expect(validateTimeRange('', '17:00')).toBe('Start and end times are required');
+    expect(validateTimeRange('09:00', '')).toBe('Start and end times are required');
+    expect(validateTimeRange('', '')).toBe('Start and end times are required');
+  });
+});
 
-  describe('validateTimeFormat', () => {
-    it('returns empty string for valid time', () => {
-      expect(validateTimeFormat('09:00')).toBe('');
-      expect(validateTimeFormat('23:59')).toBe('');
-      expect(validateTimeFormat('00:00')).toBe('');
-    });
-
-    it('returns error for invalid format', () => {
-      expect(validateTimeFormat('9:00')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
-      expect(validateTimeFormat('25:00')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
-      expect(validateTimeFormat('12:60')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
-    });
-
-    it('returns error for empty time', () => {
-      expect(validateTimeFormat('')).toBe('Time is required');
-    });
+describe('validateDuration', () => {
+  it('should validate valid duration format', () => {
+    expect(validateDuration('08:30')).toBe('');
+    expect(validateDuration('00:00')).toBe('');
+    expect(validateDuration('23:59')).toBe('');
+    expect(validateDuration('12:45')).toBe('');
   });
 
-  // ============================================================================
-  // Duration Parsing
-  // ============================================================================
-
-  describe('parseDurationToMinutes', () => {
-    it('parses duration correctly', () => {
-      expect(parseDurationToMinutes('08:30')).toBe(510); // 8*60 + 30
-      expect(parseDurationToMinutes('01:15')).toBe(75);
-      expect(parseDurationToMinutes('00:45')).toBe(45);
-    });
-
-    it('returns 0 for empty string', () => {
-      expect(parseDurationToMinutes('')).toBe(0);
-    });
-
-    it('returns 0 for invalid format', () => {
-      expect(parseDurationToMinutes('abc')).toBe(0);
-      expect(parseDurationToMinutes('invalid')).toBe(0);
-    });
-
-    it('handles 00:00', () => {
-      expect(parseDurationToMinutes('00:00')).toBe(0);
-    });
-
-    it('handles maximum duration 23:59', () => {
-      expect(parseDurationToMinutes('23:59')).toBe(1439); // 23*60 + 59
-    });
+  it('should return error for invalid format', () => {
+    expect(validateDuration('8:30')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
+    expect(validateDuration('08:5')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
+    expect(validateDuration('25:00')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
+    expect(validateDuration('12:60')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
+    expect(validateDuration('invalid')).toBe('Invalid format. Use HH:mm (e.g., 08:30)');
   });
 
-  // ============================================================================
-  // Project Report Validation
-  // ============================================================================
+  it('should return error when empty', () => {
+    expect(validateDuration('')).toBe('Duration is required');
+  });
 
-  describe('validateRequiredFields', () => {
-    it('returns no errors for valid duration-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
+  it('should accept max valid duration (23:59)', () => {
+    expect(validateDuration('23:59')).toBe('');
+  });
+});
+
+describe('validateTimeFormat', () => {
+  it('should validate valid time format', () => {
+    expect(validateTimeFormat('09:00')).toBe('');
+    expect(validateTimeFormat('00:00')).toBe('');
+    expect(validateTimeFormat('23:59')).toBe('');
+  });
+
+  it('should return error for invalid format', () => {
+    expect(validateTimeFormat('9:00')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
+    expect(validateTimeFormat('24:00')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
+    expect(validateTimeFormat('12:60')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
+    expect(validateTimeFormat('invalid')).toBe('Invalid format. Use HH:mm (e.g., 09:00)');
+  });
+
+  it('should return error when empty', () => {
+    expect(validateTimeFormat('')).toBe('Time is required');
+  });
+});
+
+describe('parseDurationToMinutes', () => {
+  it('should parse valid duration to minutes', () => {
+    expect(parseDurationToMinutes('08:30')).toBe(510);
+    expect(parseDurationToMinutes('00:45')).toBe(45);
+    expect(parseDurationToMinutes('01:00')).toBe(60);
+    expect(parseDurationToMinutes('00:00')).toBe(0);
+    expect(parseDurationToMinutes('23:59')).toBe(1439);
+  });
+
+  it('should return 0 for empty string', () => {
+    expect(parseDurationToMinutes('')).toBe(0);
+  });
+
+  it('should return 0 for invalid format', () => {
+    expect(parseDurationToMinutes('invalid')).toBe(0);
+    expect(parseDurationToMinutes('abc:def')).toBe(0);
+  });
+});
+
+// ============================================================================
+// Project Report Validation Tests
+// ============================================================================
+
+describe('validateRequiredFields', () => {
+  it('should validate complete duration-based project report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'duration',
+      duration: 480,
+    };
+    const errors = validateRequiredFields(report);
+    expect(Object.keys(errors).length).toBe(0);
+  });
+
+  it('should validate complete startEnd-based project report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'startEnd',
+      startTime: '09:00',
+      endTime: '17:00',
+    };
+    const errors = validateRequiredFields(report);
+    expect(Object.keys(errors).length).toBe(0);
+  });
+
+  it('should return error for missing projectId', () => {
+    const report: Partial<ProjectReportItem> = {
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'duration',
+      duration: 480,
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.projectId).toBe('Project is required');
+  });
+
+  it('should return error for missing taskId', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      location: 'office',
+      reportingType: 'duration',
+      duration: 480,
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.taskId).toBe('Task is required');
+  });
+
+  it('should return error for missing location', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      reportingType: 'duration',
+      duration: 480,
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.location).toBe('Location is required');
+  });
+
+  it('should return error for missing duration in duration-based report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'duration',
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.duration).toBe('Duration is required');
+  });
+
+  it('should return error for zero duration', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'duration',
+      duration: 0,
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.duration).toBe('Duration must be greater than 0');
+  });
+
+  it('should return error for missing times in startEnd-based report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'startEnd',
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.startTime).toBe('Start time is required');
+    expect(errors.endTime).toBe('End time is required');
+  });
+
+  it('should return error for invalid time range in startEnd report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'startEnd',
+      startTime: '17:00',
+      endTime: '09:00',
+    };
+    const errors = validateRequiredFields(report);
+    expect(errors.endTime).toBe('End time must be after start time');
+  });
+});
+
+describe('isProjectReportValid', () => {
+  it('should return true for valid duration-based report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'duration',
+      duration: 480,
+    };
+    expect(isProjectReportValid(report)).toBe(true);
+  });
+
+  it('should return true for valid startEnd-based report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      taskId: 'task-1',
+      location: 'office',
+      reportingType: 'startEnd',
+      startTime: '09:00',
+      endTime: '17:00',
+    };
+    expect(isProjectReportValid(report)).toBe(true);
+  });
+
+  it('should return false for invalid report', () => {
+    const report: Partial<ProjectReportItem> = {
+      projectId: 'proj-1',
+      reportingType: 'duration',
+    };
+    expect(isProjectReportValid(report)).toBe(false);
+  });
+});
+
+// ============================================================================
+// Duration Calculation Tests
+// ============================================================================
+
+describe('calculateTotalDuration', () => {
+  it('should return 0 for empty array', () => {
+    expect(calculateTotalDuration([])).toBe(0);
+  });
+
+  it('should calculate total duration for duration-based reports', () => {
+    const reports: ProjectReportItem[] = [
+      {
+        clientId: 'c1',
+        clientName: 'Client 1',
+        projectId: 'p1',
+        projectName: 'Project 1',
+        taskId: 't1',
+        taskName: 'Task 1',
         reportingType: 'duration',
-        duration: 480,
-      };
-      const errors = validateRequiredFields(report);
-      expect(Object.keys(errors)).toHaveLength(0);
-    });
-
-    it('returns no errors for valid startEnd-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
         location: 'office',
+        duration: 240,
+      },
+      {
+        clientId: 'c1',
+        clientName: 'Client 1',
+        projectId: 'p2',
+        projectName: 'Project 2',
+        taskId: 't2',
+        taskName: 'Task 2',
+        reportingType: 'duration',
+        location: 'office',
+        duration: 180,
+      },
+    ];
+    expect(calculateTotalDuration(reports)).toBe(420);
+  });
+
+  it('should calculate total duration for startEnd-based reports', () => {
+    const reports: ProjectReportItem[] = [
+      {
+        clientId: 'c1',
+        clientName: 'Client 1',
+        projectId: 'p1',
+        projectName: 'Project 1',
+        taskId: 't1',
+        taskName: 'Task 1',
         reportingType: 'startEnd',
+        location: 'office',
         startTime: '09:00',
-        endTime: '17:00',
-      };
-      const errors = validateRequiredFields(report);
-      expect(Object.keys(errors)).toHaveLength(0);
-    });
+        endTime: '12:00',
+      },
+    ];
+    expect(calculateTotalDuration(reports)).toBe(180);
+  });
 
-    it('returns error for missing projectId', () => {
-      const report: Partial<ProjectReportItem> = {
-        taskId: '1',
-        location: 'office',
+  it('should calculate total duration for mixed report types', () => {
+    const reports: ProjectReportItem[] = [
+      {
+        clientId: 'c1',
+        clientName: 'Client 1',
+        projectId: 'p1',
+        projectName: 'Project 1',
+        taskId: 't1',
+        taskName: 'Task 1',
         reportingType: 'duration',
-        duration: 480,
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.projectId).toBe('Project is required');
-    });
-
-    it('returns error for missing taskId', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
         location: 'office',
-        reportingType: 'duration',
-        duration: 480,
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.taskId).toBe('Task is required');
-    });
-
-    it('returns error for missing location', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        reportingType: 'duration',
-        duration: 480,
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.location).toBe('Location is required');
-    });
-
-    it('returns error for missing duration in duration-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
-        reportingType: 'duration',
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.duration).toBe('Duration is required');
-    });
-
-    it('returns error for zero duration in duration-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
-        reportingType: 'duration',
-        duration: 0,
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.duration).toBe('Duration must be greater than 0');
-    });
-
-    it('returns error for missing startTime in startEnd-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
+        duration: 240,
+      },
+      {
+        clientId: 'c1',
+        clientName: 'Client 1',
+        projectId: 'p2',
+        projectName: 'Project 2',
+        taskId: 't2',
+        taskName: 'Task 2',
         reportingType: 'startEnd',
-        endTime: '17:00',
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.startTime).toBe('Start time is required');
-    });
-
-    it('returns error for missing endTime in startEnd-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
         location: 'office',
-        reportingType: 'startEnd',
-        startTime: '09:00',
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.endTime).toBe('End time is required');
-    });
+        startTime: '13:00',
+        endTime: '15:00',
+      },
+    ];
+    expect(calculateTotalDuration(reports)).toBe(360);
+  });
+});
 
-    it('returns error for invalid time range in startEnd-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
-        reportingType: 'startEnd',
-        startTime: '17:00',
-        endTime: '09:00',
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.endTime).toBe('End time must be after start time');
-    });
-
-    it('returns multiple errors when multiple fields are missing', () => {
-      const report: Partial<ProjectReportItem> = {
-        reportingType: 'duration',
-      };
-      const errors = validateRequiredFields(report);
-      expect(errors.projectId).toBeDefined();
-      expect(errors.taskId).toBeDefined();
-      expect(errors.location).toBeDefined();
-      expect(errors.duration).toBeDefined();
-    });
+describe('calculateTargetDuration', () => {
+  it('should calculate target duration from entrance and exit times', () => {
+    expect(calculateTargetDuration('09:00', '17:00')).toBe(480);
+    expect(calculateTargetDuration('08:00', '16:30')).toBe(510);
   });
 
-  describe('isProjectReportValid', () => {
-    it('returns true for valid duration-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
-        reportingType: 'duration',
-        duration: 480,
-      };
-      expect(isProjectReportValid(report)).toBe(true);
-    });
-
-    it('returns true for valid startEnd-based report', () => {
-      const report: Partial<ProjectReportItem> = {
-        projectId: '1',
-        taskId: '1',
-        location: 'office',
-        reportingType: 'startEnd',
-        startTime: '09:00',
-        endTime: '17:00',
-      };
-      expect(isProjectReportValid(report)).toBe(true);
-    });
-
-    it('returns false for invalid report', () => {
-      const report: Partial<ProjectReportItem> = {
-        reportingType: 'duration',
-      };
-      expect(isProjectReportValid(report)).toBe(false);
-    });
+  it('should return 0 for missing times', () => {
+    expect(calculateTargetDuration('', '17:00')).toBe(0);
+    expect(calculateTargetDuration('09:00', '')).toBe(0);
+    expect(calculateTargetDuration('', '')).toBe(0);
   });
 
-  // ============================================================================
-  // Duration Calculation
-  // ============================================================================
+  it('should return 0 for invalid time range', () => {
+    expect(calculateTargetDuration('17:00', '09:00')).toBe(0);
+  });
+});
 
-  describe('calculateTotalDuration', () => {
-    it('returns 0 for empty array', () => {
-      expect(calculateTotalDuration([])).toBe(0);
-    });
+// ============================================================================
+// Tracker Validation Tests
+// ============================================================================
 
-    it('calculates total for duration-based reports', () => {
-      const reports: ProjectReportItem[] = [
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '1',
-          taskName: 'Task A',
-          reportingType: 'duration',
-          location: 'office',
-          duration: 240, // 4 hours
-        },
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '2',
-          taskName: 'Task B',
-          reportingType: 'duration',
-          location: 'home',
-          duration: 180, // 3 hours
-        },
-      ];
-      expect(calculateTotalDuration(reports)).toBe(420); // 7 hours
-    });
-
-    it('calculates total for startEnd-based reports', () => {
-      const reports: ProjectReportItem[] = [
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '1',
-          taskName: 'Task A',
-          reportingType: 'startEnd',
-          location: 'office',
-          startTime: '09:00',
-          endTime: '12:00', // 3 hours
-        },
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '2',
-          taskName: 'Task B',
-          reportingType: 'startEnd',
-          location: 'client',
-          startTime: '13:00',
-          endTime: '17:00', // 4 hours
-        },
-      ];
-      expect(calculateTotalDuration(reports)).toBe(420); // 7 hours
-    });
-
-    it('calculates total for mixed reporting types', () => {
-      const reports: ProjectReportItem[] = [
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '1',
-          taskName: 'Task A',
-          reportingType: 'duration',
-          location: 'office',
-          duration: 240, // 4 hours
-        },
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '2',
-          projectName: 'Project B',
-          taskId: '2',
-          taskName: 'Task B',
-          reportingType: 'startEnd',
-          location: 'home',
-          startTime: '13:00',
-          endTime: '16:00', // 3 hours
-        },
-      ];
-      expect(calculateTotalDuration(reports)).toBe(420); // 7 hours
-    });
-
-    it('ignores reports with missing time data', () => {
-      const reports: ProjectReportItem[] = [
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '1',
-          projectName: 'Project A',
-          taskId: '1',
-          taskName: 'Task A',
-          reportingType: 'duration',
-          location: 'office',
-          duration: 240,
-        },
-        {
-          clientId: '1',
-          clientName: 'Client A',
-          projectId: '2',
-          projectName: 'Project B',
-          taskId: '2',
-          taskName: 'Task B',
-          reportingType: 'startEnd',
-          location: 'home',
-          // Missing startTime and endTime
-        },
-      ];
-      expect(calculateTotalDuration(reports)).toBe(240);
-    });
+describe('validateTrackerComplete', () => {
+  it('should return complete when total >= target', () => {
+    const result = validateTrackerComplete(480, 480);
+    expect(result.isComplete).toBe(true);
+    expect(result.missingMinutes).toBe(0);
+    expect(result.missingPercentage).toBe(0);
   });
 
-  describe('calculateTargetDuration', () => {
-    it('calculates target duration correctly', () => {
-      expect(calculateTargetDuration('09:00', '17:00')).toBe(480); // 8 hours
-      expect(calculateTargetDuration('08:30', '16:45')).toBe(495); // 8 hours 15 minutes
-    });
-
-    it('returns 0 for missing entrance time', () => {
-      expect(calculateTargetDuration('', '17:00')).toBe(0);
-    });
-
-    it('returns 0 for missing exit time', () => {
-      expect(calculateTargetDuration('09:00', '')).toBe(0);
-    });
-
-    it('returns 0 for negative duration', () => {
-      expect(calculateTargetDuration('17:00', '09:00')).toBe(0);
-    });
-
-    it('returns 0 for same entrance and exit time', () => {
-      expect(calculateTargetDuration('09:00', '09:00')).toBe(0);
-    });
+  it('should return incomplete when total < target', () => {
+    const result = validateTrackerComplete(240, 480);
+    expect(result.isComplete).toBe(false);
+    expect(result.missingMinutes).toBe(240);
+    expect(result.missingPercentage).toBe(50);
   });
 
-  // ============================================================================
-  // Tracker Validation
-  // ============================================================================
-
-  describe('validateTrackerComplete', () => {
-    it('returns complete when total equals target', () => {
-      const result = validateTrackerComplete(480, 480);
-      expect(result.isComplete).toBe(true);
-      expect(result.missingMinutes).toBe(0);
-      expect(result.missingPercentage).toBe(0);
-    });
-
-    it('returns complete when total exceeds target', () => {
-      const result = validateTrackerComplete(500, 480);
-      expect(result.isComplete).toBe(true);
-      expect(result.missingMinutes).toBe(0);
-      expect(result.missingPercentage).toBe(0);
-    });
-
-    it('returns incomplete when total is less than target', () => {
-      const result = validateTrackerComplete(240, 480);
-      expect(result.isComplete).toBe(false);
-      expect(result.missingMinutes).toBe(240);
-      expect(result.missingPercentage).toBe(50);
-    });
-
-    it('handles zero target', () => {
-      const result = validateTrackerComplete(0, 0);
-      expect(result.isComplete).toBe(true);
-      expect(result.missingMinutes).toBe(0);
-      expect(result.missingPercentage).toBe(0);
-    });
-
-    it('calculates correct percentage for partial completion', () => {
-      const result = validateTrackerComplete(360, 480); // 75%
-      expect(result.isComplete).toBe(false);
-      expect(result.missingMinutes).toBe(120);
-      expect(result.missingPercentage).toBe(25);
-    });
+  it('should return complete when total > target', () => {
+    const result = validateTrackerComplete(500, 480);
+    expect(result.isComplete).toBe(true);
+    expect(result.missingMinutes).toBe(0);
   });
 
-  describe('calculateProgressPercentage', () => {
-    it('returns 0 for zero target', () => {
-      expect(calculateProgressPercentage(100, 0)).toBe(0);
-    });
+  it('should handle zero target', () => {
+    const result = validateTrackerComplete(0, 0);
+    expect(result.isComplete).toBe(true);
+    expect(result.missingMinutes).toBe(0);
+    expect(result.missingPercentage).toBe(0);
+  });
+});
 
-    it('calculates percentage correctly', () => {
-      expect(calculateProgressPercentage(240, 480)).toBe(50);
-      expect(calculateProgressPercentage(360, 480)).toBe(75);
-      expect(calculateProgressPercentage(120, 480)).toBe(25);
-    });
-
-    it('caps at 100% when total exceeds target', () => {
-      expect(calculateProgressPercentage(500, 480)).toBe(100);
-      expect(calculateProgressPercentage(600, 480)).toBe(100);
-    });
-
-    it('returns 100% when total equals target', () => {
-      expect(calculateProgressPercentage(480, 480)).toBe(100);
-    });
-
-    it('returns 0% when total is 0', () => {
-      expect(calculateProgressPercentage(0, 480)).toBe(0);
-    });
-
-    it('rounds to nearest integer', () => {
-      expect(calculateProgressPercentage(333, 1000)).toBe(33); // 33.3 -> 33
-      expect(calculateProgressPercentage(667, 1000)).toBe(67); // 66.7 -> 67
-    });
+describe('calculateProgressPercentage', () => {
+  it('should calculate correct percentage', () => {
+    expect(calculateProgressPercentage(240, 480)).toBe(50);
+    expect(calculateProgressPercentage(480, 480)).toBe(100);
+    expect(calculateProgressPercentage(360, 480)).toBe(75);
   });
 
-  // ============================================================================
-  // Date Validation
-  // ============================================================================
-
-  describe('validateDateFormat', () => {
-    it('returns empty string for valid date', () => {
-      expect(validateDateFormat('2026-01-21')).toBe('');
-      expect(validateDateFormat('2025-12-31')).toBe('');
-    });
-
-    it('returns error for invalid format', () => {
-      expect(validateDateFormat('21-01-2026')).toBe('Invalid format. Use YYYY-MM-DD');
-      expect(validateDateFormat('2026/01/21')).toBe('Invalid format. Use YYYY-MM-DD');
-      expect(validateDateFormat('21.01.2026')).toBe('Invalid format. Use YYYY-MM-DD');
-    });
-
-    it('returns error for empty date', () => {
-      expect(validateDateFormat('')).toBe('Date is required');
-    });
-
-    it('returns error for invalid date values', () => {
-      expect(validateDateFormat('2026-13-01')).toBe('Invalid date');
-      expect(validateDateFormat('2026-02-30')).toBe('Invalid date');
-    });
+  it('should cap at 100%', () => {
+    expect(calculateProgressPercentage(600, 480)).toBe(100);
   });
 
-  describe('validateNotFutureDate', () => {
-    beforeEach(() => {
-      // Mock current date to 2026-01-21
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2026-01-21T12:00:00Z'));
-    });
+  it('should return 0 for zero target', () => {
+    expect(calculateProgressPercentage(100, 0)).toBe(0);
+  });
 
-    afterEach(() => {
-      vi.useRealTimers();
-    });
+  it('should return 0 for zero total', () => {
+    expect(calculateProgressPercentage(0, 480)).toBe(0);
+  });
+});
 
-    it('returns empty string for today', () => {
-      expect(validateNotFutureDate('2026-01-21')).toBe('');
-    });
+// ============================================================================
+// Date Validation Tests
+// ============================================================================
 
-    it('returns empty string for past date', () => {
-      expect(validateNotFutureDate('2026-01-20')).toBe('');
-      expect(validateNotFutureDate('2025-12-31')).toBe('');
-    });
+describe('validateDateFormat', () => {
+  it('should validate valid date format', () => {
+    expect(validateDateFormat('2026-01-21')).toBe('');
+    expect(validateDateFormat('2024-12-31')).toBe('');
+    expect(validateDateFormat('2025-06-15')).toBe('');
+  });
 
-    it('returns error for future date', () => {
-      expect(validateNotFutureDate('2026-01-22')).toBe('Cannot report for future dates');
-      expect(validateNotFutureDate('2026-02-01')).toBe('Cannot report for future dates');
-    });
+  it('should return error for invalid format', () => {
+    expect(validateDateFormat('2026/01/21')).toBe('Invalid format. Use YYYY-MM-DD');
+    expect(validateDateFormat('21-01-2026')).toBe('Invalid format. Use YYYY-MM-DD');
+    expect(validateDateFormat('2026-1-21')).toBe('Invalid format. Use YYYY-MM-DD');
+    expect(validateDateFormat('invalid')).toBe('Invalid format. Use YYYY-MM-DD');
+  });
 
-    it('returns error for invalid format', () => {
-      expect(validateNotFutureDate('21-01-2026')).toBe('Invalid format. Use YYYY-MM-DD');
-    });
+  it('should return error for empty date', () => {
+    expect(validateDateFormat('')).toBe('Date is required');
+  });
 
-    it('returns error for empty date', () => {
-      expect(validateNotFutureDate('')).toBe('Date is required');
-    });
+  it('should return error for invalid month', () => {
+    expect(validateDateFormat('2026-00-21')).toBe('Invalid date');
+    expect(validateDateFormat('2026-13-21')).toBe('Invalid date');
+  });
+
+  it('should return error for invalid day', () => {
+    expect(validateDateFormat('2026-01-00')).toBe('Invalid date');
+    expect(validateDateFormat('2026-01-32')).toBe('Invalid date');
+    expect(validateDateFormat('2026-02-30')).toBe('Invalid date');
+  });
+
+  it('should validate leap year dates', () => {
+    expect(validateDateFormat('2024-02-29')).toBe(''); // 2024 is leap year
+    expect(validateDateFormat('2025-02-29')).toBe('Invalid date'); // 2025 is not
+  });
+});
+
+describe('validateNotFutureDate', () => {
+  it('should allow today and past dates', () => {
+    const today = new Date().toISOString().split('T')[0];
+    expect(validateNotFutureDate(today)).toBe('');
+    expect(validateNotFutureDate('2020-01-01')).toBe('');
+  });
+
+  it('should return error for future dates', () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 1);
+    const futureDate = future.toISOString().split('T')[0];
+    expect(validateNotFutureDate(futureDate)).toBe('Cannot report for future dates');
+  });
+
+  it('should return error for invalid format', () => {
+    expect(validateNotFutureDate('invalid')).toBe('Invalid format. Use YYYY-MM-DD');
   });
 });

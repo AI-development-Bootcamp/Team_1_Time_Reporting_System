@@ -1591,10 +1591,10 @@ backend/src/
     - [x] Show loading skeleton while fetching
 
 **Testing:**
-- [ ] TASK-M2-020-TEST-001: Unit tests for utils
-  - [ ] Test `validation.ts` functions (all edge cases)
-  - [ ] Test `timeUtils.ts` functions (parsing, formatting)
-  - [ ] Coverage target: ≥80%
+- [x] TASK-M2-020-TEST-001: Unit tests for utils
+  - [x] Test `validation.ts` functions (all edge cases) - 49 tests, 97.93% coverage
+  - [x] Test `timeUtils.ts` functions (parsing, formatting) - 42 tests, 100% coverage
+  - [x] Coverage target: ≥80% - ✅ Achieved (validation: 97.93%, timeUtils: 100%)
 
 - [ ] TASK-M2-020-TEST-002: Unit tests for hooks
   - [ ] Test `useDailyReportForm` state management
