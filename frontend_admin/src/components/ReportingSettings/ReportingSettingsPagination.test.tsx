@@ -6,7 +6,7 @@ import { ReportingSettingsPagination } from './ReportingSettingsPagination';
 describe('ReportingSettingsPagination', () => {
   it('renders pagination component', () => {
     const onPageChange = vi.fn();
-    const { container } = render(
+    render(
       <ReportingSettingsPagination
         currentPage={1}
         totalPages={5}
@@ -17,7 +17,7 @@ describe('ReportingSettingsPagination', () => {
     // Mantine Pagination renders buttons, check that pagination buttons are present
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(0);
-    
+
     // Check for page number buttons
     expect(screen.getByText('1')).toBeInTheDocument();
   });
@@ -71,7 +71,7 @@ describe('ReportingSettingsPagination', () => {
     const pageButtons = buttons.filter(
       (btn) => btn.getAttribute('aria-current') !== 'page' && btn.textContent?.match(/^\d+$/)
     );
-    
+
     if (pageButtons.length > 0) {
       await user.click(pageButtons[0]);
       // Mantine pagination should call onPageChange with the page number
@@ -96,7 +96,7 @@ describe('ReportingSettingsPagination', () => {
     // Check that there are multiple page buttons
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(1);
-    
+
     // Should show page 10 (last page)
     expect(screen.getByText('10')).toBeInTheDocument();
   });
@@ -114,7 +114,7 @@ describe('ReportingSettingsPagination', () => {
     // Should have at least one button (the current page)
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThanOrEqual(1);
-    
+
     // Should show page 1
     expect(screen.getByText('1')).toBeInTheDocument();
   });

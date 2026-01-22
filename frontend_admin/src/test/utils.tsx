@@ -23,7 +23,7 @@ function AllTheProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={{ dir: 'rtl' }}>
+      <MantineProvider>
         <Notifications />
         <BrowserRouter>{children}</BrowserRouter>
       </MantineProvider>

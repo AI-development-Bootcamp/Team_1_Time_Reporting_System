@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@test/utils';
+import { render, screen } from '@test/utils';
 import userEvent from '@testing-library/user-event';
 import { ErrorBoundary } from './ErrorBoundary';
-import React from 'react';
 
 // Component that throws an error
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
@@ -17,7 +16,7 @@ describe('ErrorBoundary', () => {
 
   beforeEach(() => {
     // Suppress console.error for error boundary tests
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {
@@ -61,7 +60,7 @@ describe('ErrorBoundary', () => {
 
   it('resets error state when reset button is clicked', async () => {
     const user = userEvent.setup();
-    
+
     // Test that reset button calls handleReset
     // We'll verify the button exists and is clickable
     // The actual reset behavior requires children to not throw after reset
@@ -75,10 +74,10 @@ describe('ErrorBoundary', () => {
 
     const resetButton = screen.getByText('נסה שוב');
     expect(resetButton).toBeInTheDocument();
-    
+
     // Click the reset button - this should call handleReset
     await user.click(resetButton);
-    
+
     // After clicking reset, ErrorBoundary's state is reset
     // But since ThrowError still throws, it will catch the error again
     // This is expected behavior - the error boundary resets, but if children

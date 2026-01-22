@@ -10,12 +10,12 @@ interface ReportingSettingsTableProps {
    * Array of projects with client data
    */
   projects: ProjectWithClient[];
-  
+
   /**
    * Callback when reporting type changes
    */
   onReportingTypeChange: (projectId: number, reportingType: ReportingType) => void;
-  
+
   /**
    * Whether any update is in progress
    */
@@ -44,7 +44,7 @@ export function ReportingSettingsTable({
   ];
 
   return (
-    <ReusableTable 
+    <ReusableTable
       columns={columns}
       isEmpty={projects.length === 0}
     >
@@ -64,7 +64,7 @@ export function ReportingSettingsTable({
             <Box>
               <ReportingTypeToggle
                 value={project.reportingType}
-                onChange={(value) => onReportingTypeChange(project.id, value)}
+                onChange={(value) => onReportingTypeChange(Number(project.id), value)}
                 disabled={isUpdating}
               />
             </Box>

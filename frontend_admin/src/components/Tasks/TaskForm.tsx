@@ -14,7 +14,7 @@ import {
 import { useForm } from '@mantine/form';
 import { IconX, IconPlus } from '@tabler/icons-react';
 import { useProjects } from '../../hooks/useProjects';
-import { useTasks, Task } from '../../hooks/useTasks';
+import { Task } from '../../hooks/useTasks';
 import '../../styles/components/TaskForm.css';
 
 export interface CreateTaskInput {

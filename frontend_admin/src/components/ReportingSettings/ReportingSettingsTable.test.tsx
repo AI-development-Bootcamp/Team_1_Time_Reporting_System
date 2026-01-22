@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@test/utils';
 import dayjs from 'dayjs';
 import { ReportingSettingsTable } from './ReportingSettingsTable';
-import type { ProjectWithClient } from '../../../hooks/useReportingSettings';
+import type { ProjectWithClient } from '../../hooks/useReportingSettings';
 
 const mockProjects: ProjectWithClient[] = [
   {
@@ -94,7 +94,7 @@ describe('ReportingSettingsTable', () => {
   it('calls onReportingTypeChange when reporting type is changed', async () => {
     const userEvent = (await import('@testing-library/user-event')).default;
     const user = userEvent.setup();
-    
+
     const onReportingTypeChange = vi.fn();
     render(
       <ReportingSettingsTable

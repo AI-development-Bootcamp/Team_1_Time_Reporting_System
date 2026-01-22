@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error details for debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
@@ -86,7 +86,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </Text>
 
               {/* Show error details in development */}
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <Paper p="md" bg="red.0" withBorder>
                   <Text fw={700} size="sm" c="red.9" mb="xs">
                     פרטי שגיאה (במצב פיתוח):
@@ -95,10 +95,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     {this.state.error.toString()}
                   </Text>
                   {this.state.errorInfo && (
-                    <Text 
-                      size="xs" 
-                      c="red.8" 
-                      mt="xs" 
+                    <Text
+                      size="xs"
+                      c="red.8"
+                      mt="xs"
                       className={styles.errorStack}
                     >
                       {this.state.errorInfo.componentStack}
@@ -111,9 +111,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <Button onClick={this.handleReset} fullWidth>
                   נסה שוב
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.location.reload()} 
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.reload()}
                   fullWidth
                 >
                   רענן את הדף
