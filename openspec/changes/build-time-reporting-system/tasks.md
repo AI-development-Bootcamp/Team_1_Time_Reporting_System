@@ -1596,12 +1596,12 @@ backend/src/
   - [x] Test `timeUtils.ts` functions (parsing, formatting) - 42 tests, 100% coverage
   - [x] Coverage target: ≥80% - ✅ Achieved (validation: 97.93%, timeUtils: 100%)
 
-- [ ] TASK-M2-020-TEST-002: Unit tests for hooks
-  - [ ] Test `useDailyReportForm` state management
-  - [ ] Test `useCreateDailyReport` mutation behavior
-  - [ ] Test `useUpdateDailyReport` mutation behavior
-  - [ ] Test `useProjectSelector` data fetching and transformation
-  - [ ] Coverage target: ≥70%
+- [x] TASK-M2-020-TEST-002: Unit tests for hooks
+  - [x] Test `useDailyReportForm` state management - 31 tests, 89.71% coverage
+  - [x] Test `useCreateDailyReport` mutation behavior - 10 tests, 100% coverage
+  - [x] Test `useUpdateDailyReport` mutation behavior - 18 tests, 100% coverage
+  - [x] Test `useProjectSelector` data fetching and transformation - 9 tests, 100% coverage
+  - [x] Coverage target: ≥70% - ✅ Achieved (hooks: 92.3% statements, 81.96% branch, 97.91% funcs, 91.53% lines)
 
 - [ ] TASK-M2-020-TEST-003: Component tests
   - [ ] Test `WorkReportTab` renders correctly
