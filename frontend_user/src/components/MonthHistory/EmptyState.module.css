@@ -1,0 +1,15 @@
+/**
+ * EmptyState styles
+ */
+
+.container {
+  flex: 1;
+  min-height: 400px;
+  width: 100%;
+}
+
+.image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+}

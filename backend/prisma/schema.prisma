@@ -147,6 +147,8 @@ model ProjectTimeLogs {
   dailyAttendanceId  BigInt         @map("daily_attendance_id")
   taskId             BigInt         @map("task_id")
   durationMin        Int            @map("duration_min")
+  startTime          DateTime?      @map("start_time") @db.Time  // NULL if project reportingType=duration
+  endTime            DateTime?      @map("end_time") @db.Time    // NULL if project reportingType=duration
   location           LocationStatus // Where the work was done: office, client, or home
   description        String?
   createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz

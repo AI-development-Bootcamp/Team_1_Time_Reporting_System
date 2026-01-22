@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
         '@types': path.resolve(__dirname, './src/types'),
         '@utils': path.resolve(__dirname, './src/utils'),
         '@shared': path.resolve(__dirname, '../shared/src'),
+        '@images': path.resolve(__dirname, '../shared/image_components'),
       },
     },
     server: {
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => {
       exclude: ['node_modules', 'dist', '.git'],
       globals: true,
       environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json'],

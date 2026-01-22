@@ -1,0 +1,37 @@
+/**
+ * TimeLogRow Component
+ * Displays a single time log entry with duration and project name
+ */
+
+import { Group, Text } from '@mantine/core';
+import { ProjectTimeLog } from '../../types';
+import { formatDurationHours } from '../../utils/dateUtils';
+import styles from './TimeLogRow.module.css';
+
+interface TimeLogRowProps {
+  /** Time log data */
+  timeLog: ProjectTimeLog;
+}
+
+export function TimeLogRow({ timeLog }: TimeLogRowProps) {
+  const timeFormatted = formatDurationHours(timeLog.duration);
+  const projectName = timeLog.task.project.name;
+
+  return (
+    <Group justify="space-between" wrap="nowrap">
+      {/* Project name - appears on the right in RTL */}
+      <Text size="sm" c="dimmed">
+        {projectName}
+      </Text>
+      {/* Duration - appears on the left in RTL */}
+      <Group gap={4} wrap="nowrap">
+        <Text size="sm" c="dimmed" dir="ltr" className={styles.ltrText}>
+          {timeFormatted}
+        </Text>
+        <Text size="sm" c="dimmed">
+          ש'
+        </Text>
+      </Group>
+    </Group>
+  );
+}

@@ -7,6 +7,9 @@ import assignmentsRoutes from './routes/admin/Assignments';
 import projectsRouter from './routes/admin/Projects';
 import clientsRouter from './routes/admin/Clients';
 import tasksRouter from './routes/admin/Tasks';
+import attendanceRoutes from './routes/attendance.routes';
+import timeLogsRoutes from './routes/timeLogs.routes';
+import projectsRoutes from './routes/projects.routes';
 
 /**
  * Create and configure Express app
@@ -53,6 +56,9 @@ export const createApp = () => {
   app.use('/api/admin/projects', projectsRouter);
   app.use('/api/admin/clients', clientsRouter);
   app.use('/api/admin/tasks', tasksRouter);
+  app.use('/api/attendance', attendanceRoutes);
+  app.use('/api/time-logs', timeLogsRoutes);
+  app.use('/api/projects', projectsRoutes);
 
   // Error handler must be last
   app.use(errorHandler);

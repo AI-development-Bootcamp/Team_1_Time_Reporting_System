@@ -10,6 +10,9 @@ CREATE TYPE "DailyAttendanceStatus" AS ENUM ('work', 'sickness', 'reserves', 'da
 -- CreateEnum
 CREATE TYPE "LocationStatus" AS ENUM ('office', 'client', 'home');
 
+-- CreateEnum
+CREATE TYPE "ReportingType" AS ENUM ('duration', 'startEnd');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" BIGSERIAL NOT NULL,
@@ -45,6 +48,7 @@ CREATE TABLE "projects" (
     "start_date" DATE NOT NULL,
     "end_date" DATE,
     "description" TEXT,
+    "reporting_type" "ReportingType" NOT NULL DEFAULT 'startEnd',
     "active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
@@ -96,6 +100,8 @@ CREATE TABLE "project_time_logs" (
     "daily_attendance_id" BIGINT NOT NULL,
     "task_id" BIGINT NOT NULL,
     "duration_min" INTEGER NOT NULL,
+    "start_time" TIME,
+    "end_time" TIME,
     "location" "LocationStatus" NOT NULL,
     "description" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
