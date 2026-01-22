@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
-import app from '../../src/app';
+import { createApp } from '../../src/app';
 
 const prisma = new PrismaClient();
+const app = createApp();
 
 // Test data
 let testUserId: bigint;
@@ -86,19 +87,25 @@ describe('Time Logs API Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Clean up all test data
+    // Clean up all test data - delete time logs via attendance to catch any orphaned records
     try {
+      // Delete all time logs for the test user's attendance records
       await prisma.projectTimeLogs.deleteMany({
-        where: { taskId: testTaskId },
+        where: {
+          dailyAttendance: {
+            userId: testUserId,
+          },
+        },
       });
       await prisma.dailyAttendance.deleteMany({
         where: { userId: testUserId },
       });
       await prisma.taskWorker.deleteMany({
-        where: { taskId: testTaskId },
+        where: { userId: testUserId },
       });
+      // Delete tasks by project (catches any nested test tasks that weren't cleaned up)
       await prisma.task.deleteMany({
-        where: { id: testTaskId },
+        where: { projectId: testProjectId },
       });
       await prisma.project.deleteMany({
         where: { id: testProjectId },

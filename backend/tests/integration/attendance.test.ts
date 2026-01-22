@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
-import app from '../../src/app';
+import { createApp } from '../../src/app';
 
 const prisma = new PrismaClient();
+const app = createApp();
 
 // Test data
 let testUserId: bigint;
