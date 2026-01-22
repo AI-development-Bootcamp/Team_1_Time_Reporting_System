@@ -1,0 +1,169 @@
+/**
+ * LocationListStep Styles
+ * RTL-supported, mobile-first location selection component
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Location Button
+ * ============================================================================ */
+
+.locationButton {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  direction: rtl;
+}
+
+.locationButton:hover {
+  background: #f8f9fa;
+  border-color: #228be6;
+}
+
+.locationButton.selected {
+  background: #e7f5ff;
+  border-color: #228be6;
+  border-width: 2px;
+}
+
+.locationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  text-align: right;
+}
+
+.checkIcon {
+  color: #228be6;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .locationButton {
+    padding: 0.875rem;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .locationButton {
+    padding: 1rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .locationButton {
+    padding: 1.125rem;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.container {
+  direction: rtl;
+}
+
+.locationContent {
+  text-align: right;
+}
+
+.locationButton {
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.locationButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .locationButton {
+    min-height: 56px;
+  }
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Selected state animation */
+.locationButton.selected {
+  animation: selectPulse 0.3s ease-out;
+}
+
+@keyframes selectPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Fade in animation */
+.container {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Disabled state */
+.locationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

@@ -5,3 +5,5 @@
 
 export { ProjectSelectorModal } from './ProjectSelectorModal';
 export { ProjectListStep } from './ProjectListStep';
+export { TaskListStep } from './TaskListStep';
+export { LocationListStep } from './LocationListStep';

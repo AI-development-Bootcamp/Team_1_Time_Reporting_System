@@ -1,0 +1,204 @@
+/**
+ * TaskListStep Styles
+ * RTL-supported, mobile-first task list component
+ */
+
+/* ============================================================================
+ * Container
+ * ============================================================================ */
+
+.container {
+  width: 100%;
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Context Subtitle
+ * ============================================================================ */
+
+.contextSubtitle {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+  text-align: center;
+}
+
+/* ============================================================================
+ * Task Button
+ * ============================================================================ */
+
+.taskButton {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  direction: rtl;
+}
+
+.taskButton:hover {
+  background: #f8f9fa;
+  border-color: #228be6;
+}
+
+.taskButton.selected {
+  background: #e7f5ff;
+  border-color: #228be6;
+  border-width: 2px;
+}
+
+.taskContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  text-align: right;
+}
+
+.checkIcon {
+  color: #228be6;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+ * Empty State
+ * ============================================================================ */
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Mobile First (default) */
+@media (max-width: 767px) {
+  .taskButton {
+    padding: 0.875rem;
+  }
+
+  .contextSubtitle {
+    margin-bottom: 0.875rem;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .taskButton {
+    padding: 1rem;
+  }
+
+  .contextSubtitle {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .taskButton {
+    padding: 1.125rem;
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.container {
+  direction: rtl;
+}
+
+.contextSubtitle {
+  text-align: center;
+}
+
+.taskContent {
+  text-align: right;
+}
+
+.taskButton {
+  direction: rtl;
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.taskButton:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .taskButton {
+    min-height: 56px;
+  }
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+/* Selected state animation */
+.taskButton.selected {
+  animation: selectPulse 0.3s ease-out;
+}
+
+@keyframes selectPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Fade in animation */
+.container {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Disabled state */
+.taskButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

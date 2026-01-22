@@ -1493,23 +1493,23 @@ backend/src/
     - [x] Props: `projects[]`, `selectedId`, `onSelect`
   - [x] Create `ProjectListStep.module.css`
 
-- [ ] TASK-M2-020-FE-022: Create TaskListStep component
-  - [ ] Create `components/ProjectSelector/TaskListStep.tsx`:
-    - [ ] Context subtitle: "בחר משימה - מצב: עריכה" (or other context)
-    - [ ] Filtered task list for selected project
-    - [ ] Selected task shows blue checkmark
-    - [ ] Props: `tasks[]`, `selectedId`, `onSelect`, `projectName`
-  - [ ] Create `TaskListStep.module.css`
+- [x] TASK-M2-020-FE-022: Create TaskListStep component
+  - [x] Create `components/ProjectSelector/TaskListStep.tsx`:
+    - [x] Context subtitle: "בחר משימה - מצב: עריכה" (or other context)
+    - [x] Filtered task list for selected project
+    - [x] Selected task shows blue checkmark
+    - [x] Props: `tasks[]`, `selectedId`, `onSelect`, `projectName`
+  - [x] Create `TaskListStep.module.css`
 
-- [ ] TASK-M2-020-FE-023: Create LocationListStep component
-  - [ ] Create `components/ProjectSelector/LocationListStep.tsx`:
-    - [ ] Three options with icons:
-      - [ ] משרד (office)
-      - [ ] בית (home)
-      - [ ] בית לקוח (client site)
-    - [ ] Selected location shows blue checkmark
-    - [ ] Props: `selectedLocation`, `onSelect`
-  - [ ] Create `LocationListStep.module.css`
+- [x] TASK-M2-020-FE-023: Create LocationListStep component
+  - [x] Create `components/ProjectSelector/LocationListStep.tsx`:
+    - [x] Three options with icons:
+      - [x] משרד (office)
+      - [x] בית (home)
+      - [x] בית לקוח (client site)
+    - [x] Selected location shows blue checkmark
+    - [x] Props: `selectedLocation`, `onSelect`
+  - [x] Create `LocationListStep.module.css`
 
 - [ ] TASK-M2-020-FE-024: Create SelectorErrorState component
   - [ ] Create `components/ProjectSelector/SelectorErrorState.tsx`:
