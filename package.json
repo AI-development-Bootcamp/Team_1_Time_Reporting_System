@@ -6,7 +6,8 @@
   "workspaces": [
     "backend",
     "frontend_user",
-    "frontend_admin"
+    "frontend_admin",
+    "shared"
   ],
   "scripts": {
     "setup": "node scripts/setup.js",
