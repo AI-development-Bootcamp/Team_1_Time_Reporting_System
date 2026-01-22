@@ -724,7 +724,8 @@ describe('Attendance API Integration Tests', () => {
       expect(response.body.success).toBe(false);
     });
 
-    it('should reject missing userId', async () => {
+    it('should use userId from auth token (not query param)', async () => {
+      // With auth token, userId is obtained from the token, not query params
       const response = await request(app)
         .get('/api/attendance/month-history')
         .set('Authorization', `Bearer ${authToken}`)
@@ -732,8 +733,8 @@ describe('Attendance API Integration Tests', () => {
           month: '1',
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
     });
 
     it('should reject missing month', async () => {
@@ -1173,6 +1174,7 @@ describe('Attendance API Integration Tests', () => {
       it('should create dayOff when no other attendance exists', async () => {
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-01',
@@ -1186,6 +1188,7 @@ describe('Attendance API Integration Tests', () => {
       it('should create sickness without document (frontend shows badge)', async () => {
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-02',
@@ -1210,6 +1213,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-03',
@@ -1232,6 +1236,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance/combined')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-04',
@@ -1257,6 +1262,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-05',
@@ -1283,6 +1289,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-10',
@@ -1305,6 +1312,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance/combined')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-11',
@@ -1330,6 +1338,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .post('/api/attendance')
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             userId: testUserId.toString(),
             date: '2026-02-12',
@@ -1551,6 +1560,7 @@ describe('Attendance API Integration Tests', () => {
       // Try to update with invalid time - schema should reject 24:00
       const response = await request(app)
         .put(`/api/attendance/${attendance.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           endTime: '24:00', // Invalid
         });
@@ -1600,6 +1610,7 @@ describe('Attendance API Integration Tests', () => {
       // Try to extend to 4 hours - should fail (120 < 240)
       const response = await request(app)
         .put(`/api/attendance/${attendance.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           endTime: '13:00', // 4 hours = 240 min
         });
@@ -1633,6 +1644,7 @@ describe('Attendance API Integration Tests', () => {
       // Reduce to 2 hours - should succeed (240 >= 120)
       const response = await request(app)
         .put(`/api/attendance/${attendance.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           endTime: '11:00', // 2 hours = 120 min
         });
