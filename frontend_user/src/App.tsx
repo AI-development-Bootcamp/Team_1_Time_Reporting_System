@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { MantineProvider, DirectionProvider } from '@mantine/core';
 import { AuthContextProvider } from '@shared/context/AuthContext';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute/ProtectedRoute';
 import { LoginPage } from '@shared/components/Login/LoginPage';
@@ -7,7 +6,12 @@ import { useAuth } from '@shared/hooks/useAuth';
 import { MonthHistory } from '@pages/MonthHistory';
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Wait for auth to load before making navigation decisions
+  if (isLoading) {
+    return null; // Or return a loading spinner component
+  }
 
   return (
     <Routes>
@@ -27,21 +31,17 @@ const AppRoutes = () => {
 
 /**
  * Top-level React component that establishes routing and authentication context for the app.
- * Wrapped with RTL-configured MantineProvider for Hebrew language support.
+ * Providers (MantineProvider, DirectionProvider) are applied in main.tsx.
  *
  * @returns The root React element that wraps the application with a router and authentication provider.
  */
 function App() {
   return (
-    <DirectionProvider initialDirection="rtl">
-      <MantineProvider>
-        <BrowserRouter>
-          <AuthContextProvider>
-            <AppRoutes />
-          </AuthContextProvider>
-        </BrowserRouter>
-      </MantineProvider>
-    </DirectionProvider>
+    <BrowserRouter>
+      <AuthContextProvider>
+        <AppRoutes />
+      </AuthContextProvider>
+    </BrowserRouter>
   );
 }
 

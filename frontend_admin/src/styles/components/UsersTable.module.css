@@ -1,0 +1,23 @@
+.usersTableContainer {
+    width: 100%;
+}
+
+.searchInput {
+    width: 350px;
+    height: 40px;
+}
+
+.createButton {
+    background-color: #ff6b35;
+    color: white;
+    font-family: 'SimplerPro', sans-serif;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.createButton:hover {
+    background-color: #e55a2b;
+}

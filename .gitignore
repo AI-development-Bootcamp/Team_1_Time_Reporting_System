@@ -11,6 +11,7 @@ backend/.env
 
 frontend_user/.env
 frontend_admin/.env
+backend/coverage
 
 # Build outputs
 dist/
@@ -31,6 +32,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+mcp-trello-config.json
+real_tasks.md
+tasks_trello.md
+test-trello-connection.js
+sync-tasks-to-trello.js
+CODE_REVIEW_ISSUES.md
+
 
 CODE_REVIEW_ISSUES.md
 mcp-trello-config.json

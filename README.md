@@ -160,19 +160,9 @@ When you're done working:
 The `backend/.env` file is automatically created/updated by the setup script with the correct `DATABASE_URL` based on the selected PostgreSQL port.
 
 **Required variables:**
-- `DATABASE_URL` - Automatically set by setup script (format: `postgresql://postgres:postgres@localhost:PORT/timereporting?schema=public`)
-- `JWT_SECRET` - Secret key for JWT token signing (default: `dev_secret_key_123` in seed data)
-- `PORT` - Backend server port (default: `3000`, falls back to `10000` if occupied)
-
-**Optional CORS variables (security):**
-- `LOCAL_CORS_ORIGINS` - Comma-separated list of allowed origins for local development (e.g., `http://localhost:5173,http://localhost:5174`)
-- `DEPLOY_CORS_ORIGINS` - Comma-separated list of allowed origins for production (e.g., `https://yourdomain.com,https://admin.yourdomain.com`)
-- If not set, CORS will allow all origins (development fallback - **not secure for production**)
-
-**Optional rate limiting variables (security):**
-- `AUTH_RATE_LIMIT_WINDOW_MS` - Time window for rate limiting in milliseconds (default: `900000` = 15 minutes)
-- `AUTH_RATE_LIMIT_MAX_REQUESTS` - Maximum login attempts per window (default: `5`)
-- Rate limiting prevents brute force attacks on authentication endpoints
+- `DATABASE_URL` - Automatically set by setup script 
+- `JWT_SECRET` - Secret key for JWT token signing 
+- `PORT` - Backend server port 
 
 **Note:** The setup script automatically handles port conflicts and updates the `DATABASE_URL` accordingly. If you manually change the PostgreSQL port, make sure to update `DATABASE_URL` in `backend/.env`.
 
@@ -183,8 +173,8 @@ Each frontend has its own `.env` file:
 - `frontend_admin/.env`
 
 **Required variables:**
-- `VITE_API_URL` - Backend API URL (default: `http://localhost:3000/api`, falls back to `http://localhost:10000/api` if backend port is 10000)
-- `BACKEND_PORT` - Reference variable for the backend port (default: `3000`)
+- `VITE_API_URL` - Backend API URL (
+- `BACKEND_PORT` - Reference variable for the backend port
 
 ## Seed Database
 
@@ -197,12 +187,6 @@ npx prisma db seed
 
 **Note:** The seed script automatically clears existing seed data before creating new records, so it's safe to run multiple times.
 
-This will create:
-- Initial admin user (admin@timereporting.com / Password123!)
-- Worker users (john.doe@timereporting.com, jane.smith@timereporting.com, david.cohen@timereporting.com / Password123!)
-- Sample clients, projects, and tasks
-- User-task assignments
-- Sample daily attendance and time log records
 
 ## Project Structure
 

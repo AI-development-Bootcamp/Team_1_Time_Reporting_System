@@ -10,7 +10,7 @@ To implement a complete time-tracking platform with dual frontend interfaces (Us
 | **Member 1** | **Auth + User Management** | Auth API, User CRUD APIs | Login (both apps), User Management UI |
 | **Member 2** | **Time Reporting** | Attendance API, Time Logs API, Project Selector | Daily Report, Month History, Project Selector |
 | **Member 3** | **Entity Management** | Clients, Projects, Tasks, Assignments APIs | Entity Tables, Forms, Assignments UI |
-| **Member 4** | **Advanced Features** | Timer API, File Upload | Timer UI, Dashboard, Absence Upload |
+| **Member 4** | **Advanced Features + Reporting Settings** | Timer API, File Upload | Timer UI, Dashboard, Absence Upload, Reporting Settings UI (admin) |
 
 ### Why Full-Stack Split?
 - ✅ Each developer owns a complete feature end-to-end

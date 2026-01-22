@@ -74,7 +74,12 @@ describe('HTTP Integration Tests - Auth Endpoints', () => {
     if (adminUser) await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => { });
     if (inactiveUser) await prisma.user.delete({ where: { id: inactiveUser.id } }).catch(() => { });
     // prisma.$disconnect() removed to prevent closing shared connection during parallel tests
-    process.env.JWT_SECRET = originalSecret;
+    // Restore JWT_SECRET correctly - delete if it was undefined, otherwise restore original value
+    if (originalSecret === undefined) {
+      delete process.env.JWT_SECRET;
+    } else {
+      process.env.JWT_SECRET = originalSecret;
+    }
   });
 
   describe('POST /api/auth/login', () => {
