@@ -1,7 +1,7 @@
 import { AppShell, NavLink, Group, Box, Image, Text } from '@mantine/core';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
-import { IconUsers, IconClock } from '@tabler/icons-react';
+import { IconUsers, IconClock, IconUserEdit } from '@tabler/icons-react';
 import abraLogo from '../../../../shared/image_components/abraLogo_inverted.png';
 import bottomLogo from '../../../../shared/image_components/bottom_logo.png';
 import { useAuth } from '@shared/hooks/useAuth';
@@ -29,6 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isClientManagement =
     location.pathname === '/client-management' || location.pathname === '/';
   const isReportingSettings = location.pathname === '/client-management/reporting-setting';
+  const isUserManagement = location.pathname === '/client-management/modify-user';
 
   return (
     <AppShell
@@ -99,6 +100,37 @@ export function AppLayout({ children }: AppLayoutProps) {
             onClick={() => navigate('/client-management/reporting-setting')}
             active={isReportingSettings}
             className={isReportingSettings ? styles.activeNavItem : ''}
+            styles={{
+              root: {
+                borderRadius: 8,
+                marginBottom: 4,
+                color: 'white',
+                fontFamily: 'SimplerPro, sans-serif',
+                backgroundColor: 'transparent',
+                position: 'relative',
+                '&:hover': {
+                  backgroundColor: '#4a6fa5 !important',
+                },
+              },
+              label: {
+                color: 'white',
+                textAlign: 'right',
+                fontFamily: 'SimplerPro, sans-serif',
+              },
+            }}
+          />
+
+          {/* User Management */}
+          <NavLink
+            label="יצירת/שינוי משתמש"
+            rightSection={
+              <Box className={styles.iconBox}>
+                <IconUserEdit size={20} stroke={1.5} />
+              </Box>
+            }
+            onClick={() => navigate('/client-management/modify-user')}
+            active={isUserManagement}
+            className={isUserManagement ? styles.activeNavItem : ''}
             styles={{
               root: {
                 borderRadius: 8,
