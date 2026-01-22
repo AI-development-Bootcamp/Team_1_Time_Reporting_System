@@ -15,6 +15,7 @@ import { TextInput, Button, Stack, Group, Text, Loader } from '@mantine/core';
 import { useDailyReportForm } from '../../hooks/useDailyReportForm';
 import { useCreateDailyReport } from '../../hooks/useCreateDailyReport';
 import { IncompleteHoursModal } from './IncompleteHoursModal';
+import { DailyAttendance } from '../../types';
 import { formatDurationHours } from '../../utils/dateUtils';
 import { showMissingFieldsError, showSaveSuccess, showError } from '../../utils/toast';
 import classes from './WorkReportTab.module.css';
@@ -24,6 +25,8 @@ interface WorkReportTabProps {
   mode?: 'create' | 'edit';
   /** Existing attendance ID (for edit mode) */
   existingAttendanceId?: string;
+  /** Existing attendance data (for edit mode pre-fill) */
+  existingAttendance?: DailyAttendance;
   /** Default date to pre-fill (YYYY-MM-DD) */
   defaultDate?: string;
   /** Callback when report is successfully saved */
@@ -43,9 +46,30 @@ interface WorkReportTabProps {
 export function WorkReportTab({
   mode = 'create',
   existingAttendanceId: _existingAttendanceId,
+  existingAttendance,
   defaultDate,
   onSuccess,
 }: WorkReportTabProps) {
+  // Convert existing attendance to initial form data for edit mode
+  const getInitialData = () => {
+    if (mode === 'edit' && existingAttendance) {
+      // Pre-fill basic fields: date, entrance/exit times
+      // Note: Project reports pre-filling is handled separately by fetching
+      // the full project/task hierarchy data to ensure proper reporting type info
+      return {
+        date: existingAttendance.date,
+        entranceTime: existingAttendance.startTime || '',
+        exitTime: existingAttendance.endTime || '',
+      };
+    }
+    
+    if (defaultDate) {
+      return { date: defaultDate };
+    }
+    
+    return undefined;
+  };
+
   // Form state management
   const {
     formData,
@@ -58,7 +82,7 @@ export function WorkReportTab({
     isValid,
     validateForm,
   } = useDailyReportForm({
-    initialData: defaultDate ? { date: defaultDate } : undefined,
+    initialData: getInitialData(),
     mode,
   });
 
@@ -165,11 +189,15 @@ export function WorkReportTab({
             error={errors.date}
             className={classes.input}
             dir="ltr"
+            readOnly={mode === 'edit'} // Read-only in edit mode
+            disabled={mode === 'edit'}
             // TODO: Replace with DatePickerModal
             // onClick={() => openDatePicker()}
           />
           <Text size="xs" c="dimmed" mt="xs">
-            TODO: Replace with DatePickerModal (future task)
+            {mode === 'edit' 
+              ? 'תאריך לא ניתן לעריכה במצב עריכה'
+              : 'TODO: Replace with DatePickerModal (future task)'}
           </Text>
         </div>
 

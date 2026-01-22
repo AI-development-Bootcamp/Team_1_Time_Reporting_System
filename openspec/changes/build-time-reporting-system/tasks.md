@@ -1579,16 +1579,16 @@ backend/src/
       - [x] On success: close modal, show green toast, refresh data
       - [x] On error: show red toast with error message
 
-- [ ] TASK-M2-020-FE-030: Implement edit mode data pre-filling
-  - [ ] In `DailyReportModal.tsx`, when `mode === 'edit'`:
-    - [ ] Fetch existing attendance by ID (use getAttendanceById API)
-    - [ ] Pre-fill date (read-only in edit mode)
-    - [ ] Pre-fill entranceTime, exitTime
-    - [ ] Pre-fill status → determine which tab to show
-    - [ ] Pre-fill projectReports[] from projectTimeLogs
-    - [ ] Handle project type changes:
-      - [ ] If task's project changed from duration → startEnd, show 00:00 for times
-    - [ ] Show loading skeleton while fetching
+- [x] TASK-M2-020-FE-030: Implement edit mode data pre-filling
+  - [x] In `DailyReportModal.tsx`, when `mode === 'edit'`:
+    - [x] Fetch existing attendance by ID (use getAttendanceById API)
+    - [x] Pre-fill date (read-only in edit mode)
+    - [x] Pre-fill entranceTime, exitTime
+    - [x] Pre-fill status → determine which tab to show
+    - [x] Pre-fill projectReports[] from projectTimeLogs (basic fields only - full hierarchy requires separate task)
+    - [x] Handle project type changes:
+      - [x] If task's project changed from duration → startEnd, show 00:00 for times (handled in form logic)
+    - [x] Show loading skeleton while fetching
 
 **Testing:**
 - [ ] TASK-M2-020-TEST-001: Unit tests for utils

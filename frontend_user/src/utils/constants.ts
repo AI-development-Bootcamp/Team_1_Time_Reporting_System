@@ -176,6 +176,7 @@ export const QUERY_KEYS = {
   monthHistory: 'monthHistory',
   timeLogs: 'timeLogs',
   projectSelector: 'projectSelector',
+  attendance: 'attendance',
 } as const;
 
 // ============================================================================
