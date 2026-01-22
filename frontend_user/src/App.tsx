@@ -24,7 +24,7 @@ function App() {
   }, []);
 
   // TODO: Get actual userId from auth context
-  const userId = '85';
+  const userId = '99';
 
   // Show message if not on mobile
   if (!isMobile) {
