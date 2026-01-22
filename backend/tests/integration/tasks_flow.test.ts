@@ -4,6 +4,9 @@ import request from 'supertest';
 import { errorHandler } from '../../src/middleware/ErrorHandler';
 import tasksRouter from '../../src/routes/admin/Tasks';
 import { prisma } from '../../src/utils/prisma';
+import { Bcrypt } from '../../src/utils/Bcrypt';
+import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
 
 const app = express();
 app.use(express.json());
@@ -15,9 +18,45 @@ describe('Tasks API Integration Tests', () => {
   let testProjectId: bigint;
   let testClientId: bigint;
   let testManagerId: bigint;
+  let adminUser: User;
+  const originalSecret = process.env.JWT_SECRET;
+
+  // Helper to create admin token
+  const createAdminToken = (user: User) => {
+    return jwt.sign(
+      {
+        userId: user.id.toString(),
+        userType: 'admin',
+        user: {
+          id: Number(user.id),
+          name: user.name,
+          mail: user.mail,
+          userType: 'admin',
+          active: true,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        },
+      },
+      'test-secret-key',
+      { expiresIn: '24h' }
+    );
+  };
 
   beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-secret-key';
     await prisma.$connect();
+
+    // Create admin user for authentication
+    const adminPassword = await Bcrypt.hash('AdminPass123!');
+    adminUser = await prisma.user.create({
+      data: {
+        name: 'Admin Test User',
+        mail: `admin-tasks-${Date.now()}@example.com`,
+        password: adminPassword,
+        userType: 'admin',
+        active: true,
+      },
+    });
 
     // Create test client
     const testClient = await prisma.client.create({
@@ -62,19 +101,32 @@ describe('Tasks API Integration Tests', () => {
         },
       });
     }
+    // Delete all projects for testManagerId before deleting the user
+    if (testManagerId) {
+      await prisma.project.deleteMany({
+        where: {
+          projectManagerId: testManagerId,
+        },
+      });
+    }
     // Delete project after tasks (tasks reference project)
     if (testProjectId) {
-      await prisma.project.delete({ where: { id: testProjectId } });
+      await prisma.project.delete({ where: { id: testProjectId } }).catch(() => {});
     }
     // Delete user after project (project references user)
     if (testManagerId) {
-      await prisma.user.delete({ where: { id: testManagerId } });
+      await prisma.user.delete({ where: { id: testManagerId } }).catch(() => {});
     }
     // Delete client after project (project references client)
     if (testClientId) {
       await prisma.client.delete({ where: { id: testClientId } });
     }
+    // Clean up admin user
+    if (adminUser) {
+      await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => {});
+    }
     await prisma.$disconnect();
+    process.env.JWT_SECRET = originalSecret;
   });
 
   beforeEach(() => {
@@ -83,9 +135,11 @@ describe('Tasks API Integration Tests', () => {
 
   describe('Full CRUD Workflow', () => {
     it('should create, read, update, and soft delete a task', async () => {
+      const token = createAdminToken(adminUser);
       // CREATE
       const createResponse = await request(app)
         .post('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Integration Test Task ${Date.now()}`,
           projectId: Number(testProjectId),
@@ -113,6 +167,7 @@ describe('Tasks API Integration Tests', () => {
       // READ - Get all tasks (should include our new task)
       const listResponse = await request(app)
         .get('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(listResponse.body.success).toBe(true);
@@ -125,6 +180,7 @@ describe('Tasks API Integration Tests', () => {
       // READ - Filter by projectId
       const filteredResponse = await request(app)
         .get(`/api/admin/tasks?projectId=${Number(testProjectId)}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(filteredResponse.body.success).toBe(true);
@@ -136,6 +192,7 @@ describe('Tasks API Integration Tests', () => {
       // UPDATE
       const updateResponse = await request(app)
         .put(`/api/admin/tasks/${taskId}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Updated Integration Test Task',
           description: 'Updated description',
@@ -156,6 +213,7 @@ describe('Tasks API Integration Tests', () => {
       // SOFT DELETE (sets status to closed)
       const deleteResponse = await request(app)
         .delete(`/api/admin/tasks/${taskId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(deleteResponse.body.success).toBe(true);
@@ -169,6 +227,7 @@ describe('Tasks API Integration Tests', () => {
       // Verify task is hidden from default list (only shows open tasks)
       const listAfterDeleteResponse = await request(app)
         .get('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       const hiddenTask = listAfterDeleteResponse.body.data.find(
@@ -178,8 +237,10 @@ describe('Tasks API Integration Tests', () => {
     });
 
     it('should return 404 when creating task with non-existent project', async () => {
+      const token = createAdminToken(adminUser);
       const response = await request(app)
         .post('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Test Task',
           projectId: 99999,
@@ -192,8 +253,10 @@ describe('Tasks API Integration Tests', () => {
     });
 
     it('should create task with minimal required fields', async () => {
+      const token = createAdminToken(adminUser);
       const createResponse = await request(app)
         .post('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Minimal Task ${Date.now()}`,
           projectId: Number(testProjectId),
@@ -213,6 +276,7 @@ describe('Tasks API Integration Tests', () => {
     });
 
     it('should update task projectId and verify project exists', async () => {
+      const token = createAdminToken(adminUser);
       // Create a second project
       const secondProject = await prisma.project.create({
         data: {
@@ -227,6 +291,7 @@ describe('Tasks API Integration Tests', () => {
       // Create a task
       const createResponse = await request(app)
         .post('/api/admin/tasks')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Task to Move ${Date.now()}`,
           projectId: Number(testProjectId),
@@ -239,6 +304,7 @@ describe('Tasks API Integration Tests', () => {
       // Update task to move to second project
       const updateResponse = await request(app)
         .put(`/api/admin/tasks/${taskId}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           projectId: Number(secondProject.id),
         })

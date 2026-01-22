@@ -4,6 +4,10 @@ import request from 'supertest';
 import { errorHandler } from '../../src/middleware/ErrorHandler';
 import projectsRouter from '../../src/routes/admin/Projects';
 import { prisma } from '../../src/utils/prisma';
+import { Bcrypt } from '../../src/utils/Bcrypt';
+import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
+
 const app = express();
 app.use(express.json());
 app.use('/api/admin/projects', projectsRouter);
@@ -13,9 +17,45 @@ describe('Projects API Integration Tests', () => {
   let createdProjectIds: bigint[] = [];
   let testClientId: bigint;
   let testManagerId: bigint;
+  let adminUser: User;
+  const originalSecret = process.env.JWT_SECRET;
+
+  // Helper to create admin token
+  const createAdminToken = (user: User) => {
+    return jwt.sign(
+      {
+        userId: user.id.toString(),
+        userType: 'admin',
+        user: {
+          id: Number(user.id),
+          name: user.name,
+          mail: user.mail,
+          userType: 'admin',
+          active: true,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        },
+      },
+      'test-secret-key',
+      { expiresIn: '24h' }
+    );
+  };
 
   beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-secret-key';
     await prisma.$connect();
+
+    // Create admin user for authentication
+    const adminPassword = await Bcrypt.hash('AdminPass123!');
+    adminUser = await prisma.user.create({
+      data: {
+        name: 'Admin Test User',
+        mail: `admin-projects-${Date.now()}@example.com`,
+        password: adminPassword,
+        userType: 'admin',
+        active: true,
+      },
+    });
 
     // Use more unique identifiers to avoid conflicts
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -53,13 +93,18 @@ describe('Projects API Integration Tests', () => {
     }
     // Delete user after projects (projects reference user)
     if (testManagerId) {
-      await prisma.user.delete({ where: { id: testManagerId } });
+      await prisma.user.delete({ where: { id: testManagerId } }).catch(() => {});
     }
     // Delete client after projects (projects reference client)
     if (testClientId) {
       await prisma.client.delete({ where: { id: testClientId } });
     }
+    // Clean up admin user
+    if (adminUser) {
+      await prisma.user.delete({ where: { id: adminUser.id } }).catch(() => {});
+    }
     await prisma.$disconnect();
+    process.env.JWT_SECRET = originalSecret;
   });
 
   beforeEach(() => {
@@ -68,9 +113,11 @@ describe('Projects API Integration Tests', () => {
 
   describe('Full CRUD Workflow', () => {
     it('should create, read, update, and soft delete a project', async () => {
+      const token = createAdminToken(adminUser);
       // CREATE
       const createResponse = await request(app)
         .post('/api/admin/projects')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: `Integration Test Project ${Date.now()}`,
           clientId: Number(testClientId),
@@ -99,6 +146,7 @@ describe('Projects API Integration Tests', () => {
       // READ - Get all projects
       const listResponse = await request(app)
         .get('/api/admin/projects')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(listResponse.body.success).toBe(true);
@@ -110,6 +158,7 @@ describe('Projects API Integration Tests', () => {
       // READ - Filter by clientId
       const filteredResponse = await request(app)
         .get(`/api/admin/projects?clientId=${Number(testClientId)}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(filteredResponse.body.success).toBe(true);
@@ -121,6 +170,7 @@ describe('Projects API Integration Tests', () => {
       // UPDATE
       const updateResponse = await request(app)
         .put(`/api/admin/projects/${projectId}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Updated Integration Test Project',
           description: 'Updated description',
@@ -139,6 +189,7 @@ describe('Projects API Integration Tests', () => {
       // SOFT DELETE
       const deleteResponse = await request(app)
         .delete(`/api/admin/projects/${projectId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(deleteResponse.body.success).toBe(true);
@@ -151,8 +202,10 @@ describe('Projects API Integration Tests', () => {
     });
 
     it('should return 404 when creating project with non-existent client', async () => {
+      const token = createAdminToken(adminUser);
       const response = await request(app)
         .post('/api/admin/projects')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Test Project',
           clientId: 99999,
@@ -167,8 +220,10 @@ describe('Projects API Integration Tests', () => {
     });
 
     it('should return 404 when creating project with non-existent manager', async () => {
+      const token = createAdminToken(adminUser);
       const response = await request(app)
         .post('/api/admin/projects')
+        .set('Authorization', `Bearer ${token}`)
         .send({
           name: 'Test Project',
           clientId: Number(testClientId),

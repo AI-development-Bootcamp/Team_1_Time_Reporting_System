@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { ProjectController } from '../../controllers/ProjectController';
+import { authMiddleware } from '../../middleware/AuthMiddleware';
+import { adminMiddleware } from '../../middleware/Admin';
 
 const router = Router();
+
+// Apply auth and admin middleware to all routes
+router.use(authMiddleware);
+router.use(adminMiddleware);
 
 /**
  * GET /api/admin/projects
