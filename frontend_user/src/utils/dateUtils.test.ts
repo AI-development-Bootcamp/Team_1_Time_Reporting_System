@@ -19,20 +19,20 @@ describe('dateUtils', () => {
     it('formats date with Hebrew day name', () => {
       // Sunday Jan 19, 2025
       const result = formatDateWithDay('2025-01-19');
-      expect(result).toContain("'יום א");
+      expect(result).toContain("יום א'");
       expect(result).toContain('19/01/25');
     });
 
     it('formats Saturday correctly', () => {
       // Saturday Jan 18, 2025
       const result = formatDateWithDay('2025-01-18');
-      expect(result).toContain("'יום ש");
+      expect(result).toContain("יום ש'");
     });
 
     it('formats Friday correctly', () => {
       // Friday Jan 17, 2025
       const result = formatDateWithDay('2025-01-17');
-      expect(result).toContain("'יום ו");
+      expect(result).toContain("יום ו'");
     });
   });
 

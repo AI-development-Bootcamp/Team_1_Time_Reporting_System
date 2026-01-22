@@ -49,7 +49,8 @@ describe('MonthHeader', () => {
     renderWithProvider(<MonthHeader {...defaultProps} onPreviousMonth={onPreviousMonth} />);
     
     const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[1]); // Second button is previous (RTL layout)
+    // First button in DOM is previous (ChevronRight)
+    fireEvent.click(buttons[0]);
     
     expect(onPreviousMonth).toHaveBeenCalledTimes(1);
   });
@@ -59,7 +60,8 @@ describe('MonthHeader', () => {
     renderWithProvider(<MonthHeader {...defaultProps} onNextMonth={onNextMonth} />);
     
     const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[0]); // First button is next (RTL layout)
+    // Second button in DOM is next (ChevronLeft)
+    fireEvent.click(buttons[1]);
     
     expect(onNextMonth).toHaveBeenCalledTimes(1);
   });
@@ -68,15 +70,17 @@ describe('MonthHeader', () => {
     renderWithProvider(<MonthHeader {...defaultProps} isPreviousDisabled={true} />);
     
     const buttons = screen.getAllByRole('button');
-    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true'); // Second button is previous (RTL layout)
-    expect(buttons[1]).toHaveAttribute('data-disabled', 'true');
+    // First button in DOM is previous
+    expect(buttons[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[0]).toHaveAttribute('data-disabled', 'true');
   });
 
   it('disables next button when isNextDisabled is true', () => {
     renderWithProvider(<MonthHeader {...defaultProps} isNextDisabled={true} />);
     
     const buttons = screen.getAllByRole('button');
-    expect(buttons[0]).toHaveAttribute('aria-disabled', 'true'); // First button is next (RTL layout)
-    expect(buttons[0]).toHaveAttribute('data-disabled', 'true');
+    // Second button in DOM is next
+    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[1]).toHaveAttribute('data-disabled', 'true');
   });
 });

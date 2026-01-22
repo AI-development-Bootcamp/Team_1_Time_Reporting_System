@@ -1,5 +1,16 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  // Restore real timers if fake timers were used
+  if (vi.isFakeTimers()) {
+    vi.useRealTimers();
+  }
+});
 
 // Mock window.matchMedia for Mantine components
 Object.defineProperty(window, 'matchMedia', {
@@ -23,6 +34,15 @@ class ResizeObserverMock {
   disconnect = vi.fn();
 }
 window.ResizeObserver = ResizeObserverMock;
+
+// Mock IntersectionObserver (required by some Mantine components)
+class IntersectionObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn(() => []);
+}
+(global as any).IntersectionObserver = IntersectionObserverMock;
 
 // Mock image imports
 vi.mock('@images/LeftArrowIcon.png', () => ({ default: 'left-arrow.png' }));

@@ -95,10 +95,10 @@ describe('useMonthHistory', () => {
       { wrapper: createWrapper() }
     );
 
+    // Note: userId is obtained from auth token on the backend, not passed via API
     await waitFor(() => {
       expect(attendanceApi.getMonthHistory).toHaveBeenCalledWith({
         month: 3,
-        userId: 'test-user',
       });
     });
   });
