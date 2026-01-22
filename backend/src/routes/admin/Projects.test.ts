@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ReportingType, TaskStatus } from '@prisma/client';
 
+// Mock the auth middleware to bypass authentication in unit tests
+vi.mock('../../middleware/AuthMiddleware', () => ({
+  authMiddleware: vi.fn((req, res, next) => next()),
+}));
+
+vi.mock('../../middleware/Admin', () => ({
+  adminMiddleware: vi.fn((req, res, next) => next()),
+}));
+
 // Use vi.hoisted() to create mocks before module imports
 const { mockPrisma } = vi.hoisted(() => {
   const mockPrismaInstance = {
