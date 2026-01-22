@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
         '@types': path.resolve(__dirname, './src/types'),
         '@utils': path.resolve(__dirname, './src/utils'),
         '@shared': path.resolve(__dirname, '../shared/src'),
+        '@images': path.resolve(__dirname, '../shared/image_components'),
       },
     },
     server: {

@@ -122,6 +122,13 @@ export function DayAccordionItem({
     <Accordion.Item value={date} className={classes.item}>
       <Accordion.Control className={classes.control}>
         <Group justify="space-between" wrap="nowrap" className={classes.header}>
+          {/* Calendar icon and date - appears on the right in RTL */}
+          <Group gap="xs" wrap="nowrap">
+            <Image src={calendarIcon} alt="" w={20} h={20} className={classes.calendarIcon} />
+            {/* Date text displayed as single string for correct RTL rendering */}
+            <Text size="sm" fw={500}>{`${dateOnly}, ${dayLabel}`}</Text>
+          </Group>
+          {/* Status badge - appears on the left in RTL (near chevron) */}
           <StatusBadge
             date={date}
             status={primaryStatus}
@@ -130,14 +137,6 @@ export function DayAccordionItem({
             isMissing={isMissing}
             hasBothHalfDayAndWork={hasBothHalfDayAndWork}
           />
-          <Group gap="xs" wrap="nowrap">
-            <Group gap={4} wrap="nowrap">
-              <Text size="sm" fw={500} style={{ direction: 'ltr' }}>{dayLabel}</Text>
-              <Text size="sm" fw={500}>,</Text>
-              <Text size="sm" fw={500}>{dateOnly}</Text>
-            </Group>
-            <Image src={calendarIcon} alt="" w={20} h={20} className={classes.calendarIcon} />
-          </Group>
         </Group>
       </Accordion.Control>
 

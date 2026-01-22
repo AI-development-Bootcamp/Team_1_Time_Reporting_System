@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { LocationStatus } from '@prisma/client';
 import { TimeLogsService } from '../services/TimeLogsService';
 import { ApiResponse } from '../utils/Response';
+import { AuthRequest } from '../middleware/AuthMiddleware';
 import { parseBigIntParam } from '../utils/paramValidation';
 import {
   createTimeLogSchema,
@@ -15,7 +16,7 @@ export class TimeLogsController {
    * Create a new time log entry
    * Supports both reportingType=duration (requires duration) and reportingType=startEnd (requires startTime/endTime)
    */
-  static async create(req: Request, res: Response, next: NextFunction) {
+  static async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const body = createTimeLogSchema.parse(req.body);
 
@@ -39,7 +40,7 @@ export class TimeLogsController {
    * GET /api/time-logs?dailyAttendanceId=X
    * List time logs for a specific attendance record
    */
-  static async getByAttendance(req: Request, res: Response, next: NextFunction) {
+  static async getByAttendance(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const query = queryTimeLogsSchema.parse(req.query);
 
@@ -56,7 +57,7 @@ export class TimeLogsController {
    * Update an existing time log
    * Supports both reportingType=duration and reportingType=startEnd based on current project settings
    */
-  static async update(req: Request, res: Response, next: NextFunction) {
+  static async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = parseBigIntParam(req.params.id, 'id');
       const body = updateTimeLogSchema.parse(req.body);
@@ -80,7 +81,7 @@ export class TimeLogsController {
    * DELETE /api/time-logs/:id
    * Delete a time log
    */
-  static async delete(req: Request, res: Response, next: NextFunction) {
+  static async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = parseBigIntParam(req.params.id, 'id');
 

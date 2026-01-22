@@ -68,7 +68,7 @@ export function MonthHistoryPage({ userId, onEdit, onAddReport }: MonthHistoryPa
   const hasNoData = !isFuture && !isLoading && !isError && attendances.length === 0 && !hasNoDates;
 
   return (
-    <div className={classes.page}>
+    <div className={classes.page} dir="rtl">
       {/* Header with month navigation */}
       <MonthHeader
         month={month}

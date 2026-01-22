@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { DailyAttendanceStatus, LocationStatus } from '@prisma/client';
 import { AttendanceService } from '../services/AttendanceService';
 import { CombinedAttendanceService } from '../services/CombinedAttendanceService';
 import { ApiResponse } from '../utils/Response';
 import { AppError } from '../middleware/ErrorHandler';
+import { AuthRequest } from '../middleware/AuthMiddleware';
 import { logAudit } from '../utils/AuditLog';
 import { parseBigIntParam } from '../utils/paramValidation';
 import {
@@ -18,7 +19,7 @@ export class AttendanceController {
    * POST /api/attendance
    * Create a new DailyAttendance record
    */
-  static async create(req: Request, res: Response, next: NextFunction) {
+  static async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const body = createAttendanceSchema.parse(req.body);
 
@@ -30,8 +31,8 @@ export class AttendanceController {
         );
       }
 
-      // TODO: Get userId from authenticated user (req.user.id) when auth is ready
-      const userId = body.userId;
+      // Get userId from authenticated user
+      const userId = req.userId!;
 
       const id = await AttendanceService.createAttendance({
         userId,
@@ -61,12 +62,12 @@ export class AttendanceController {
    * GET /api/attendance/month-history
    * Get attendance records for a specific month
    */
-  static async getMonthHistory(req: Request, res: Response, next: NextFunction) {
+  static async getMonthHistory(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const query = monthHistoryQuerySchema.parse(req.query);
 
-      // TODO: Use req.user.id when auth is ready instead of query param
-      const attendances = await AttendanceService.getMonthHistory(query.userId, query.month);
+      // Use authenticated user's ID
+      const attendances = await AttendanceService.getMonthHistory(req.userId!, query.month);
 
       ApiResponse.success(res, attendances);
     } catch (error) {
@@ -78,7 +79,7 @@ export class AttendanceController {
    * PUT /api/attendance/:id
    * Update an existing DailyAttendance record
    */
-  static async update(req: Request, res: Response, next: NextFunction) {
+  static async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = parseBigIntParam(req.params.id, 'id');
 
@@ -118,12 +119,12 @@ export class AttendanceController {
    * POST /api/attendance/combined
    * Create DailyAttendance + ProjectTimeLogs atomically (for work status only)
    */
-  static async createCombined(req: Request, res: Response, next: NextFunction) {
+  static async createCombined(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const body = combinedAttendanceSchema.parse(req.body);
 
-      // TODO: Get userId from authenticated user (req.user.id) when auth is ready
-      const userId = body.userId;
+      // Get userId from authenticated user
+      const userId = req.userId!;
 
       const result = await CombinedAttendanceService.createCombined({
         userId,

@@ -47,6 +47,9 @@
       ],
       "@shared/*": [
         "../shared/src/*"
+      ],
+      "@images/*": [
+        "../shared/image_components/*"
       ]
     }
   },

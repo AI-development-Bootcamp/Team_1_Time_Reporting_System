@@ -13,6 +13,7 @@ export const timeSchema = z.string().regex(TIME_REGEX, 'Time must be in HH:mm fo
 /**
  * Schema for creating a new attendance record
  * POST /api/attendance
+ * Note: userId is obtained from authenticated user, not from body
  */
 export const createAttendanceSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
@@ -21,7 +22,6 @@ export const createAttendanceSchema = z.object({
   startTime: timeSchema.optional().nullable(),
   endTime: timeSchema.optional().nullable(),
   status: z.enum(['work', 'sickness', 'reserves', 'dayOff', 'halfDayOff']),
-  userId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
 });
 
 /**
@@ -37,20 +37,20 @@ export const updateAttendanceSchema = z.object({
 /**
  * Schema for month history query parameters
  * GET /api/attendance/month-history
+ * Note: userId is obtained from authenticated user, not from query params
  */
 export const monthHistoryQuerySchema = z.object({
   month: z.string().transform((val) => parseInt(val, 10)).refine((val) => val >= 1 && val <= 12, {
     message: 'Month must be between 1 and 12',
   }),
-  userId: z.string().transform((val) => BigInt(val)),
 });
 
 /**
  * Schema for combined attendance + time logs creation
  * POST /api/attendance/combined
+ * Note: userId is obtained from authenticated user, not from body
  */
 export const combinedAttendanceSchema = z.object({
-  userId: z.union([z.string(), z.number()]).transform((val) => BigInt(val)),
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid date format. Expected YYYY-MM-DD',
   }),

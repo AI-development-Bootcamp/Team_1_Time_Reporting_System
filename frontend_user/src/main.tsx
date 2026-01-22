@@ -19,12 +19,12 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MantineProvider>
-        <DirectionProvider initialDirection="rtl">
+      <DirectionProvider initialDirection="rtl">
+        <MantineProvider>
           <Notifications position="top-center" zIndex={10000} />
           <App />
-        </DirectionProvider>
-      </MantineProvider>
+        </MantineProvider>
+      </DirectionProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

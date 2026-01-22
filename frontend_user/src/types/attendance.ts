@@ -67,8 +67,8 @@ export interface MonthHistoryResponse {
 
 /**
  * Query params for month history endpoint
+ * Note: userId is obtained from auth token, not passed in params
  */
 export interface MonthHistoryParams {
   month: number; // 1-12
-  userId: string;
 }

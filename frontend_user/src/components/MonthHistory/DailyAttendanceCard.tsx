@@ -49,25 +49,27 @@ export function DailyAttendanceCard({ attendance, onEdit }: DailyAttendanceCardP
 
   return (
     <Stack gap="xs" className={classes.card}>
-      {/* Header row: Edit button + Time range or Status label */}
+      {/* Header row: Time range on right, Edit button on left (RTL) */}
       <Group justify="space-between" wrap="nowrap">
-        <UnstyledButton onClick={handleEdit} className={classes.editButton}>
-          <Group gap={4}>
-            <Image src={editIcon} alt="Edit" w={16} h={16} />
-            <Text size="sm" c="blue">
-              {HEBREW_STRINGS.edit}
-            </Text>
-          </Group>
-        </UnstyledButton>
-
+        {/* Time range - appears on the right in RTL */}
         <Text size="sm" c="blue" fw={500} dir="ltr" style={{ unicodeBidi: 'embed' }}>
           {isWorkStatus ? timeRange : statusLabel}
         </Text>
+
+        {/* Edit button - appears on the left in RTL */}
+        <UnstyledButton onClick={handleEdit} className={classes.editButton}>
+          <Group gap={4}>
+            <Text size="sm" c="blue">
+              {HEBREW_STRINGS.edit}
+            </Text>
+            <Image src={editIcon} alt="Edit" w={16} h={16} />
+          </Group>
+        </UnstyledButton>
       </Group>
 
       {/* Status label for non-work (below time range) */}
       {!isWorkStatus && statusLabel && (
-        <Group justify="flex-end">
+        <Group justify="flex-start">
           <Text size="sm" c="dimmed">
             {statusLabel}
           </Text>

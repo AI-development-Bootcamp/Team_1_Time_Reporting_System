@@ -19,17 +19,19 @@ export function TimeLogRow({ timeLog }: TimeLogRowProps) {
 
   return (
     <Group justify="space-between" wrap="nowrap">
-      <Group gap={4} wrap="nowrap">
-        <Text size="sm" c="dimmed">
-          'ש
-        </Text>
-        <Text size="sm" c="dimmed" dir="ltr" className={styles.ltrText}>
-          {timeFormatted}
-        </Text>
-      </Group>
+      {/* Project name - appears on the right in RTL */}
       <Text size="sm" c="dimmed">
         {projectName}
       </Text>
+      {/* Duration - appears on the left in RTL */}
+      <Group gap={4} wrap="nowrap">
+        <Text size="sm" c="dimmed" dir="ltr" className={styles.ltrText}>
+          {timeFormatted}
+        </Text>
+        <Text size="sm" c="dimmed">
+          ש'
+        </Text>
+      </Group>
     </Group>
   );
 }

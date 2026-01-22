@@ -49,25 +49,14 @@ export function MonthHeader({
 
   return (
     <div className={classes.header}>
+      {/* Page title - on the right in RTL */}
+      <Title order={2} className={classes.title}>
+        {HEBREW_STRINGS.pageTitle}
+      </Title>
+
       {/* Month navigation - on the left in RTL */}
       <Group gap="xs" className={classes.navigation}>
-        {/* Left arrow = Next month (forward in RTL) */}
-        <UnstyledButton
-          onClick={isNextDisabled ? undefined : onNextMonth}
-          disabled={isNextDisabled}
-          className={classes.navButton}
-          data-disabled={isNextDisabled || undefined}
-          aria-disabled={isNextDisabled}
-          style={{ pointerEvents: isNextDisabled ? 'none' : 'auto' }}
-        >
-          <ChevronLeft />
-        </UnstyledButton>
-
-        <Text size="md" fw={500} className={classes.monthName}>
-          {monthName}
-        </Text>
-
-        {/* Right arrow = Previous month (back in RTL) */}
+        {/* Right arrow (>) = Previous month (go back) */}
         <UnstyledButton
           onClick={isPreviousDisabled ? undefined : onPreviousMonth}
           disabled={isPreviousDisabled}
@@ -78,12 +67,23 @@ export function MonthHeader({
         >
           <ChevronRight />
         </UnstyledButton>
-      </Group>
 
-      {/* Page title - on the right in RTL */}
-      <Title order={2} className={classes.title}>
-        {HEBREW_STRINGS.pageTitle}
-      </Title>
+        <Text size="md" fw={500} className={classes.monthName}>
+          {monthName}
+        </Text>
+
+        {/* Left arrow (<) = Next month (go forward) */}
+        <UnstyledButton
+          onClick={isNextDisabled ? undefined : onNextMonth}
+          disabled={isNextDisabled}
+          className={classes.navButton}
+          data-disabled={isNextDisabled || undefined}
+          aria-disabled={isNextDisabled}
+          style={{ pointerEvents: isNextDisabled ? 'none' : 'auto' }}
+        >
+          <ChevronLeft />
+        </UnstyledButton>
+      </Group>
     </div>
   );
 }

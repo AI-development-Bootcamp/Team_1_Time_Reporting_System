@@ -17,23 +17,23 @@ interface BottomBarProps {
 export function BottomBar({ onManualReport }: BottomBarProps) {
   return (
     <div className={classes.bottomBar}>
-      {/* Start Timer - Disabled */}
-      <UnstyledButton className={classes.startTimerButton} disabled>
-        <Image src={playIcon} alt="" className={classes.startTimerIcon} />
-        <Text size="sm" fw={500} c="dimmed">
-          {HEBREW_STRINGS.startTimer}
+      {/* Manual Report - on the right side */}
+      <UnstyledButton className={classes.manualReportButton} onClick={onManualReport}>
+        <Image src={newReportIcon} alt="" className={classes.manualReportIcon} />
+        <Text size="sm" fw={500} c="dark">
+          {HEBREW_STRINGS.manualReport}
         </Text>
       </UnstyledButton>
 
       {/* Vertical Divider */}
       <div className={classes.divider} />
 
-      {/* Manual Report */}
-      <UnstyledButton className={classes.manualReportButton} onClick={onManualReport}>
-        <Text size="sm" fw={500} c="dark">
-          {HEBREW_STRINGS.manualReport}
+      {/* Start Timer - Disabled - on the left side */}
+      <UnstyledButton className={classes.startTimerButton} disabled>
+        <Text size="sm" fw={500} c="dimmed">
+          {HEBREW_STRINGS.startTimer}
         </Text>
-        <Image src={newReportIcon} alt="" className={classes.manualReportIcon} />
+        <Image src={playIcon} alt="" className={classes.startTimerIcon} />
       </UnstyledButton>
     </div>
   );

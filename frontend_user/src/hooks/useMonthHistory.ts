@@ -32,8 +32,9 @@ interface UseMonthHistoryReturn {
 
 /**
  * Hook to fetch month history data
+ * Note: userId is obtained from auth token on the backend
  * 
- * @param params - Month, year, userId, and optional enabled flag
+ * @param params - Month, year, userId (for cache key), and optional enabled flag
  * @returns Attendance data, loading/error states, and refetch function
  */
 export function useMonthHistory({
@@ -51,7 +52,7 @@ export function useMonthHistory({
     isFetching,
   } = useQuery({
     queryKey: [QUERY_KEYS.monthHistory, month, userId],
-    queryFn: () => getMonthHistory({ month, userId }),
+    queryFn: () => getMonthHistory({ month }),
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)

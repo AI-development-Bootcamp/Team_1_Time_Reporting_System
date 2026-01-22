@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { TimeLogsController } from '../controllers/TimeLogsController';
-// import { authMiddleware } from '../middleware/AuthMiddleware'; // Uncomment when auth ready
+import { authMiddleware } from '../middleware/AuthMiddleware';
 
 const router = Router();
 
-// TODO: Apply auth middleware when Member 1 completes auth
-// router.use(authMiddleware);
+// Apply auth middleware to all time-logs routes
+router.use(authMiddleware);
 
 /**
  * POST /api/time-logs

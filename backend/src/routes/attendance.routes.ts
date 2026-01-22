@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { AttendanceController } from '../controllers/AttendanceController';
-// import { authMiddleware } from '../middleware/AuthMiddleware'; // Uncomment when auth ready
+import { authMiddleware } from '../middleware/AuthMiddleware';
 
 const router = Router();
 
-// TODO: Apply auth middleware when Member 1 completes auth
-// router.use(authMiddleware);
+// Apply auth middleware to all attendance routes
+router.use(authMiddleware);
 
 /**
  * POST /api/attendance

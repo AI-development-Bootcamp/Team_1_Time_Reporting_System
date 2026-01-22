@@ -58,7 +58,12 @@ export function MonthAccordion({
       multiple
       variant="separated"
       className={classes.accordion}
-      chevronPosition="left"
+      chevronPosition="right"
+      styles={{
+        chevron: {
+          marginRight: 8, // Add space between chevron and status badge
+        },
+      }}
     >
       {dates.map((date) => (
         <DayAccordionItem
