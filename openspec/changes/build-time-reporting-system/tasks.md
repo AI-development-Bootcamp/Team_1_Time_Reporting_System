@@ -1450,15 +1450,15 @@ backend/src/
     - [x] Use `useMutation` for POST /api/attendance (non-work status)
   - [x] Create `AbsenceReportTab.module.css`
 
-- [ ] TASK-M2-020-FE-018: Create FileUpload component
-  - [ ] Create `components/DailyReport/FileUpload.tsx`:
-    - [ ] Drag & drop zone with blue folder icon
-    - [ ] "לחץ כאן להעלאת הקובץ" link
-    - [ ] Show accepted formats: JPG / PNG / PDF
-    - [ ] Validate file size (max 5MB) and type before upload
-    - [ ] After upload: show file name + badge (PDF/JPG/PNG) + delete icon
-    - [ ] Props: `file`, `onUpload`, `onDelete`
-  - [ ] Create `FileUpload.module.css`
+- [x] TASK-M2-020-FE-018: Create FileUpload component
+  - [x] Create `components/DailyReport/FileUpload.tsx`:
+    - [x] Drag & drop zone with blue folder icon
+    - [x] "לחץ כאן להעלאת הקובץ" link
+    - [x] Show accepted formats: JPG / PNG / PDF
+    - [x] Validate file size (max 5MB) and type before upload
+    - [x] After upload: show file name + badge (PDF/JPG/PNG) + delete icon
+    - [x] Props: `file`, `onUpload`, `onDelete`
+  - [x] Create `FileUpload.module.css`
 
 - [ ] TASK-M2-020-FE-019: Create DateRangePickerModal component
   - [ ] Create `components/DailyReport/DateRangePickerModal.tsx`:

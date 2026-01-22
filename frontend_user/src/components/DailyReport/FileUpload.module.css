@@ -1,0 +1,210 @@
+/**
+ * FileUpload Styles
+ * RTL-supported, mobile-first file upload component
+ */
+
+/* ============================================================================
+ * Drop Zone
+ * ============================================================================ */
+
+.dropZone {
+  padding: 2rem 1.5rem;
+  background: white;
+  border: 2px dashed #228be6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+}
+
+.dropZone:hover {
+  background: #e7f5ff;
+  border-color: #1971c2;
+}
+
+.dragging {
+  background: #d0ebff;
+  border-color: #1971c2;
+  border-style: solid;
+  transform: scale(1.02);
+}
+
+/* ============================================================================
+ * Icon
+ * ============================================================================ */
+
+.icon {
+  color: #228be6;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.dropZone:hover .icon {
+  transform: scale(1.1);
+}
+
+.dragging .icon {
+  transform: scale(1.15);
+  color: #1971c2;
+}
+
+/* ============================================================================
+ * Upload Link
+ * ============================================================================ */
+
+.uploadLink {
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.uploadLink:hover {
+  color: #1971c2;
+}
+
+/* ============================================================================
+ * Hidden Input
+ * ============================================================================ */
+
+.hiddenInput {
+  display: none;
+}
+
+/* ============================================================================
+ * Uploaded Container
+ * ============================================================================ */
+
+.uploadedContainer {
+  padding: 1rem;
+  background: #e7f5ff;
+  border: 2px solid #228be6;
+  border-radius: 8px;
+  direction: rtl;
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  text-align: right;
+}
+
+.deleteButton {
+  color: #fa5252;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deleteButton:hover {
+  background: #fff5f5;
+  color: #c92a2a;
+}
+
+/* ============================================================================
+ * Responsive Design
+ * ============================================================================ */
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .dropZone {
+    padding: 2.5rem 2rem;
+    min-height: 180px;
+  }
+
+  .uploadedContainer {
+    padding: 1.25rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .dropZone {
+    padding: 3rem 2.5rem;
+    min-height: 200px;
+  }
+}
+
+/* ============================================================================
+ * Accessibility
+ * ============================================================================ */
+
+.dropZone:focus-visible {
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
+}
+
+.deleteButton:focus-visible {
+  outline: 2px solid #fa5252;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * Animations
+ * ============================================================================ */
+
+.uploadedContainer {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+ * RTL Support
+ * ============================================================================ */
+
+.uploadedContainer {
+  direction: rtl;
+}
+
+.fileInfo {
+  text-align: right;
+}
+
+/* ============================================================================
+ * Touch Improvements
+ * ============================================================================ */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .dropZone {
+    min-height: 180px;
+  }
+
+  .deleteButton {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ============================================================================
+ * States
+ * ============================================================================ */
+
+/* Error state */
+.error {
+  border-color: #fa5252;
+  background: #fff5f5;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
