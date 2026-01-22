@@ -90,23 +90,44 @@ Login and receive JWT (24h expiry).
   "success": true,
   "data": {
     "token": "jwt...",
-    "expiresInHours": 24,
-    "user": {
-      "id": 1,
-      "name": "Dor",
-      "mail": "user@example.com",
-      "userType": "admin",
-      "active": true,
-      "createdAt": "2026-01-14T10:00:00.000Z",
-      "updatedAt": "2026-01-14T10:00:00.000Z"
-    }
+    "expiresInHours": 24
   }
 }
 ```
 
+**Note:** User data is encoded in the JWT token payload. Decode the token on the frontend or use the `/auth/me` endpoint to retrieve user information.
+
 ### Errors
 - 400 `VALIDATION_ERROR` (missing/invalid fields)
 - 401 `UNAUTHORIZED` (wrong credentials)
+
+---
+
+## GET `/auth/me`
+Get current user data from JWT token.
+
+**Auth:** Required
+
+### 200 OK
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Dor",
+    "mail": "user@example.com",
+    "userType": "admin",
+    "active": true,
+    "createdAt": "2026-01-14T10:00:00.000Z",
+    "updatedAt": "2026-01-14T10:00:00.000Z"
+  }
+}
+```
+
+**Note:** This endpoint decodes user data from the JWT token. No database query is performed.
+
+### Errors
+- 401 `UNAUTHORIZED` (missing/invalid token)
 
 ---
 
@@ -115,15 +136,19 @@ Login and receive JWT (24h expiry).
 > Users are **soft-deleted** by setting `active=false`.
 
 ## GET `/admin/users?active=true`
-List users (filter by active/inactive).
+## GET `/admin/users?id=123`
+List users (filter by active/inactive) or get a specific user by ID.
 
 **Auth:** Required  
 **Role:** `admin`
 
 ### Query Params
-- `active` (boolean, optional)
+- `active` (boolean, optional) - Filter by active status. **Defaults to `true`** if not provided (returns only active users).
+- `id` (number, optional) - Get specific user by ID
 
-### 200 OK
+**Note:** If `id` is provided, returns a single user object. Otherwise, returns an array of users. When no `active` parameter is provided, only active users are returned by default.
+
+### 200 OK (List)
 ```json
 {
   "success": true,
@@ -141,9 +166,26 @@ List users (filter by active/inactive).
 }
 ```
 
+### 200 OK (Single User)
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Admin",
+    "mail": "admin@example.com",
+    "userType": "admin",
+    "active": true,
+    "createdAt": "2026-01-01T09:00:00.000Z",
+    "updatedAt": "2026-01-10T09:00:00.000Z"
+  }
+}
+```
+
 ### Errors
 - 401 `UNAUTHORIZED`
 - 403 `FORBIDDEN`
+- 404 `NOT_FOUND` (when id is provided but user doesn't exist)
 
 ---
 
@@ -582,7 +624,6 @@ Create a time log entry for a DailyAttendance.
 
 ## GET `/time-logs?dailyAttendanceId=701`
 List time logs for a specific day.
-
 ### 200 OK
 ```json
 {

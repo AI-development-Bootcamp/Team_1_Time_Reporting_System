@@ -16,6 +16,7 @@ import { useForm } from '@mantine/form';
 import { IconX, IconPlus } from '@tabler/icons-react';
 import { useClients } from '../../hooks/useClients';
 import { useProjects, Project } from '../../hooks/useProjects';
+import { useUsers } from '../../hooks/useUsers';
 import '../../styles/components/ProjectForm.css';
 import { CreateProjectInput } from '../../types/Project';
 import dayjs from 'dayjs';
@@ -38,7 +39,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({
   submitting = false,
 }) => {
   const { clientsQuery } = useClients();
-  // TODO: Add useUsers hook when backend endpoint is available
+  const { usersQuery } = useUsers();
   const [project, setProject] = useState<Project | null>(null);
   const { projectsQuery } = useProjects();
 
@@ -67,8 +68,8 @@ export const ProjectForm: FC<ProjectFormProps> = ({
         setProject(foundProject);
         form.setValues({
           name: foundProject.name ?? '',
-          clientId: foundProject.clientId ?? '',
-          projectManagerId: foundProject.projectManagerId ?? '',
+          clientId: String(foundProject.clientId ?? ''),
+          projectManagerId: String(foundProject.projectManagerId ?? ''),
           startDate: foundProject.startDate
             ? dayjs(foundProject.startDate).format('YYYY-MM-DD')
             : '',
@@ -96,7 +97,7 @@ export const ProjectForm: FC<ProjectFormProps> = ({
   });
 
   const clients = clientsQuery.data ?? [];
-  const users: Array<{ id: string; name: string }> = []; // TODO: Replace with useUsers when endpoint is available
+  const users = usersQuery.data ?? [];
 
   return (
     <Modal
@@ -178,9 +179,10 @@ export const ProjectForm: FC<ProjectFormProps> = ({
             <Select
               label="שייך מנהל ראשי לפרויקט"
               placeholder="בחר מנהל"
-              data={users.map((user) => ({ value: user.id, label: user.name }))}
+              data={users.map((user) => ({ value: String(user.id), label: user.name }))}
               {...form.getInputProps('projectManagerId')}
               searchable
+              disabled={usersQuery.isLoading}
               className="project-form-field"
               classNames={{
                 label: 'project-form-field-label',

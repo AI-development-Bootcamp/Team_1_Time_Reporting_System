@@ -22,7 +22,7 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 // Mock the prisma singleton instance directly
-vi.mock('@utils/prisma', () => ({
+vi.mock('../../utils/prisma', () => ({
   prisma: mockPrisma,
 }));
 
@@ -36,13 +36,13 @@ import tasksRouter from './Tasks';
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
-  
+
   // Use the imported router
   app.use('/api/admin/tasks', tasksRouter);
-  
+
   // Error handler
   app.use(errorHandler);
-  
+
   return app;
 };
 
@@ -90,11 +90,11 @@ describe('Tasks Router', () => {
       expect(response.body.success).toBe(true);
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(response.body.data).toHaveLength(2);
-      
+
       // Verify BigInt serialization
       expect(response.body.data[0].id).toBe('1');
       expect(response.body.data[1].id).toBe('2');
-      
+
       // Verify Date serialization
       expect(response.body.data[0].createdAt).toBe('2026-01-01T00:00:00.000Z');
       expect(response.body.data[0].updatedAt).toBe('2026-01-01T00:00:00.000Z');

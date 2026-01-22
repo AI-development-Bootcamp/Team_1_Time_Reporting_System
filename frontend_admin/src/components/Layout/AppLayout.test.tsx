@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@test/utils';
 import { AppLayout } from './AppLayout';
-import { useAuth } from '@hooks/useAuth';
+import { useAuth } from '@shared/hooks/useAuth';
 
 // Mock useAuth hook
-vi.mock('@hooks/useAuth');
+vi.mock('@shared/hooks/useAuth');
 
 const mockUseAuth = vi.mocked(useAuth);
 
@@ -19,6 +19,11 @@ describe('AppLayout', () => {
         userType: 'admin',
         active: true,
       },
+      token: 'mock-token',
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
     });
   });
 
@@ -54,7 +59,14 @@ describe('AppLayout', () => {
   });
 
   it('displays default "Admin" when user is null', () => {
-    mockUseAuth.mockReturnValue({ user: null });
+    mockUseAuth.mockReturnValue({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
 
     render(
       <AppLayout>
@@ -74,6 +86,11 @@ describe('AppLayout', () => {
         userType: 'admin',
         active: true,
       },
+      token: 'mock-token',
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
     });
 
     render(

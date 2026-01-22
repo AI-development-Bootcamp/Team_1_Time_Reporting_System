@@ -97,67 +97,96 @@ Current `backend/prisma/schema.prisma` issues:
 **Feature Owner**: Authentication and User CRUD (full-stack)
 
 #### TASK-M1-010: Auth Backend (Per `doc/api/API.md` Section 1)
-- [ ] Create `backend/src/routes/Auth.ts`
-- [ ] Create `backend/src/middleware/Auth.ts` - JWT validation middleware
-- [ ] Create `backend/src/utils/Bcrypt.ts` - Password hashing
-- [ ] Implement `POST /api/auth/login`:
-  - [ ] Zod schema: `{ mail: string, password: string }`
-  - [ ] Validate credentials against database
-  - [ ] Compare password hash using bcrypt
-  - [ ] Generate JWT token (24h expiry)
-  - [ ] Return: `{ success: true, data: { token, expiresInHours: 24, user } }`
-  - [ ] Exclude password from user response
-- [ ] Error handling:
-  - [ ] 400 `VALIDATION_ERROR` for missing/invalid fields
-  - [ ] 401 `UNAUTHORIZED` for wrong credentials
+- [x] Create `backend/src/routes/Auth.ts`
+- [x] Create `backend/src/middleware/Auth.ts` - JWT validation middleware
+- [x] Create `backend/src/utils/Bcrypt.ts` - Password hashing
+- [x] Create `backend/src/utils/AppError.ts` - Custom error class (exists in ErrorHandler.ts)
+- [x] Create `backend/src/utils/validationSchemas.ts` - Zod schemas for auth
+- [x] Implement `POST /api/auth/login`:
+  - [x] Zod schema: `{ mail: string, password: string }`
+  - [x] Validate credentials against database
+  - [x] Compare password hash using bcrypt
+  - [x] Generate JWT token (24h expiry)
+  - [x] Return: `{ success: true, data: { token, expiresInHours: 24, user } }`
+  - [x] Exclude password from user response
+  - [x] Throw `AppError` instead of using try/catch
+- [x] Error handling (via global `errorHandler` middleware):
+  - [x] 400 `VALIDATION_ERROR` for missing/invalid fields (ZodError)
+  - [x] 401 `UNAUTHORIZED` for wrong credentials
 - **Validation**: Login returns JWT, invalid credentials return 401
+- [x] **Tests**: Unit tests for Bcrypt, validationSchemas; Integration tests for auth flow
 
 #### TASK-M1-011: User CRUD Backend (Per `doc/api/API.md` Section 2)
-- [ ] Create `backend/src/routes/admin/Users.ts`
-- [ ] Add admin role check middleware (`userType === 'admin'`)
-- [ ] Implement `GET /api/admin/users`:
-  - [ ] Query param: `active` (boolean, optional)
-  - [ ] Filter by active status, default to all
-  - [ ] Return user list (exclude passwords)
-- [ ] Implement `POST /api/admin/users`:
-  - [ ] Zod schema: `{ name, mail, password, userType }`
-  - [ ] Hash password before saving
-  - [ ] Return: `{ success: true, data: { id } }`
-  - [ ] 409 `CONFLICT` if mail already exists
-- [ ] Implement `PUT /api/admin/users/:id`:
-  - [ ] Zod schema: `{ name?, mail?, password?, userType?, active? }`
-  - [ ] Hash password if provided
-  - [ ] Return: `{ success: true, data: { updated: true } }`
-- [ ] Implement `DELETE /api/admin/users/:id`:
-  - [ ] Soft delete: set `active = false`
-  - [ ] Return: `{ success: true, data: { deleted: true } }`
-- [ ] Implement `POST /api/admin/users/:id/reset-password`:
-  - [ ] Zod schema: `{ newPassword }`
-  - [ ] Hash and update password
-  - [ ] Return: `{ success: true, data: { updated: true } }`
-- **Validation**: All CRUD works, soft delete filters correctly
+- [x] Create `backend/src/routes/admin/Users.ts`
+- [x] Add admin role check middleware (`userType === 'admin'`)
+- [x] Implement `GET /api/admin/users`:
+  - [x] Query param: `active` (boolean, optional)
+  - [x] Filter by active status, default to all
+  - [x] Return user list (exclude passwords)
+- [x] Implement `POST /api/admin/users`:
+  - [x] Zod schema: `{ name, mail, password, userType }` with password validation (8 chars, 1 uppercase, 1 lowercase, 1 special char)
+  - [x] Hash password before saving
+  - [x] Return: `{ success: true, data: { id } }` (201 Created)
+  - [x] 409 `CONFLICT` if mail already exists
+  - [x] Throw `AppError` instead of using try/catch
+- [x] Implement `PUT /api/admin/users/:id`:
+  - [x] Zod schema: `{ name?, mail?, userType?, isActive? }` (password NOT allowed - use reset-password endpoint)
+  - [x] Return: `{ success: true, data: { updated: true } }`
+- [x] Implement `DELETE /api/admin/users/:id`:
+  - [x] Soft delete: set `isActive = false`
+  - [x] Return: `{ success: true, data: { deleted: true } }`
+- [x] Implement `POST /api/admin/users/:id/reset-password`:
+  - [x] Zod schema: `{ newPassword }` with password validation
+  - [x] Hash and update password
+  - [x] Return: `{ success: true, data: { updated: true } }`
+- [x] **Validation**: All CRUD works, soft delete filters correctly (filtering on `isActive: true`)
+- [x] **Tests**: Integration tests for all CRUD operations (`backend/tests/integration/users.test.ts`)
 
-#### TASK-M1-020: Login UI (Both Apps)
-- [ ] Create `frontend_user/src/components/Login/LoginPage.tsx`
-- [ ] Create `frontend_admin/src/components/Login/LoginPage.tsx`
-- [ ] Implement login form with Mantine:
-  - [ ] TextInput for mail
-  - [ ] PasswordInput for password
-  - [ ] Button for submit
-  - [ ] Use `@mantine/form` with `getInputProps`
-- [ ] Create `context/AuthContext.tsx` in both apps:
-  - [ ] Store JWT token in localStorage
-  - [ ] Store user info in state
-  - [ ] Provide `login()`, `logout()`, `isAuthenticated` functions
-- [ ] Create `components/ProtectedRoute.tsx`:
-  - [ ] Redirect to login if not authenticated
-  - [ ] Admin app: also check `userType === 'admin'`
-- [ ] Create `hooks/useAuth.ts` for easy access to auth context
-- [ ] Update `utils/ApiClient.ts` to include `Authorization: Bearer <token>` header
-- [ ] Setup routing with React Router:
-  - [ ] `/login` - public
-  - [ ] `/` - protected (redirects to login if not auth)
-- **Validation**: Users can login, token persists on refresh, protected routes work
+#### TASK-M1-020: Login UI (Both Apps - Shared Components)
+- [x] Install `@mantine/notifications` in both frontends
+- [x] Update `main.tsx` in both apps to include `NotificationsProvider` wrapper
+- [x] Create **shared** `shared/src/types/User.ts` - User type definitions (matches API response)
+- [x] Create **shared** `shared/src/context/AuthContext.tsx`:
+  - [x] Store JWT token in localStorage (Bearer token approach)
+  - [x] Decode user info from token on mount (user is decoded from token, not stored separately)
+  - [x] Provide `login()`, `logout()`, `isAuthenticated`, `user` functions
+  - [x] Load user from token on mount
+  - [x] Verify `userType === 'admin'` for admin routes (in admin app's ProtectedRoute)
+- [x] Create **shared** `shared/src/hooks/useLogin.ts`:
+  - [x] Uses `useMutation` from TanStack Query
+  - [x] Calls `POST /api/auth/login` via `apiClient`
+  - [x] 3-layer error handling:
+    - 400 validation errors: Use `form.setFieldError()` for inline red text on inputs
+    - 401/409/500 operational errors: Use `notifications.show()` for toast messages
+  - [x] On success: Call `login()` from AuthContext, redirect to appropriate page
+- [x] Create **shared** `shared/src/components/Login/LoginPage.tsx`:
+  - [x] Accept `appType: 'user' | 'admin'` prop
+  - [x] Adapt images based on appType:
+    - Admin: `@shared/image_components/log_in_backround.png`, `abraLogo.png`
+    - User: `@shared/image_components/login_mobile.png`, `log_in_backround.png` background
+  - [x] Same welcome text for both (Hebrew, styled appropriately)
+  - [x] Replace "התחברות באמצעות azure" with "התחברות" on login button/text
+  - [x] Implement login form with Mantine:
+    - [x] TextInput for mail (required)
+    - [x] PasswordInput for password (required)
+    - [x] Button for submit
+    - [x] Use `@mantine/form` with `getInputProps` pattern
+    - [x] Basic validation: mail and password required (no password strength check for login)
+- [x] Create **shared** `shared/src/components/ProtectedRoute/ProtectedRoute.tsx`:
+  - [x] Accept `children`, `requireAdmin?: boolean` props
+  - [x] Redirect to `/login` if not authenticated
+  - [x] If `requireAdmin=true`: also check `userType === 'admin'`, redirect to `/login` if not admin
+- [x] Create **shared** `shared/src/hooks/useAuth.ts` for easy access to auth context
+- [x] Update `App.tsx` in both apps:
+  - [x] Wrap with `AuthContextProvider` from shared
+  - [x] Setup React Router v7 routes:
+    - [x] `/login` - public route (uses shared LoginPage with appType prop)
+    - [x] User app: `/month-history` - protected route (placeholder page for now)
+    - [x] Admin app: `/client-management` - protected route with `requireAdmin=true` (placeholder page for now)
+  - [x] Redirect `/` to appropriate default page (`/login` if not auth, `/month-history` or `/client-management` if auth)
+- [x] **Note**: `ApiClient.ts` includes `Authorization: Bearer <token>` header (shared) - token stored in localStorage
+- **Validation**: Users can login, token persists on refresh, protected routes work, redirects to correct pages after login
+- [x] **Tests**: Unit tests for AuthContext, ProtectedRoute, ApiClient logic
 
 #### TASK-M1-021: User Management UI (Admin App)
 - [ ] Create `frontend_admin/src/components/Users/UsersTable.tsx`:
@@ -663,23 +692,29 @@ backend/src/
 ├── routes/Auth.ts
 ├── routes/admin/Users.ts
 ├── middleware/Auth.ts
-└── utils/Bcrypt.ts
+├── utils/Bcrypt.ts
+├── utils/AppError.ts
+└── utils/validationSchemas.ts
 
-frontend_user/src/
-├── components/Login/LoginPage.tsx
+shared/src/
+├── types/User.ts
 ├── context/AuthContext.tsx
 ├── hooks/useAuth.ts
-└── components/ProtectedRoute.tsx
+├── hooks/useLogin.ts
+├── components/Login/LoginPage.tsx
+└── components/ProtectedRoute/ProtectedRoute.tsx
+
+frontend_user/src/
+├── App.tsx (routing setup)
+└── main.tsx (NotificationsProvider setup)
 
 frontend_admin/src/
-├── components/Login/LoginPage.tsx
 ├── components/Users/UsersTable.tsx
 ├── components/Users/UserForm.tsx
 ├── components/Users/ResetPasswordModal.tsx
-├── context/AuthContext.tsx
-├── hooks/useAuth.ts
 ├── hooks/useUsers.ts
-└── components/ProtectedRoute.tsx
+├── App.tsx (routing setup)
+└── main.tsx (NotificationsProvider setup)
 ```
 
 ### Member 2: Time Reporting

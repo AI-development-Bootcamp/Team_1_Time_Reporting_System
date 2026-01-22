@@ -4,35 +4,48 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@controllers': path.resolve(__dirname, './src/controllers'),
-      '@middleware': path.resolve(__dirname, './src/middleware'),
-      '@routes': path.resolve(__dirname, './src/routes'),
-      '@validators': path.resolve(__dirname, './src/validators'),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   test: {
     globals: true,
     environment: 'node',
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    testTimeout: 30000, // 30 seconds for HTTP integration tests
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: [
+        'src/controllers/**/*.ts',
+        'src/services/**/*.ts',
+        'src/validators/**/*.ts',
+        'src/routes/**/*.ts',
+        'src/middleware/**/*.ts',
+        'src/utils/**/*.ts',
+      ],
       exclude: [
-        'node_modules/',
-        'dist/',
         '**/*.test.ts',
         '**/*.spec.ts',
-        'prisma/',
+        '**/node_modules/**',
+        '**/dist/**',
+        'dist/**',
+        '**/tests/**',
+        // Exclude other members' files
+        'src/routes/Attendance.ts',
+        'src/routes/TimeLogs.ts',
+        // 'src/services/**', // Removed to allow coverage for our services
+        'src/index.ts', // Entry point, not unit testable
+        'src/utils/DatabaseConfig.ts', // Infrastructure setup
+        'src/utils/prismaClient.ts', // Prisma singleton
       ],
       thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 60,
-        statements: 60,
+        global: {
+          lines: 60,
+          functions: 60,
+          branches: 60,
+          statements: 60,
+        },
       },
     },
   },
 });
-
-

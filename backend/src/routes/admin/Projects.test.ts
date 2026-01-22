@@ -23,13 +23,13 @@ const { mockPrisma } = vi.hoisted(() => {
     taskWorker: {
       deleteMany: vi.fn(),      // Needed for entity_management feature
     },
-    $transaction: vi.fn((cb: any) => cb(mockPrismaInstance)), // Needed for entity_management
+    $transaction: vi.fn(async (cb: any) => await cb(mockPrismaInstance)), // Needed for entity_management
   };
   return { mockPrisma: mockPrismaInstance };
 });
 
 // Mock the prisma singleton instance directly
-vi.mock('@utils/prisma', () => ({
+vi.mock('../../utils/prisma', () => ({
   prisma: mockPrisma,
 }));
 
@@ -46,13 +46,13 @@ import projectsRouter from './Projects';
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
-  
+
   // Use the imported router
   app.use('/api/admin/projects', projectsRouter);
-  
+
   // Error handler
   app.use(errorHandler);
-  
+
   return app;
 };
 
@@ -133,7 +133,7 @@ describe('Projects Router', () => {
           createdAt: 'desc',
         },
       });
-      
+
       // Verify all returned projects belong to the filtered client
       const allMatch = response.body.data.every((p: any) => p.clientId === '1');
       expect(allMatch).toBe(true);
@@ -704,7 +704,7 @@ describe('Projects Router', () => {
       expect(response.body.data.projectManagerId).toBe('1');
       expect(response.body.data.reportingType).toBe('startEnd');
       expect(response.body.data.active).toBe(true);
-      
+
       expect(mockPrisma.task.findUnique).toHaveBeenCalledWith({
         where: { id: BigInt(1) },
         include: { project: true },
@@ -721,7 +721,7 @@ describe('Projects Router', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.error.code).toBe('NOT_FOUND');
       expect(response.body.error.message).toBe('Task not found');
-      
+
       expect(mockPrisma.task.findUnique).toHaveBeenCalledWith({
         where: { id: BigInt(999) },
         include: { project: true },

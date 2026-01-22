@@ -26,10 +26,11 @@ import { ReusableTable } from '../Common/ReusableTable';
 import { ReusablePagination } from '../Common/ReusablePagination';
 import tableStyles from '../Common/ReusableTable.module.css';
 import styles from '../../styles/components/ClientsTable.module.css';
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@shared/utils/ApiClient';
 import { useTasks } from '../../hooks/useTasks';
 import { CreateProjectInput } from '../../types/Project';
+import { ASSIGNMENTS_QUERY_KEY } from '../../hooks/useAssignments';
 
 interface TableRowData {
   clientId: string;
@@ -170,6 +171,7 @@ function TableRow({ rowData, onEditClient, onEditProject, onEditTask, onEditAssi
 }
 
 export function ClientsTable() {
+  const queryClient = useQueryClient();
   const { clientsQuery, createClientMutation, updateClientMutation, deleteClientMutation } =
     useClients();
   const { createProjectMutation, updateProjectMutation, deleteProjectMutation } = useProjects();
@@ -429,8 +431,9 @@ export function ClientsTable() {
   };
 
   const handleEditAssignment = async () => {
-    // Invalidate assignments query to refresh data
-    assignmentsQuery.refetch();
+    // Invalidate assignments query to refresh data with user information
+    queryClient.invalidateQueries({ queryKey: ASSIGNMENTS_QUERY_KEY });
+    await assignmentsQuery.refetch();
     setAssignmentFormOpened(false);
     setSelectedTaskId(null);
   };

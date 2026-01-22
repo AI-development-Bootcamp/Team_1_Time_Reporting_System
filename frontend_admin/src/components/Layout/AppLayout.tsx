@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { IconUsers, IconClock } from '@tabler/icons-react';
 import abraLogo from '../../../../shared/image_components/abraLogo_inverted.png';
 import bottomLogo from '../../../../shared/image_components/bottom_logo.png';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@shared/hooks/useAuth';
 import styles from './AppLayout.module.css';
 
 interface AppLayoutProps {
@@ -39,7 +39,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       padding={0}
       dir="rtl"
     >
-      <AppShell.Navbar 
+      <AppShell.Navbar
         className={styles.navbar}
       >
         {/* Logo / Brand */}

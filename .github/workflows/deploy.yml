@@ -26,7 +26,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Generate Prisma Client
         run: npm run prisma:generate -w backend
@@ -40,6 +40,26 @@ jobs:
     needs: unit-tests
     if: github.event_name == 'pull_request' && (github.base_ref == 'dev' || github.base_ref == 'main')
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: timereporting_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/timereporting_test?schema=public
+      JWT_SECRET: test_secret_for_ci
+    
     steps:
       - uses: actions/checkout@v4
       
@@ -50,10 +70,18 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Generate Prisma Client
         run: npm run prisma:generate -w backend
+
+      - name: Run Database Migrations
+        working-directory: ./backend
+        run: npx prisma migrate deploy
+
+      - name: Seed Test Database
+        working-directory: ./backend
+        run: npx prisma db seed
 
       - name: Run Integration Tests
         run: npm run test:integration
