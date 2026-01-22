@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../src/app';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const app = createApp();
@@ -12,9 +13,16 @@ let testClientId: bigint;
 let testProjectId: bigint;
 let testTaskId: bigint;
 let testAttendanceId: bigint;
+let authToken: string;
+
+const JWT_SECRET = 'test-secret-key';
+const originalSecret = process.env.JWT_SECRET;
 
 describe('Time Logs API Integration Tests', () => {
   beforeAll(async () => {
+    // Set JWT secret for tests
+    process.env.JWT_SECRET = JWT_SECRET;
+
     // Create test user
     const user = await prisma.user.create({
       data: {
@@ -26,6 +34,12 @@ describe('Time Logs API Integration Tests', () => {
       },
     });
     testUserId = user.id;
+
+    // Generate JWT token for test user
+    authToken = jwt.sign(
+      { userId: testUserId.toString(), userType: 'worker' },
+      JWT_SECRET
+    );
 
     // Create test client
     const client = await prisma.client.create({
@@ -103,12 +117,17 @@ describe('Time Logs API Integration Tests', () => {
       await prisma.taskWorker.deleteMany({
         where: { userId: testUserId },
       });
-      // Delete tasks by project (catches any nested test tasks that weren't cleaned up)
+      // Delete tasks by clientId (catches any nested test tasks that weren't cleaned up)
       await prisma.task.deleteMany({
-        where: { projectId: testProjectId },
+        where: {
+          project: {
+            clientId: testClientId,
+          },
+        },
       });
+      // Delete all projects by clientId (catches nested projects from describe blocks)
       await prisma.project.deleteMany({
-        where: { id: testProjectId },
+        where: { clientId: testClientId },
       });
       await prisma.client.deleteMany({
         where: { id: testClientId },
@@ -117,6 +136,12 @@ describe('Time Logs API Integration Tests', () => {
         where: { id: testUserId },
       });
     } finally {
+      // Restore JWT_SECRET
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET;
+      } else {
+        process.env.JWT_SECRET = originalSecret;
+      }
       await prisma.$disconnect();
     }
   });
@@ -129,6 +154,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should create time log with valid data', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -145,6 +171,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should create time log without description', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -160,6 +187,7 @@ describe('Time Logs API Integration Tests', () => {
       // Create first log
       await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -170,6 +198,7 @@ describe('Time Logs API Integration Tests', () => {
       // Create second log (overlapping is allowed per spec)
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -184,6 +213,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject invalid location', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -198,6 +228,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject zero duration', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -212,6 +243,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject negative duration', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: testTaskId.toString(),
@@ -226,6 +258,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return NOT_FOUND for non-existent attendance', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: '999999',
           taskId: testTaskId.toString(),
@@ -241,6 +274,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return NOT_FOUND for non-existent task', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: '999999',
@@ -256,6 +290,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject missing required fields', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           // missing taskId, duration, location
@@ -296,6 +331,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return time logs for attendance', async () => {
       const response = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: testAttendanceId.toString() });
 
       expect(response.status).toBe(200);
@@ -307,6 +343,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return flat list (no nested objects)', async () => {
       const response = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: testAttendanceId.toString() });
 
       expect(response.status).toBe(200);
@@ -334,6 +371,7 @@ describe('Time Logs API Integration Tests', () => {
 
       const response = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: newAttendance.id.toString() });
 
       expect(response.status).toBe(200);
@@ -343,6 +381,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return NOT_FOUND for non-existent attendance', async () => {
       const response = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: '999999' });
 
       expect(response.status).toBe(404);
@@ -350,7 +389,9 @@ describe('Time Logs API Integration Tests', () => {
     });
 
     it('should reject missing dailyAttendanceId', async () => {
-      const response = await request(app).get('/api/time-logs');
+      const response = await request(app)
+        .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -381,6 +422,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should update time log duration', async () => {
       const response = await request(app)
         .put(`/api/time-logs/${existingLogId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: 500,
         });
@@ -393,6 +435,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should update time log location', async () => {
       const response = await request(app)
         .put(`/api/time-logs/${existingLogId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           location: 'home',
         });
@@ -404,6 +447,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should update time log description', async () => {
       const response = await request(app)
         .put(`/api/time-logs/${existingLogId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           description: 'Updated description',
         });
@@ -415,6 +459,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should return 404 for non-existent time log', async () => {
       const response = await request(app)
         .put('/api/time-logs/999999')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: 120,
         });
@@ -426,6 +471,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject invalid duration', async () => {
       const response = await request(app)
         .put(`/api/time-logs/${existingLogId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: -10,
         });
@@ -460,7 +506,8 @@ describe('Time Logs API Integration Tests', () => {
       });
 
       const response = await request(app)
-        .delete(`/api/time-logs/${log.id}`);
+        .delete(`/api/time-logs/${log.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -469,7 +516,8 @@ describe('Time Logs API Integration Tests', () => {
 
     it('should return 404 for non-existent time log', async () => {
       const response = await request(app)
-        .delete('/api/time-logs/999999');
+        .delete('/api/time-logs/999999')
+        .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(404);
       expect(response.body.success).toBe(false);
@@ -495,7 +543,8 @@ describe('Time Logs API Integration Tests', () => {
 
       // Try to delete - should fail because 0 < 480
       const response = await request(app)
-        .delete(`/api/time-logs/${log.id}`);
+        .delete(`/api/time-logs/${log.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -523,7 +572,8 @@ describe('Time Logs API Integration Tests', () => {
 
       // Delete first log - remaining 300 < 480, should fail
       const response = await request(app)
-        .delete(`/api/time-logs/${log1.id}`);
+        .delete(`/api/time-logs/${log1.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -543,6 +593,7 @@ describe('Time Logs API Integration Tests', () => {
       // Try to reduce to 60 min - should fail because 60 < 480
       const response = await request(app)
         .put(`/api/time-logs/${log.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: 60,
         });
@@ -602,6 +653,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should create time log with startTime and endTime', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -620,6 +672,7 @@ describe('Time Logs API Integration Tests', () => {
       // Create a time log via API
       const createRes = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -633,6 +686,7 @@ describe('Time Logs API Integration Tests', () => {
       // Check via GET
       const getRes = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: testAttendanceId.toString() });
 
       expect(getRes.status).toBe(200);
@@ -646,6 +700,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject if startTime/endTime missing for startEnd project', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -661,6 +716,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject if endTime <= startTime', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -677,6 +733,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject endTime that crosses midnight (00:30 next day)', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -693,6 +750,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject invalid time format (24:00)', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: startEndTaskId.toString(),
@@ -751,6 +809,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should create time log with duration only', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: durationTaskId.toString(),
@@ -767,6 +826,7 @@ describe('Time Logs API Integration Tests', () => {
       // Create a time log
       const createRes = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: durationTaskId.toString(),
@@ -779,6 +839,7 @@ describe('Time Logs API Integration Tests', () => {
       // Check via GET
       const getRes = await request(app)
         .get('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({ dailyAttendanceId: testAttendanceId.toString() });
 
       expect(getRes.status).toBe(200);
@@ -792,6 +853,7 @@ describe('Time Logs API Integration Tests', () => {
     it('should reject if duration missing for duration project', async () => {
       const response = await request(app)
         .post('/api/time-logs')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           dailyAttendanceId: testAttendanceId.toString(),
           taskId: durationTaskId.toString(),
@@ -819,6 +881,7 @@ describe('Time Logs API Integration Tests', () => {
       // Update
       const response = await request(app)
         .put(`/api/time-logs/${log.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: 500,
         });
@@ -871,6 +934,7 @@ describe('Time Logs API Integration Tests', () => {
       // Try to update with just duration - should fail now
       const response = await request(app)
         .put(`/api/time-logs/${log.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           duration: 500, // Only duration, no startTime/endTime
         });

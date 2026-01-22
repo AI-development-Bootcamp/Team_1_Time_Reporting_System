@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../src/app';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const app = createApp();
@@ -11,9 +12,16 @@ let testUserId: bigint;
 let testClientId: bigint;
 let testProjectId: bigint;
 let testTaskId: bigint;
+let authToken: string;
+
+const JWT_SECRET = 'test-secret-key';
+const originalSecret = process.env.JWT_SECRET;
 
 describe('Attendance API Integration Tests', () => {
   beforeAll(async () => {
+    // Set JWT secret for tests
+    process.env.JWT_SECRET = JWT_SECRET;
+
     // Create test user with correct schema fields
     const user = await prisma.user.create({
       data: {
@@ -25,6 +33,12 @@ describe('Attendance API Integration Tests', () => {
       },
     });
     testUserId = user.id;
+
+    // Generate JWT token for test user
+    authToken = jwt.sign(
+      { userId: testUserId.toString(), userType: 'worker' },
+      JWT_SECRET
+    );
 
     // Create test client
     const client = await prisma.client.create({
@@ -78,19 +92,23 @@ describe('Attendance API Integration Tests', () => {
     // Clean up all test data in correct order (reverse dependency order)
     try {
       await prisma.projectTimeLogs.deleteMany({
-        where: { taskId: testTaskId },
+        where: {
+          dailyAttendance: {
+            userId: testUserId,
+          },
+        },
       });
       await prisma.dailyAttendance.deleteMany({
         where: { userId: testUserId },
       });
       await prisma.taskWorker.deleteMany({
-        where: { taskId: testTaskId },
+        where: { userId: testUserId },
       });
       await prisma.task.deleteMany({
-        where: { id: testTaskId },
+        where: { projectId: testProjectId },
       });
       await prisma.project.deleteMany({
-        where: { id: testProjectId },
+        where: { clientId: testClientId },
       });
       await prisma.client.deleteMany({
         where: { id: testClientId },
@@ -99,6 +117,12 @@ describe('Attendance API Integration Tests', () => {
         where: { id: testUserId },
       });
     } finally {
+      // Restore JWT_SECRET
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET;
+      } else {
+        process.env.JWT_SECRET = originalSecret;
+      }
       await prisma.$disconnect();
     }
   });
@@ -111,6 +135,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject work status and require combined endpoint', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -127,6 +152,7 @@ describe('Attendance API Integration Tests', () => {
     it('should create attendance with sickness status (no times required)', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-21',
@@ -140,6 +166,7 @@ describe('Attendance API Integration Tests', () => {
     it('should create attendance with dayOff status', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-22',
@@ -153,6 +180,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject work status without start/end times (requires combined endpoint)', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -168,6 +196,7 @@ describe('Attendance API Integration Tests', () => {
       // Work status is blocked at controller level first
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -185,6 +214,7 @@ describe('Attendance API Integration Tests', () => {
       // Work status is blocked at controller level first
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -201,6 +231,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject invalid time format', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -216,6 +247,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject invalid status', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -250,6 +282,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject overlapping attendance (new starts during existing)', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -267,6 +300,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject overlapping attendance (new contains existing)', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -284,6 +318,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject overlapping attendance (new inside existing)', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -301,6 +336,7 @@ describe('Attendance API Integration Tests', () => {
     it('should allow non-overlapping attendance (after existing)', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -317,6 +353,7 @@ describe('Attendance API Integration Tests', () => {
     it('should allow adjacent attendance (starts when existing ends)', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -333,6 +370,7 @@ describe('Attendance API Integration Tests', () => {
     it('should allow attendance on different date', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-26', // Different date
@@ -381,6 +419,7 @@ describe('Attendance API Integration Tests', () => {
 
       const response = await request(app)
         .put(`/api/attendance/${existingAttendanceId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '08:00',
           endTime: '16:00',
@@ -394,6 +433,7 @@ describe('Attendance API Integration Tests', () => {
     it('should update attendance status successfully', async () => {
       const response = await request(app)
         .put(`/api/attendance/${existingAttendanceId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           status: 'sickness',
         });
@@ -405,6 +445,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject update with endTime <= startTime', async () => {
       const response = await request(app)
         .put(`/api/attendance/${existingAttendanceId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '17:00',
           endTime: '09:00',
@@ -440,6 +481,7 @@ describe('Attendance API Integration Tests', () => {
       // Try to extend first attendance to overlap with second
       const response = await request(app)
         .put(`/api/attendance/${existingAttendanceId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           endTime: '19:00', // Would overlap with 18:00-20:00
         });
@@ -452,6 +494,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject updating date field', async () => {
       const response = await request(app)
         .put(`/api/attendance/${existingAttendanceId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           date: '2026-01-30',
         });
@@ -464,6 +507,7 @@ describe('Attendance API Integration Tests', () => {
     it('should return 404 for non-existent attendance', async () => {
       const response = await request(app)
         .put('/api/attendance/999999')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           status: 'sickness',
         });
@@ -508,6 +552,7 @@ describe('Attendance API Integration Tests', () => {
       // Shorten to 2 hours (120 minutes) - logs (240) >= new duration (120) → PASS
       const response = await request(app)
         .put(`/api/attendance/${attendanceWithLogsId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '09:00',
           endTime: '11:00', // 2 hours = 120 minutes
@@ -521,6 +566,7 @@ describe('Attendance API Integration Tests', () => {
       // Shorten to 4 hours (240 minutes) - logs (240) >= duration (240) → PASS
       const response = await request(app)
         .put(`/api/attendance/${attendanceWithLogsId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '09:00',
           endTime: '13:00', // 4 hours = 240 minutes
@@ -534,6 +580,7 @@ describe('Attendance API Integration Tests', () => {
       // Extend to 10 hours (600 minutes) - logs (240) < duration (600) → FAIL
       const response = await request(app)
         .put(`/api/attendance/${attendanceWithLogsId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '07:00',
           endTime: '17:00', // 10 hours = 600 minutes
@@ -547,6 +594,7 @@ describe('Attendance API Integration Tests', () => {
     it('should allow status change without time change (no duration check)', async () => {
       const response = await request(app)
         .put(`/api/attendance/${attendanceWithLogsId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           status: 'work',
         });
@@ -569,6 +617,7 @@ describe('Attendance API Integration Tests', () => {
       // Now extend to 10 hours - logs (600) >= duration (600) → PASS
       const response = await request(app)
         .put(`/api/attendance/${attendanceWithLogsId}`)
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           startTime: '07:00',
           endTime: '17:00', // 10 hours = 600 minutes
@@ -608,6 +657,7 @@ describe('Attendance API Integration Tests', () => {
     it('should return attendance records for specified month', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '1',
           userId: testUserId.toString(),
@@ -622,6 +672,7 @@ describe('Attendance API Integration Tests', () => {
     it('should return empty array for month with no records', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '12', // December - no records
           userId: testUserId.toString(),
@@ -635,6 +686,7 @@ describe('Attendance API Integration Tests', () => {
     it('should format times as HH:mm strings', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '1',
           userId: testUserId.toString(),
@@ -649,6 +701,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject invalid month (0)', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '0',
           userId: testUserId.toString(),
@@ -661,6 +714,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject invalid month (13)', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '13',
           userId: testUserId.toString(),
@@ -673,6 +727,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject missing userId', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           month: '1',
         });
@@ -684,6 +739,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject missing month', async () => {
       const response = await request(app)
         .get('/api/attendance/month-history')
+        .set('Authorization', `Bearer ${authToken}`)
         .query({
           userId: testUserId.toString(),
         });
@@ -701,6 +757,7 @@ describe('Attendance API Integration Tests', () => {
     it('should create attendance and time logs atomically', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -727,6 +784,7 @@ describe('Attendance API Integration Tests', () => {
     it('should create multiple time logs in one request', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -756,6 +814,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject if total time logs < attendance duration', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -779,6 +838,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject if endTime <= startTime', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -810,6 +870,7 @@ describe('Attendance API Integration Tests', () => {
 
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-21',
@@ -843,6 +904,7 @@ describe('Attendance API Integration Tests', () => {
 
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-22',
@@ -865,6 +927,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject if task does not exist', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -887,6 +950,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject if no time logs provided', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -903,6 +967,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject invalid location in time log', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -926,6 +991,7 @@ describe('Attendance API Integration Tests', () => {
       // Try to create with invalid second time log (non-existent task)
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-23',
@@ -961,6 +1027,7 @@ describe('Attendance API Integration Tests', () => {
     it('should allow time logs sum > attendance duration', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-20',
@@ -1028,6 +1095,7 @@ describe('Attendance API Integration Tests', () => {
     it('should create combined with startEnd time log', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-24',
@@ -1051,6 +1119,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject startEnd project without startTime/endTime', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -1073,6 +1142,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject startEnd time log with endTime <= startTime', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-01-25',
@@ -1295,6 +1365,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .put(`/api/attendance/${attendance.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'halfDayOff',
           });
@@ -1317,6 +1388,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .put(`/api/attendance/${attendance.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'halfDayOff',
           });
@@ -1337,6 +1409,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .put(`/api/attendance/${attendance.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'work',
             // Missing startTime and endTime!
@@ -1358,6 +1431,7 @@ describe('Attendance API Integration Tests', () => {
 
         const response = await request(app)
           .put(`/api/attendance/${attendance.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'work',
             startTime: '14:00',
@@ -1391,6 +1465,7 @@ describe('Attendance API Integration Tests', () => {
         // Try to change first to dayOff - should fail
         const response = await request(app)
           .put(`/api/attendance/${attendance1.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'dayOff',
           });
@@ -1413,6 +1488,7 @@ describe('Attendance API Integration Tests', () => {
 
         await request(app)
           .put(`/api/attendance/${attendance.id}`)
+          .set('Authorization', `Bearer ${authToken}`)
           .send({
             status: 'sickness',
           });
@@ -1437,6 +1513,7 @@ describe('Attendance API Integration Tests', () => {
     it('should reject attendance with invalid time format (24:00)', async () => {
       const response = await request(app)
         .post('/api/attendance')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-02-25',
@@ -1484,6 +1561,7 @@ describe('Attendance API Integration Tests', () => {
     it('should accept attendance with max valid time (23:59) via combined endpoint', async () => {
       const response = await request(app)
         .post('/api/attendance/combined')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: testUserId.toString(),
           date: '2026-02-27',
